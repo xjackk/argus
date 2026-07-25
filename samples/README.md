@@ -1,11 +1,17 @@
 # Argus sample workbooks — accounting & reporting
 
-Realistic, everyday accounting/reporting spreadsheets (not finance-modeling
-DCFs) that demonstrate Argus's diff engine + AI summary. Each statement has a
-**v1** and a **v2** that differ by exactly **one authored input**, which then
-cascades through cross-cell (and cross-sheet) formulas — the everyday workflow
-where an accountant changes one assumption and needs to know what moved
-downstream.
+Realistic, richly-formatted 3-statement-style spreadsheets that demonstrate
+Argus's diff engine + AI summary. Each statement has a **v1** and a **v2** that
+differ by exactly **one authored input**, which then cascades through **dozens**
+of cross-cell (and cross-sheet) formulas — the "blast radius" demo: change one
+assumption and watch the ripple, then trace "how this number came about" back up
+the dependency chain.
+
+The Income Statement and Balance Sheet workbooks are **large and formatted**:
+many line items × many periods, every value a formula, currency rendered as
+`$#,##0` and margins/rates as `0.0%`. The number formats matter — the engine
+surfaces each cell's `displayFormat`, and the AI narrator pre-renders every
+figure through it, so the summary reads `$118,701` / `16.0%`, never a raw float.
 
 Each file's formula cells carry **cached values** (recalculated by LibreOffice),
 because the engine reads Excel's cached `<v>` and never recomputes.
@@ -21,64 +27,73 @@ go run ./cmd/argus-diff [--narrate] samples/<name>_v1.xlsx samples/<name>_v2.xls
 
 ## 1. Income Statement — `income_statement_v1.xlsx` / `_v2.xlsx`
 
-**What it models.** A 3-period income statement (2023A / 2024E / 2025E) built
-across **two sheets**: an `Assumptions` sheet (base revenue, growth %, COGS %,
-SG&A %, R&D %, interest, tax rate) drives a `P&L` sheet via **cross-sheet
-formulas**. Revenue → COGS → Gross Profit → Operating Expenses → Operating
-Income (EBIT) → Interest → Pretax Income → Tax → Net Income, plus gross /
-operating / net margin rows.
+**What it models.** A 3-statement-style P&L across **two sheets**. An
+`Assumptions` sheet holds **11 authored input cells** (blue): base revenue,
+revenue growth %, gross margin %, SG&A / R&D / marketing / G&A / D&A as % of
+revenue, interest rate, debt balance, tax rate — formatted `$#,##0` and `0.0%`.
+A `P&L` sheet spans **8 periods across columns (FY20–FY27)** and **18 line items
+down**: Revenue → COGS → Gross Profit → SG&A / R&D / Marketing / G&A → Total
+OpEx → EBITDA → D&A → EBIT → Interest → Pretax → Tax → Net Income, plus Gross /
+EBITDA / Net margin % rows. **Every P&L value is a formula** referencing
+Assumptions (cross-sheet) and the prior period (cross-cell). Currency is
+`$#,##0`; margin rows are `0.0%`.
 
-**What changed v1→v2.** `Assumptions!B4` **Revenue Growth %: 12.0% → 18.0%**
-(one cell). The 2023A column is a fixed base and does not move; the 2024E and
-2025E columns recompute end to end.
+**What changed v1→v2.** `Assumptions!B4` **Revenue Growth %: 10.0% → 16.0%**
+(one cell). FY20 is a fixed base column and does not move; FY21–FY27 recompute
+end to end.
 
-**Engine diff.** 1 authored, 22 computed, sheets `[Assumptions, P&L]`. The
-single cascade originates at `Assumptions!B4` (Revenue Growth %) and reaches 26
-downstream cells (revenue, COGS, gross profit, SG&A, R&D, EBIT, pretax, tax,
-net income and all three margin rows, across both forecast years).
+**Engine diff.** **1 authored, 105 computed**, sheets `[Assumptions, P&L]`. The
+single cascade from `Assumptions!B4` reaches every dollar line item across all
+seven forecast periods (Revenue, COGS, Gross Profit, each OpEx line, Total OpEx,
+EBITDA, D&A, EBIT, Pretax, Tax, Net Income). Interest Expense (a fixed
+debt×rate) and the margin % rows are ratios that hold constant, so they
+correctly stay out of the diff.
 
 **AI narrative.**
-> A user edited Revenue Growth % from 12.0% to 18.0%. That flowed through to
-> Revenue (52684.80 → 58480.80), Cost of Goods Sold (30557.18 → 33918.86), and
-> Gross Profit (22127.62 → 24561.94), while operating costs rose across SG&A
-> (8956.42 → 9941.74), Research & Development (4741.63 → 5263.27), and Total
-> Operating Expenses (13698.05 → 15205.01). Operating Income (EBIT) moved from
-> 8429.57 to 9356.93, Pretax Income from 7229.57 to 8156.93, Income Tax from
-> 1735.10 to 1957.66, and Net Income from 5494.47 to 6199.27.
+> A user changed the Revenue Growth % input from 10.0% to 16.0%. That flowed
+> through to Revenue, which rose from $81,846 to $118,701, with Cost of Goods
+> Sold moving from $31,102 to $45,106 and Gross Profit from $50,745 to $73,595.
+> Further down, Total Operating Expenses went from $28,646 to $41,545, EBITDA
+> from $22,098 to $32,049, Operating Income (EBIT) from $18,825 to $27,301, D&A
+> from $3,274 to $4,748, Pretax Income from $17,625 to $26,101, Income Tax from
+> $4,230 to $6,264, and Net Income from $13,395 to $19,837.
 
 ---
 
 ## 2. Balance Sheet — `balance_sheet_v1.xlsx` / `_v2.xlsx`
 
-**What it models.** A two-period balance sheet (FY2023 / FY2024) on one sheet.
-Assets: Cash, Accounts Receivable, Inventory, PP&E → Total Assets.
-Liabilities & Equity: Accounts Payable, Long-Term Debt, Common Stock, Retained
-Earnings → Total L&E. **Cash is the balancing plug** (`Total L&E − (AR + Inv +
-PP&E)`), so **Total Assets = Total L&E by construction** and a "Balance Check
-(A − L&E)" row proves it ties to 0.
+**What it models.** A rolling balance sheet across **7 periods (FY20 opening +
+FY21–FY26)** with **24 line items** on a `BalanceSheet` sheet, driven by an
+`Assumptions` sheet of **20 authored input cells** (opening balances + annual
+drivers). Assets (Cash, AR, Inventory, Prepaid → Total Current; Gross PP&E,
+Accum. Depreciation, Net PP&E, Goodwill, Intangibles → Total Non-Current →
+**Total Assets**); Liabilities (AP, Accrued, Deferred Revenue, Short-term Debt →
+Total Current; Long-term Debt → **Total Liabilities**); Equity (Common Stock,
+Retained Earnings → **Total Equity** → **Total L&E**). It **balances by
+construction** via the accounting identity — Cash rolls from a cash-flow build,
+PP&E from capex/depreciation, Debt from draws, Retained Earnings from net income
+— so a **Balance Check (A − L&E)** row is `$0` in every period of both versions.
 
-**What changed v1→v2.** `C12` **Long-Term Debt: 14,000 → 11,500** — a 2,500
-debt paydown (one cell). Cash funds it, so both totals fall and the statement
-stays balanced.
+**What changed v1→v2.** `Assumptions!B17` **Annual Capex: $4,000 → $9,000** (one
+cell). Capex is funded by an equal long-term-debt draw, so it lifts PP&E on the
+asset side and debt on the funding side; both totals rise and the sheet stays
+balanced.
 
-**Engine diff.** 1 authored, 3 computed, sheet `[Balance Sheet]`.
-
-| Cell | Label | Class | Old → New |
-|------|-------|-------|-----------|
-| C12 | Long-Term Debt | authored | 14,000 → 11,500 |
-| C4  | Cash & Equivalents | computed | 5,100 → 2,600 |
-| C8  | Total Assets | computed | 45,000 → 42,500 |
-| C15 | Total Liabilities & Equity | computed | 45,000 → 42,500 |
-
-The Balance Check row stays 0 in both versions, so it is (correctly) **absent
-from the diff** — direct proof the sheet still ties after the change.
+**Engine diff.** **1 authored, 60 computed**, sheets `[Assumptions,
+BalanceSheet]`. The cascade from `Assumptions!B17` moves Gross PP&E, Accumulated
+Depreciation, Net PP&E, Total Non-Current Assets, Total Assets, Cash (via
+depreciation), Long-term Debt, Total Liabilities, Total Equity and Total L&E
+across all forecast periods — while the Balance Check row stays `$0`, so it is
+(correctly) **absent from the diff**: direct proof the sheet still ties.
 
 **AI narrative.**
-> A human edited Long-Term Debt from 14000.00 down to 11500.00. That flowed
-> through to Cash & Equivalents, which recalculated from 5100.00 to 2600.00, a
-> 2500.00 decrease matching the debt change. Both Total Assets and Total
-> Liabilities & Equity moved from 45000.00 to 42500.00, and the two totals
-> remain equal to each other.
+> A human raised Annual Capex ($000) from $4,000 to $9,000. That flowed through
+> to Gross PP&E, which went from $64,000 to $94,000, and to Net PP&E across
+> periods — $19,600 to $39,100, $22,000 to $39,500, $24,000 to $39,000, and
+> $25,600 to $37,600 — lifting Total Non-Current Assets from $40,600 to
+> $60,100. On the funding side, Long-term Debt moved from $46,000 to $76,000,
+> $42,000 to $67,000, and $38,000 to $58,000, bringing Total Liabilities from
+> $65,400 to $95,400.
 
 ---
 
@@ -114,18 +129,35 @@ and Ending Cash falls sharply).
 
 ## How these were built
 
-1. `openpyxl` writes the labels, constants and formulas (formulas only — no
-   cached values).
-2. LibreOffice recalculates and stores cached `<v>`:
+The Income Statement and Balance Sheet pairs are generated + formatted by
+`_build_income_statement.py` and `_build_balance_sheet.py`, then recalculated by
+LibreOffice via `_recalc_uno.py`. To regenerate:
+
+1. Write labels, constants, formulas **and number formats** with `openpyxl`
+   (formulas carry no cached values yet):
    ```
-   soffice --headless --calc \
-     --convert-to xlsx:"Calc MS Excel 2007 XML" --outdir samples <file>.xlsx
+   cd samples
+   python3 _build_income_statement.py
+   python3 _build_balance_sheet.py
    ```
-3. Verify cached values landed:
+2. Recalculate and store cached `<v>` values. **Note:** LibreOffice's
+   `--convert-to` does **not** recalculate on load, so use a scripted full
+   recalc instead — launch a headless socket listener and drive it with the
+   bundled python + UNO:
+   ```
+   soffice --headless --invisible --norestore \
+     --accept="socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" &
+   /Applications/LibreOffice.app/Contents/Resources/python _recalc_uno.py
+   pkill -f soffice
+   ```
+   `_recalc_uno.py` opens each workbook, calls `calculateAll()`, and `store()`s
+   it — writing the cached `<v>` the engine reads.
+3. Verify cached values landed (should print formula/value pairs, not empties):
    ```
    unzip -p <file>.xlsx 'xl/worksheets/*.xml' \
-     | grep -o '<f[^>]*>[^<]*</f><v>[^<]*</v>' | head
+     | grep -o '<f[^>]*>[^<]*</f><v>[0-9.eE+-]*</v>' | head
    ```
 
-If a file's formula cells lack `<v>`, the diff would show 0 computed changes —
-rerun the recalc step. All six files here were verified to carry cached values.
+If a file's formula cells lack numeric `<v>`, the diff shows 0 computed changes
+— rerun the recalc step. All workbooks here were verified to carry cached values
+and number formats (`$#,##0`, `0.0%`).

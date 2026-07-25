@@ -723,7 +723,16 @@ h1,h2,h3,h4,p{ margin:0; }
       if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
     });
   }, { rootMargin:'0px 0px -8% 0px', threshold:0.06 });
+
+  var vh = window.innerHeight;
   els.forEach(function(el, i){
+    // Anything already on screen at load paints immediately — no fade, no
+    // delay. A visitor should never land on a blank hero waiting for JS.
+    if(el.getBoundingClientRect().top < vh){
+      el.style.transition = 'none';
+      el.classList.add('in');
+      return;
+    }
     el.style.transitionDelay = Math.min(i % 5, 4) * 55 + 'ms';
     io.observe(el);
   });

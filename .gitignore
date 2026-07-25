@@ -7,3 +7,6 @@ node_modules
 /argus-diff
 /cmd/argus-diff/argus-diff
 .gstack/
+
+# Wails desktop build output
+/desktop/desktop

@@ -145,6 +145,43 @@ func TestAuthoredCellsHaveNoCause(t *testing.T) {
 	}
 }
 
+// TestUnlabeledWorkbook proves the engine doesn't depend on the atlas structure:
+// a workbook with NO column-A labels (headers in row 1, data in a matrix) still
+// diffs, classifies, and cascades correctly — labels just come back nil.
+func TestUnlabeledWorkbook(t *testing.T) {
+	res, err := Diff(testWorkbookDir+"unlabeled_v1.xlsx", testWorkbookDir+"unlabeled_v2.xlsx")
+	if err != nil {
+		t.Fatalf("Diff error: %v", err)
+	}
+	// One input (B2) changed; every formula cell recomputed.
+	if res.Summary.AuthoredCount != 1 {
+		t.Errorf("authoredCount = %d, want 1", res.Summary.AuthoredCount)
+	}
+	if res.Summary.ComputedCount == 0 {
+		t.Errorf("computedCount = 0, want > 0 (formula cells should recompute)")
+	}
+	// The changed input is authored with the right value move...
+	b2 := findChange(res, "Sheet1", "B2")
+	if b2 == nil || b2.Classification != "authored" {
+		t.Fatalf("B2 = %+v, want an authored change", b2)
+	}
+	if !floatEquals(b2.OldValue, 1000, 1e-9) || !floatEquals(b2.NewValue, 1200, 1e-9) {
+		t.Errorf("B2 %v→%v, want 1000→1200", b2.OldValue, b2.NewValue)
+	}
+	// ...and every changed cell has a nil label (no column-A labels), which must
+	// NOT break anything — a downstream computed cell still traces its cause.
+	c2 := findChange(res, "Sheet1", "C2")
+	if c2 == nil {
+		t.Fatal("expected a change at Sheet1!C2")
+	}
+	if c2.Label != nil {
+		t.Errorf("C2 label = %v, want nil (unlabeled workbook)", *c2.Label)
+	}
+	if c2.Classification != "computed" || len(c2.CausedBy) == 0 {
+		t.Errorf("C2 should be computed with a cause; got %s causedBy=%v", c2.Classification, c2.CausedBy)
+	}
+}
+
 // --- helpers ---
 
 func findChange(res DiffResult, sheet, coord string) *CellChange {

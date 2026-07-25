@@ -3,6 +3,7 @@ import { formatDelta } from "../data/format";
 import { revisionsFor } from "../data/cellHistory";
 import { qualify, canonRef } from "../data/refs";
 import { isAuthored, classDot } from "../data/classify";
+import { dependencyChain } from "../data/graph";
 import { ValueDelta } from "./ValueDelta";
 
 interface Props {
@@ -34,9 +35,12 @@ export function CellDetail({
   const revisions = revisionsFor(qualified); // oldest→newest
   const up = (change.magnitude ?? 0) > 0; // delta color follows direction
 
-  // The chain of cells from the authored origin down to this one. Each node is
-  // enriched with its formula + value move where the cell is part of the diff.
-  const chainRefs = origin ? [origin, qualified] : [];
+  // The full multi-hop path of changed cells from the authored origin down to
+  // this one (origin → … → here). Each node is enriched with its formula +
+  // value move, and every node except "here" is clickable to jump there.
+  const chainRefs = origin
+    ? dependencyChain(qualified, origin, changeByRef)
+    : [];
 
   return (
     <div className="detail">

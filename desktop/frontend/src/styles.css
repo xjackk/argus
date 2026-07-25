@@ -24,6 +24,69 @@
   --topbar-h: 54px;
 }
 
+/* ── Themes (semantics preserved: green=authored, purple=computed, red=down,
+   amber=anomaly). Default :root is Midnight (dark). ── */
+
+/* Dark · Tokyo Night */
+:root[data-theme="tokyo"] {
+  --bg: #1a1b26;
+  --bg2: #1f2335;
+  --bg3: #292e42;
+  --line: #2f334d;
+  --line2: #24283b;
+  --tx: #c0caf5;
+  --tx2: #7f88b3;
+  --tx3: #565f89;
+  --blue: #7aa2f7;
+  --green: #9ece6a;
+  --greenbg: #23372c;
+  --purple: #bb9af7;
+  --purplebg: #2e2942;
+  --red: #f7768e;
+  --amber: #e0af68;
+  --amberbg: #38301c;
+}
+
+/* Light · GitHub Light */
+:root[data-theme="github-light"] {
+  --bg: #ffffff;
+  --bg2: #f6f8fa;
+  --bg3: #eaeef2;
+  --line: #d0d7de;
+  --line2: #eaeef2;
+  --tx: #1f2328;
+  --tx2: #656d76;
+  --tx3: #8c959f;
+  --blue: #0969da;
+  --green: #1a7f37;
+  --greenbg: #dafbe1;
+  --purple: #8250df;
+  --purplebg: #f1ebfd;
+  --red: #cf222e;
+  --amber: #9a6700;
+  --amberbg: #fff8c5;
+}
+
+/* Light · Solarized Light */
+:root[data-theme="solarized-light"] {
+  --bg: #fdf6e3;
+  --bg2: #eee8d5;
+  --bg3: #e3ddc9;
+  --line: #d9d2bf;
+  --line2: #eee8d5;
+  --tx: #586e75;
+  --tx2: #93a1a1;
+  --tx3: #a9b3b1;
+  --blue: #268bd2;
+  --green: #718400;
+  --greenbg: #e5ecc6;
+  --purple: #6c71c4;
+  --purplebg: #e5e2ee;
+  --red: #dc322f;
+  --amber: #b58900;
+  --amberbg: #f0e6c8;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -1188,3 +1251,39 @@ body {
 /* CellDetail change delta — red for a decrease, green for an increase */
 .d-delta { color: var(--red); }
 .d-delta.up { color: var(--green); }
+
+/* ── Theme picker (top bar) ──────────────────────────────────────────────── */
+.theme-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--tx2);
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  font-size: 15px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.theme-btn:hover {
+  background: var(--bg3);
+  color: var(--tx);
+}
+.theme-menu {
+  right: 0;
+  left: auto;
+  min-width: 180px;
+}
+.menu-check {
+  margin-left: auto;
+  color: var(--green);
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+}

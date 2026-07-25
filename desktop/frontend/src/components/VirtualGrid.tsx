@@ -46,9 +46,11 @@ export function VirtualGrid({
       maxCol = Math.max(maxCol, ch.col);
     }
     // Give the grid real scroll room so virtualization is meaningful; a real
-    // PE model has hundreds of rows and this same path handles it.
+    // PE model has hundreds of rows and this same path handles it. Render enough
+    // columns to fill a wide viewport so the sheet reads as a real spreadsheet
+    // (empty trailing columns = normal Excel), not dead space beside the grid.
     const rc = Math.max(46, maxRow + 12);
-    const colCount = Math.max(6, maxCol + 2);
+    const colCount = Math.max(16, maxCol + 3);
     const colList = Array.from({ length: colCount }, (_, i) => i + 1);
     const width = ROWNUM_W + LABEL_W + (colCount - 1) * CELL_W;
     return {

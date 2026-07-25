@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Onboarding } from "./Onboarding";
+import { ThemePicker } from "./ThemePicker";
 
 const WORKBOOKS = [
   "Project Atlas — LBO",
@@ -84,6 +85,7 @@ export function TopBar() {
       <div className="spacer" />
 
       <div className="tb action">
+        <ThemePicker />
         <div className="synced" onClick={doSync} title="Pull latest">
           {syncing ? "Syncing…" : syncedLabel}
           <br />

@@ -180,10 +180,12 @@
         <span class="shot-title">Argus — walkthrough</span>
       </div>
       <!-- Muted + inline + loop, so it behaves like a GIF but at a fraction of
-           the weight. Controls stay on for anyone who wants to scrub or pause. -->
-      <video class="demo-vid" width="1000" height="625" poster="assets/argus-demo-poster.webp"
+           the weight. Controls stay on for anyone who wants to scrub or pause.
+           Assembled from 2x captures rather than the original GIF, whose 256
+           colour palette dithered the dark UI into speckle. -->
+      <video class="demo-vid" width="1920" height="1200" poster="assets/argus-demo-poster.webp"
              autoplay muted loop playsinline controls preload="none"
-             aria-label="Screen recording of Argus: selecting a version, toggling between authored-only and full cascade, and opening a cell to trace what caused it to change.">
+             aria-label="Walkthrough of Argus: the cascade view showing four recalculated cells on Returns, then authored-only showing none of them were typed, then the Assumptions sheet showing the single cell a human did change from 10.5x to 9.5x, then the cell inspector tracing IRR back to that edit, and finally a flagged anomaly where a formula was replaced with a typed number.">
         <source src="assets/argus-demo.webm" type="video/webm">
         <source src="assets/argus-demo.mp4" type="video/mp4">
       </video>

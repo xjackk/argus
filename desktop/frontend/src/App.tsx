@@ -74,7 +74,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <TopBar workbook="Project Atlas — LBO" scenario="deal-team/base" />
+      <TopBar />
       <div className="body">
         <VersionRail
           commits={COMMIT_HISTORY}

@@ -1,22 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { diffForCommit } from "./data/diffs";
-import { COMMIT_HISTORY } from "./data/history";
+import { COMMIT_HISTORY, type CommitRow } from "./data/history";
+import { fetchLiveHistory, fetchLiveDiff } from "./data/store";
 import { qualify, canonRef, splitRef } from "./data/refs";
 import { isAuthored } from "./data/classify";
 import type { DiffResult, CellChange, Cascade, Anomaly } from "./data/types";
-
-// The commit shown on open — the signed-off exit-multiple cascade (the demo
-// centerpiece / UI-SPEC State 1). Falls back to the newest commit.
-const DEFAULT_COMMIT =
-  COMMIT_HISTORY.find((c) => c.id === "c06")?.id ?? COMMIT_HISTORY[0].id;
 import { TopBar } from "./components/TopBar";
 import { VersionRail } from "./components/VersionRail";
 import { DiffColumn } from "./components/DiffColumn";
 import { HoverCard, HoverState } from "./components/HoverCard";
 import type { ViewMode } from "./components/VirtualGrid";
 
+// The commit shown on open when using the bundled chain — the signed-off
+// exit-multiple cascade (demo centerpiece). Live mode picks the newest commit.
+const DEFAULT_COMMIT =
+  COMMIT_HISTORY.find((c) => c.id === "c06")?.id ?? COMMIT_HISTORY[0].id;
+
 export default function App() {
   const [diff, setDiff] = useState<DiffResult | null>(null);
+  const [commits, setCommits] = useState<CommitRow[]>(COMMIT_HISTORY);
+  const [live, setLive] = useState(false); // true once a daemon store is found
   const [selectedCommitId, setSelectedCommitId] = useState(DEFAULT_COMMIT);
   const [selectedSheet, setSelectedSheet] = useState<string>("Returns");
   const [mode, setMode] = useState<ViewMode>("cascade"); // State 1: cascade active
@@ -26,19 +29,53 @@ export default function App() {
     sheet: string;
   } | null>(null);
 
-  // ── Load the selected commit's diff. Reloads whenever a different commit is
-  // picked in the rail. Clears any open cell and keeps the sheet selection if
-  // that sheet still exists in the new diff, else jumps to the first one. ──
+  // ── Poll the live daemon store. If a daemon is running, its history replaces
+  // the bundled chain and new saves appear automatically; if not, we stay on the
+  // bundled c01→c07 chain. Same UI either way. ──
   useEffect(() => {
-    const d = diffForCommit(selectedCommitId);
-    setDiff(d);
-    setSelectedCell(null);
-    if (d && d.sheets.length) {
-      setSelectedSheet((prev) =>
-        d.sheets.some((s) => s.name === prev) ? prev : d.sheets[0].name
+    let active = true;
+    async function poll() {
+      const h = await fetchLiveHistory();
+      if (!active || !h) return;
+      setCommits(h);
+      setLive(true);
+      // Keep the selection valid; default to the newest non-base commit.
+      setSelectedCommitId((prev) =>
+        h.some((c) => c.id === prev)
+          ? prev
+          : h.find((c) => !c.base)?.id ?? h[0].id
       );
     }
-  }, [selectedCommitId]);
+    poll();
+    const t = window.setInterval(poll, 3000);
+    return () => {
+      active = false;
+      window.clearInterval(t);
+    };
+  }, []);
+
+  // ── Load the selected commit's diff (live store or bundled). Clears any open
+  // cell and keeps the sheet selection if it still exists in the new diff. ──
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      const d = live
+        ? await fetchLiveDiff(selectedCommitId)
+        : diffForCommit(selectedCommitId);
+      if (!active) return;
+      setDiff(d);
+      setSelectedCell(null);
+      if (d && d.sheets.length) {
+        setSelectedSheet((prev) =>
+          d.sheets.some((s) => s.name === prev) ? prev : d.sheets[0].name
+        );
+      }
+    }
+    load();
+    return () => {
+      active = false;
+    };
+  }, [selectedCommitId, live]);
 
   // Lookup maps derived once per diff.
   const { changeByRef, cascadeByOrigin, anomaliesByRef } = useMemo(() => {
@@ -68,9 +105,8 @@ export default function App() {
   }, [selectedCell, cascadeByOrigin]);
 
   const commit = useMemo(
-    () =>
-      COMMIT_HISTORY.find((c) => c.id === selectedCommitId) ?? COMMIT_HISTORY[0],
-    [selectedCommitId]
+    () => commits.find((c) => c.id === selectedCommitId) ?? commits[0],
+    [commits, selectedCommitId]
   );
 
   function handleSelectCell(change: CellChange, sheet: string) {
@@ -99,7 +135,7 @@ export default function App() {
       <TopBar />
       <div className="body">
         <VersionRail
-          commits={COMMIT_HISTORY}
+          commits={commits}
           selectedId={selectedCommitId}
           onSelect={setSelectedCommitId}
           diff={diff}

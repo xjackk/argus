@@ -20,16 +20,28 @@ export default function App() {
   const [diff, setDiff] = useState<DiffResult | null>(null);
   const [commits, setCommits] = useState<CommitRow[]>(COMMIT_HISTORY);
   const [live, setLive] = useState(false); // true once a daemon store is found
-  const [selectedWorkbook, setSelectedWorkbook] = useState("Project Atlas — LBO");
-  const [selectedCommitId, setSelectedCommitId] = useState(DEFAULT_COMMIT);
-  const [selectedSheet, setSelectedSheet] = useState<string>("Returns");
-  const [mode, setMode] = useState<ViewMode>("cascade"); // State 1: cascade active
+  const [loaded, setLoaded] = useState(false); // first history source resolved
+  // Selections persist across refresh (localStorage) so a reload keeps you on the
+  // same workbook / commit / sheet instead of snapping back to the first file.
+  const [selectedWorkbook, setSelectedWorkbook] = useState(
+    () => localStorage.getItem("argus.workbook") ?? "Project Atlas — LBO"
+  );
+  const [selectedCommitId, setSelectedCommitId] = useState(
+    () => localStorage.getItem("argus.commit") ?? DEFAULT_COMMIT
+  );
+  const [selectedSheet, setSelectedSheet] = useState<string>(
+    () => localStorage.getItem("argus.sheet") ?? "Returns"
+  );
+  const [mode, setMode] = useState<ViewMode>(() =>
+    localStorage.getItem("argus.mode") === "authored" ? "authored" : "cascade"
+  );
   const [hover, setHover] = useState<HoverState | null>(null);
   const [selectedCell, setSelectedCell] = useState<{
     change: CellChange;
     sheet: string;
   } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [narrating, setNarrating] = useState(false); // live AI summary in flight
   const lastTopId = useRef<string | null>(null); // newest commit id last seen live
 
   // The distinct workbooks (files) in the timeline, and the commits for the one
@@ -51,18 +63,23 @@ export default function App() {
     let active = true;
     async function poll() {
       const h = await fetchLiveHistory();
-      if (!active || !h) return;
-      // "Poof, it changed": when a new commit lands after the first live load,
-      // flash a toast — the real-time, always-running signal.
-      const topId = h[0]?.id ?? null;
-      if (lastTopId.current !== null && topId !== lastTopId.current) {
-        const c = h[0];
-        setToast(`New change tracked — ${c.author} saved ${c.file}`);
-        window.setTimeout(() => setToast(null), 4000);
+      if (!active) return;
+      if (h) {
+        // "Poof, it changed": when a new commit lands after the first live load,
+        // flash a toast — the real-time, always-running signal.
+        const topId = h[0]?.id ?? null;
+        if (lastTopId.current !== null && topId !== lastTopId.current) {
+          const c = h[0];
+          setToast(`New change tracked — ${c.author} saved ${c.file}`);
+          window.setTimeout(() => setToast(null), 4000);
+        }
+        lastTopId.current = topId;
+        setCommits(h);
+        setLive(true);
       }
-      lastTopId.current = topId;
-      setCommits(h);
-      setLive(true);
+      // Mark the source resolved (live or bundled fallback) so the validity
+      // effects below don't reset a persisted selection before live data lands.
+      setLoaded(true);
     }
     poll();
     const t = window.setInterval(poll, 3000);
@@ -72,22 +89,40 @@ export default function App() {
     };
   }, []);
 
-  // Keep the selected workbook valid as the tracked files change.
+  // Keep the selected workbook valid as the tracked files change. Gated on
+  // `loaded` so a persisted (live) workbook isn't reset against the bundled
+  // chain in the moment before the live history arrives.
   useEffect(() => {
+    if (!loaded) return;
     if (workbooks.length && !workbooks.includes(selectedWorkbook)) {
       setSelectedWorkbook(workbooks[0]);
     }
-  }, [workbooks, selectedWorkbook]);
+  }, [workbooks, selectedWorkbook, loaded]);
 
   // Keep the selected commit valid within the selected workbook (default to its
-  // newest non-base commit).
+  // newest non-base commit). Same `loaded` gate as above.
   useEffect(() => {
+    if (!loaded) return;
     if (shownCommits.length && !shownCommits.some((c) => c.id === selectedCommitId)) {
       setSelectedCommitId(
         shownCommits.find((c) => !c.base)?.id ?? shownCommits[0].id
       );
     }
-  }, [shownCommits, selectedCommitId]);
+  }, [shownCommits, selectedCommitId, loaded]);
+
+  // Persist selections so a refresh restores the same view.
+  useEffect(() => {
+    localStorage.setItem("argus.workbook", selectedWorkbook);
+  }, [selectedWorkbook]);
+  useEffect(() => {
+    localStorage.setItem("argus.commit", selectedCommitId);
+  }, [selectedCommitId]);
+  useEffect(() => {
+    localStorage.setItem("argus.sheet", selectedSheet);
+  }, [selectedSheet]);
+  useEffect(() => {
+    localStorage.setItem("argus.mode", mode);
+  }, [mode]);
 
   // ── Load the selected commit's diff (live store or bundled). Clears any open
   // cell and keeps the sheet selection if it still exists in the new diff. ──
@@ -111,6 +146,40 @@ export default function App() {
       active = false;
     };
   }, [selectedCommitId, live]);
+
+  // ── Live AI summary: a fresh capture's diff is written with narrative=null,
+  // and the daemon fills it ~2-3s later (async). While it's missing, pulse a
+  // loading skeleton and re-fetch the diff until the summary lands — capped, so
+  // a failed narration just stops pulsing. Live mode only; bundled diffs ship
+  // with their narrative already baked in. ──
+  useEffect(() => {
+    if (!live || !diff || diff.summary.narrative || !diff.sheets.length) {
+      setNarrating(false);
+      return;
+    }
+    setNarrating(true);
+    let active = true;
+    let tries = 0;
+    const t = window.setInterval(async () => {
+      tries += 1;
+      const d = await fetchLiveDiff(selectedCommitId);
+      if (!active) return;
+      if (d && d.summary.narrative) {
+        setDiff(d);
+        setNarrating(false);
+        window.clearInterval(t);
+      } else if (tries >= 30) {
+        // ~60s cap — must outlast the daemon's 45s narration timeout so a slow
+        // (big-file) summary that lands late isn't missed by the client.
+        setNarrating(false);
+        window.clearInterval(t);
+      }
+    }, 2000);
+    return () => {
+      active = false;
+      window.clearInterval(t);
+    };
+  }, [diff, live, selectedCommitId]);
 
   // Lookup maps derived once per diff.
   const { changeByRef, cascadeByOrigin, anomaliesByRef } = useMemo(() => {
@@ -197,6 +266,7 @@ export default function App() {
             onNavigate={handleNavigateToRef}
             isNavigable={isNavigable}
             rippled={rippled}
+            narrating={narrating}
             onHover={setHover}
           />
         ) : (

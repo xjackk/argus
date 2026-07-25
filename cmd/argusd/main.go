@@ -24,6 +24,7 @@
 package main
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -41,6 +42,7 @@ import (
 	"time"
 
 	"argus/engine"
+	"argus/narrator"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -65,9 +67,10 @@ type History struct {
 }
 
 type daemon struct {
-	folder string
-	store  string
-	author string
+	folder  string
+	store   string
+	author  string
+	narrate narrator.Narrator // fills summary.narrative per diff; nil = skip (tests)
 
 	mu           sync.Mutex
 	history      History
@@ -93,9 +96,23 @@ func main() {
 	folder := flag.String("folder", filepath.Join(home, "ArgusDropbox"), "watched folder")
 	store := flag.String("store", filepath.Join("desktop", "frontend", "public", "store"), "store output dir (client reads this)")
 	author := flag.String("author", osUser(), "commit author")
+	narrate := flag.Bool("narrate", true, "fill each commit's plain-English summary via `claude -p` (grounded, async ~2-3s)")
+	model := flag.String("model", "", "model for narration (default: claude CLI default)")
 	flag.Parse()
 
 	d := newDaemon(*folder, *store, *author)
+	if *narrate {
+		// Fallback → Noop so a missing/failed claude CLI degrades to a null
+		// narrative instead of erroring the capture.
+		d.narrate = narrator.Fallback{
+			// 45s: narration runs async (nothing waits on it), and a big workbook
+			// with a big change can make for a long prompt — well past the 8s
+			// ClaudeCLI default — so give it plenty of room rather than silently
+			// falling back to an empty summary.
+			Primary: narrator.ClaudeCLI{Model: *model, Timeout: 45 * time.Second},
+			Backup:  narrator.Noop{},
+		}
+	}
 	if err := d.run(); err != nil {
 		log.Fatalf("argusd: %v", err)
 	}
@@ -187,7 +204,40 @@ func (d *daemon) resume() error {
 
 	log.Printf("resumed %d commit(s) across %d file(s) — next id c%03d, seq at %06d",
 		len(h.Commits), len(keys), len(h.Commits)+1, d.seq)
+
+	// Backfill summaries for any commit whose diff has none — e.g. commits
+	// captured before narration was wired, or while it was failing. Runs in the
+	// background so startup isn't blocked, and the client picks each up on its
+	// next poll. A copy of the slice is passed so this never races the watch loop.
+	if d.narrate != nil {
+		go d.backfillNarratives(append([]Commit(nil), h.Commits...))
+	}
 	return nil
+}
+
+// backfillNarratives fills summaries for already-captured diffs that have none.
+// It reads each commit's diff and, if summary.narrative is empty, narrates and
+// rewrites it. Sequential so a restart isn't a burst of model calls; best-effort,
+// so a failure just leaves that diff's narrative null.
+func (d *daemon) backfillNarratives(commits []Commit) {
+	for _, c := range commits {
+		if c.Base {
+			continue // base commits have no diff
+		}
+		b, err := os.ReadFile(filepath.Join(d.store, "diffs", c.ID+".json"))
+		if err != nil {
+			continue // no diff on disk (e.g. the diff failed at capture) — skip
+		}
+		var res engine.DiffResult
+		if err := json.Unmarshal(b, &res); err != nil {
+			continue
+		}
+		if res.Summary.Narrative != nil && *res.Summary.Narrative != "" {
+			continue // already summarized
+		}
+		log.Printf("… backfilling summary for %s", c.ID)
+		d.narrateInto(c.ID, res) // inline within this goroutine (already async of run)
+	}
 }
 
 // scanFolder captures every .xlsx currently in the watched folder. New files
@@ -331,7 +381,14 @@ func (d *daemon) capture(path string) {
 			commit.AuthoredCount = res.Summary.AuthoredCount
 			commit.ComputedCount = res.Summary.ComputedCount
 			commit.Anomaly = len(res.Anomalies) > 0
+			// Write the diff immediately with a null narrative so the commit
+			// appears instantly (the "poof"). The plain-English summary is filled
+			// in the background and the diff rewritten — the client shows a
+			// loading pulse until it lands.
 			d.writeDiff(id, res)
+			if d.narrate != nil {
+				go d.narrateInto(id, res)
+			}
 		}
 		commit.Message = fmt.Sprintf("Updated %s", name)
 		badge := ""
@@ -344,6 +401,28 @@ func (d *daemon) capture(path string) {
 	d.history.Commits = append(d.history.Commits, commit)
 	d.lastSnapshot[key] = snap
 	d.lastCommit[key] = id
+}
+
+// narrateInto fills summary.narrative for an already-written diff via the
+// grounded narrator, then rewrites the diff file. Runs in its own goroutine so
+// the ~2-3s model call never delays the commit; res is a value copy and the only
+// field mutated is Summary.Narrative, so this races with nothing. A failed or
+// slow call is logged and leaves the narrative null (the client just stops
+// pulsing). Safe to fire per commit — ids are unique, so no two writes collide.
+func (d *daemon) narrateInto(id string, res engine.DiffResult) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	text, err := d.narrate.Narrate(ctx, res)
+	if err != nil {
+		log.Printf("· narration skipped for %s: %v", id, err)
+		return
+	}
+	if text == "" {
+		return
+	}
+	res.Summary.Narrative = &text
+	d.writeDiff(id, res)
+	log.Printf("✎ %s  summary ready", id)
 }
 
 func (d *daemon) writeDiff(id string, res engine.DiffResult) {

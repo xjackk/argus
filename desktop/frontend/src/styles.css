@@ -380,14 +380,71 @@ body {
   flex: none;
 }
 .narrative .n-text {
-  font-size: 13.5px;
+  /* The AI summary is the headline output — give it room to read like one. */
+  font-size: 15.5px;
   color: var(--tx);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 .narrative .n-sub {
   margin-top: 8px;
   font-size: 11px;
   color: var(--tx2);
+}
+
+/* AI summary loading pulse — shown while the daemon's async narration runs. */
+.narrative-loading {
+  border-left-color: var(--purple);
+}
+.narrative-loading .n-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--purple);
+  margin-bottom: 10px;
+}
+.narrative-loading .n-spark {
+  animation: spark-pulse 1.1s ease-in-out infinite;
+}
+.narrative-loading .skl {
+  height: 10px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--bg3, rgba(150, 150, 170, 0.12)) 25%,
+    rgba(152, 110, 226, 0.22) 50%,
+    var(--bg3, rgba(150, 150, 170, 0.12)) 75%
+  );
+  background-size: 200% 100%;
+  animation: skl-shimmer 1.3s linear infinite;
+  margin-top: 8px;
+}
+.narrative-loading .skl-1 {
+  width: 92%;
+}
+.narrative-loading .skl-2 {
+  width: 100%;
+}
+.narrative-loading .skl-3 {
+  width: 68%;
+}
+@keyframes skl-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@keyframes spark-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 .hl-a {
   color: var(--green);
@@ -568,25 +625,63 @@ body {
 }
 
 /* THE toggle */
-.toggle {
+/* View toggle — segmented control with a label and per-segment counts, so the
+   full-cascade count always sits beside the (smaller) authored count. */
+.viewtoggle {
   margin-left: auto;
   display: flex;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
+  align-items: center;
+  gap: 8px;
 }
-.toggle span {
-  padding: 5px 12px;
-  font-size: 11px;
+.viewtoggle .vt-label {
+  font-size: 10px;
   color: var(--tx2);
-  white-space: nowrap;
-  transition: background 0.12s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-.toggle span.on {
+.viewtoggle .vt-segs {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.viewtoggle .vt-seg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx2);
+  background: var(--bg2);
+  border: none;
+  white-space: nowrap;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.viewtoggle .vt-seg + .vt-seg {
+  border-left: 1px solid var(--line);
+}
+.viewtoggle .vt-seg:hover {
+  color: var(--tx);
+}
+.viewtoggle .vt-count {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 10.5px;
+  background: var(--line);
+  color: var(--tx2);
+  text-align: center;
+}
+.viewtoggle .vt-seg.on {
   background: var(--blue);
   color: #fff;
-  font-weight: 600;
+}
+.viewtoggle .vt-seg.on .vt-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
 }
 
 .legend {
@@ -805,70 +900,126 @@ body {
 
 /* Cell detail panel */
 /* Right-side inspector holding the clicked-cell detail (UI-SPEC State 2). */
+/* The cell inspector is the app's deepest reading surface ("git log for a
+ * cell"), so it gets reading-sized type rather than the smallest in the UI —
+ * body text now matches the summary banner instead of sitting 1.5px under it. */
 .inspector {
-  flex: 0 0 340px;
+  flex: 0 0 400px;
   border-left: 1px solid var(--line);
   background: var(--bg2);
   min-height: 0;
   overflow-y: auto;
 }
 .detail {
-  padding: 13px 15px;
+  padding: 16px 18px 24px;
 }
 .detail .d-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 .detail .d-title {
   color: var(--tx);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 15px;
+  line-height: 1.3;
 }
 .detail .d-close {
   margin-left: auto;
   color: var(--tx2);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1;
+}
+.detail .d-close:hover {
+  color: var(--tx);
 }
 .detail .d-formula {
-  padding: 7px 9px;
+  padding: 9px 11px;
   background: var(--bg);
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 5px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--tx2);
-  margin: 6px 0;
+  margin: 10px 0;
   overflow-x: auto;
 }
+
+/* Before → after: the one fact this panel exists to state. */
+.d-hero {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 12px 0 14px;
+  border-bottom: 1px solid var(--line2);
+  margin-bottom: 10px;
+}
+.d-hero-val {
+  font-size: 20px;
+  color: var(--tx2);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.d-hero-val b {
+  color: var(--tx);
+  font-weight: 600;
+}
+.d-hero-delta {
+  font-size: 14px;
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+.d-hero-delta.up {
+  color: var(--green);
+}
+
 .detail .dr {
   display: flex;
   justify-content: space-between;
-  padding: 3px 0;
-  font-size: 12px;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13.5px;
 }
 .detail .dr .k {
   color: var(--tx2);
 }
 .chain {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 .chain .h {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--tx2);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+}
+
+/* Downstream ("What this changed") — the mirror of the dependency chain. */
+.ds-sub {
+  font-size: 12.5px;
+  color: var(--tx3);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.ds-node + .ds-node {
+  margin-top: 7px;
+}
+.ds-rest {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--tx3);
 }
 .chain-arrow {
   color: var(--tx3);
-  padding: 2px 0 2px 10px;
-  font-size: 12px;
+  padding: 4px 0 4px 12px;
+  font-size: 13px;
 }
 .chain-node {
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: var(--bg);
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -890,45 +1041,45 @@ body {
 .cn-head {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .cn-label {
   color: var(--tx);
-  font-size: 12px;
+  font-size: 13px;
 }
 .cn-tag {
-  font-size: 10px;
+  font-size: 11px;
 }
 .cn-here {
   color: var(--amber);
-  font-size: 10px;
+  font-size: 11px;
   margin-left: auto;
 }
 .cn-formula {
-  margin-top: 6px;
-  padding: 5px 8px;
+  margin-top: 7px;
+  padding: 6px 9px;
   background: var(--bg2);
   border-radius: 4px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx2);
   overflow-x: auto;
 }
 .cn-val {
-  margin-top: 5px;
-  font-size: 12px;
+  margin-top: 7px;
+  font-size: 13.5px;
   color: var(--tx);
   font-variant-numeric: tabular-nums;
 }
 .reassure {
-  margin-top: 10px;
-  padding: 8px 10px;
+  margin-top: 20px;
+  padding: 11px 13px;
   background: var(--bg);
   border-left: 2px solid var(--purple);
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--tx);
-  line-height: 1.5;
+  line-height: 1.55;
   border-radius: 0 4px 4px 0;
 }
 
@@ -974,27 +1125,34 @@ body {
 
 /* Revision timeline (CellDetail — "git log for a cell") */
 .timeline {
-  margin-top: 12px;
+  margin-top: 20px;
   border-top: 1px solid var(--line);
-  padding-top: 10px;
+  padding-top: 14px;
 }
 .timeline .h {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--tx2);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+/* Nothing recorded — said plainly, so an absent section doesn't read as broken. */
+.tl-empty {
+  font-size: 12.5px;
+  color: var(--tx3);
+  line-height: 1.5;
 }
 .tl-row {
   display: flex;
-  gap: 9px;
-  padding: 5px 0;
+  gap: 10px;
+  padding: 7px 0;
 }
 .tl-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-top: 4px;
+  margin-top: 6px;
   flex: none;
 }
 .tl-dot.a { background: var(--green); }
@@ -1002,12 +1160,13 @@ body {
 .tl-body { min-width: 0; }
 .tl-val {
   color: var(--tx);
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
 }
 .tl-meta {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx2);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 /* Rail anomaly badge on commit rows */
@@ -1304,16 +1463,31 @@ body {
 }
 
 /* Daemon connectivity indicator */
+/* Connectivity status — GitHub-Desktop style: dot on the left, then a tight
+   left-aligned stack of an emphasized primary line + a MUTED secondary line
+   (both loud + right-aligned read as cramped). */
 .conn {
-  font-size: 10px;
-  color: var(--tx2);
-  text-align: right;
-  line-height: 1.35;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  line-height: 1;
 }
-.conn.live {
+.conn-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.conn-l {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx);
+}
+.conn-s {
+  font-size: 10px;
+  color: var(--tx2);
+}
+.conn.live .conn-l {
   color: var(--green);
 }
 .conn-dot {

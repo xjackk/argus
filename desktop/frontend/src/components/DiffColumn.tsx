@@ -34,6 +34,7 @@ interface Props {
   onNavigate: (ref: string) => void;
   isNavigable: (ref: string) => boolean;
   rippled: Set<string>;
+  narrating: boolean; // live AI summary being generated — show a loading pulse
   onHover: (h: HoverState | null) => void;
 }
 
@@ -57,6 +58,7 @@ export function DiffColumn(props: Props) {
     onNavigate,
     isNavigable,
     rippled,
+    narrating,
     onHover,
   } = props;
 
@@ -120,6 +122,19 @@ export function DiffColumn(props: Props) {
           </div>
         </div>
       </div>
+
+      {/* AI summary being generated live — a loading pulse until the daemon's
+          async `claude -p` call lands and the diff is re-fetched with the text. */}
+      {!summaryCollapsed && !narrative && narrating && (
+        <div className="narrative narrative-loading" aria-busy="true">
+          <div className="n-badge">
+            <span className="n-spark">✨</span> Writing plain-English summary…
+          </div>
+          <div className="skl skl-1" />
+          <div className="skl skl-2" />
+          <div className="skl skl-3" />
+        </div>
+      )}
 
       {/* Narrative banner — rendered only when present and not collapsed. */}
       {!summaryCollapsed && narrative && (
@@ -245,19 +260,34 @@ export function DiffColumn(props: Props) {
                     : ""}
                 </span>
               )}
-            <div
-              className="toggle"
-              onClick={() =>
-                onModeChange(mode === "authored" ? "cascade" : "authored")
-              }
-              title="Toggle authored-only vs. full cascade"
-            >
-              <span className={mode === "authored" ? "on" : ""}>
-                Authored only
-              </span>
-              <span className={mode === "cascade" ? "on" : ""}>
-                Show cascade
-              </span>
+            {/* View toggle — labeled and counted so the calm "just the one
+                edit" view is an obvious escape from the (larger) full cascade.
+                Each segment shows its own count, so a scary "73" always sits
+                next to the reassuring "1". */}
+            <div className="viewtoggle">
+              <span className="vt-label">Show</span>
+              <div className="vt-segs">
+                <button
+                  type="button"
+                  className={"vt-seg" + (mode === "authored" ? " on" : "")}
+                  onClick={() => onModeChange("authored")}
+                  title="Only the cells a human actually typed"
+                >
+                  Just the edit
+                  <span className="vt-count">{diff.summary.authoredCount}</span>
+                </button>
+                <button
+                  type="button"
+                  className={"vt-seg" + (mode === "cascade" ? " on" : "")}
+                  onClick={() => onModeChange("cascade")}
+                  title="Every cell the edit moved downstream"
+                >
+                  Full cascade
+                  <span className="vt-count">
+                    {diff.summary.authoredCount + diff.summary.computedCount}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 

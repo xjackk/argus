@@ -11,6 +11,9 @@
 // --narrate, it fills the narrative via `claude -p`. With --prompt-only, it
 // prints the grounded prompt that WOULD be sent (no model call) — handy for
 // eyeballing grounding.
+//
+// Env: ARGUS_NARRATION_LOG=path.jsonl appends every (prompt, narration) pair to
+// that file — the training set for a future local narrator. Unset by default.
 package main
 
 import (
@@ -48,7 +51,12 @@ func main() {
 	}
 
 	if *narrate {
-		n := narrator.ClaudeCLI{Model: *model}
+		var n narrator.Narrator = narrator.ClaudeCLI{Model: *model}
+		// Opt-in: with ARGUS_NARRATION_LOG set, append every (prompt, narration)
+		// pair to that JSONL file. Unset (the default) is an exact no-op.
+		if logPath := os.Getenv("ARGUS_NARRATION_LOG"); logPath != "" {
+			n = narrator.Recording{Inner: n, Path: logPath, Source: "claude-cli"}
+		}
 		text, err := n.Narrate(context.Background(), result)
 		if err != nil {
 			// Non-fatal: narrative stays null, engine output is still valid.

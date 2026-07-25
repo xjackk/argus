@@ -13,3 +13,6 @@ node_modules
 
 # daemon runtime store (written by argusd)
 desktop/frontend/public/store/
+
+# argusd daemon build output
+/argusd

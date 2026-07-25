@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Onboarding } from "./Onboarding";
 import { ThemePicker } from "./ThemePicker";
 
 interface TopBarProps {
@@ -9,39 +8,14 @@ interface TopBarProps {
   onSelect: (w: string) => void;
 }
 
-// Top bar: a workbook (file) picker, sync/connectivity status, and Commit.
-// Deliberately NOT a git-branch bar — finance reviewers think in "which file" +
-// "what changed over time". When a daemon is connected, the status goes live.
+// Top bar: a workbook (file) picker and connectivity status. Deliberately NOT a
+// git-branch bar — finance reviewers think in "which file" + "what changed over
+// time". There is NO manual "commit" button by design: Argus captures a version
+// automatically on every save (the daemon is the single watcher/writer), so
+// committing *is* saving. Likewise the watched folder is daemon-side config, not
+// something the client sets — the client only reads the store the daemon writes.
 export function TopBar({ live, workbooks, selected, onSelect }: TopBarProps) {
   const [open, setOpen] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [syncedLabel, setSyncedLabel] = useState("Synced 2m ago");
-  const [showCommit, setShowCommit] = useState(false);
-  const [commitMsg, setCommitMsg] = useState("");
-  const [toast, setToast] = useState<string | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
-  function flash(msg: string) {
-    setToast(msg);
-    window.setTimeout(() => setToast(null), 2200);
-  }
-
-  function doSync() {
-    if (syncing) return;
-    setSyncing(true);
-    window.setTimeout(() => {
-      setSyncing(false);
-      setSyncedLabel("Synced just now");
-      flash("Pulled latest from SharePoint");
-    }, 1100);
-  }
-
-  function doCommit() {
-    setShowCommit(false);
-    const msg = commitMsg.trim();
-    setCommitMsg("");
-    flash(msg ? `Committed: “${msg}”` : "Version committed");
-  }
 
   return (
     <div className="topbar">
@@ -68,14 +42,14 @@ export function TopBar({ live, workbooks, selected, onSelect }: TopBarProps) {
               </div>
             ))}
             <div className="menu-sep" />
+            {/* Read-only status, not an action: the watched folder is set on the
+                daemon (a laptop user at launch, or an admin on the box), so the
+                client has nothing to configure here. */}
             <div
-              className="menu-item add"
-              onClick={() => {
-                setOpen(false);
-                setShowOnboarding(true);
-              }}
+              className="menu-cap"
+              style={{ padding: "8px 12px", fontSize: 11, opacity: 0.55 }}
             >
-              ＋ Watch a new folder…
+              Versions captured automatically on save
             </div>
           </div>
         )}
@@ -88,63 +62,26 @@ export function TopBar({ live, workbooks, selected, onSelect }: TopBarProps) {
         {live ? (
           <div className="conn live" title="Connected to the capture daemon">
             <span className="conn-dot" />
-            Live
-            <br />
-            watching for saves
+            <span className="conn-text">
+              <span className="conn-l">Live</span>
+              <span className="conn-s">watching for saves</span>
+            </span>
           </div>
         ) : (
-          <div className="synced" onClick={doSync} title="Pull latest">
-            {syncing ? "Syncing…" : syncedLabel}
-            <br />
-            via SharePoint
+          // Honest offline state — no daemon connected. Editing still works; the
+          // app just shows the last saved history. (No fake "syncing" here: you
+          // don't need to be connected to anything to review your own files.)
+          <div className="conn" title="No daemon connected — showing saved history">
+            <span className="conn-text">
+              <span className="conn-l">Offline</span>
+              <span className="conn-s">showing saved history</span>
+            </span>
           </div>
         )}
-        <button className="primary" onClick={() => setShowCommit(true)}>
-          Commit version
-        </button>
       </div>
 
       {/* Backdrop closes the open dropdown */}
       {open && <div className="menu-backdrop" onClick={() => setOpen(false)} />}
-
-      {/* Commit modal (mocked) */}
-      {showCommit && (
-        <div className="modal-backdrop" onClick={() => setShowCommit(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-title">Commit a new version</div>
-            <div className="modal-sub">
-              Snapshots the current state of {selected}.
-            </div>
-            <textarea
-              className="modal-input"
-              placeholder="Summary of what changed…"
-              value={commitMsg}
-              autoFocus
-              onChange={(e) => setCommitMsg(e.target.value)}
-            />
-            <div className="modal-actions">
-              <button className="ghost" onClick={() => setShowCommit(false)}>
-                Cancel
-              </button>
-              <button className="primary" onClick={doCommit}>
-                Commit version
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showOnboarding && (
-        <Onboarding
-          onClose={() => setShowOnboarding(false)}
-          onDone={(msg) => {
-            setShowOnboarding(false);
-            flash(msg);
-          }}
-        />
-      )}
-
-      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }

@@ -69,32 +69,41 @@ flowchart TD
 
 ## Exact Demo
 
-The live "Dropbox" demo — no hardcoded data. Two terminals: the capture daemon,
-and the client. As `.xlsx` files land in the watched folder, tracked commits
-appear in the client in real time.
+The live "Dropbox" demo — no hardcoded data, driven by the two sample models in
+`samples/`. Two terminals: the capture daemon, and the client.
 
 ```sh
-# 0. One-time: a clean watched folder
-rm -rf ~/ArgusDropbox
-
-# 1. Terminal A — the capture daemon (run from the repo root)
-go run ./cmd/argusd -author "Deal Team A"
+# 1. Terminal A — the capture daemon (from the repo root).
+#    Watches ~/ArgusDropbox by DEFAULT (created for you if missing) and writes
+#    the store the client reads. -folder points it anywhere: a real
+#    Dropbox/SharePoint/OneDrive folder for a team, or any local folder for a
+#    laptop demo. Argus doesn't sync the folder — it watches one your existing
+#    tool already syncs, and generates the version history on top.
+go run ./cmd/argusd -author "Avery (Analyst)"
 
 # 2. Terminal B — the client
 cd desktop/frontend && npm run dev            # → http://localhost:5173
-#    (the top bar shows a green "● Live — watching for saves" once connected)
+#    Top-right flips to a green "● Live · watching for saves" within ~3s.
 
-# 3. Build the story LIVE. Each copy = a save = a tracked commit with its real diff.
-WB=~/Downloads/argus-files/test-workbooks
-cp $WB/atlas_c01_initial.xlsx       ~/ArgusDropbox/Atlas_LBO.xlsx   # base version
-cp $WB/atlas_c02_growth_case.xlsx   ~/ArgusDropbox/Atlas_LBO.xlsx   # 1 authored · 40 computed
-cp $WB/atlas_c03_margin_tighten.xlsx ~/ArgusDropbox/Atlas_LBO.xlsx  # margin change ripples
-cp $WB/atlas_c06_exit_multiple.xlsx ~/ArgusDropbox/Atlas_LBO.xlsx   # the exit-multiple cascade
-cp $WB/atlas_c07_hardcode_flag.xlsx ~/ArgusDropbox/Atlas_LBO.xlsx   # ⚠ anomaly, live
+# 3. Seed the two workbooks — each copy-in is captured as a base version.
+cp samples/income_statement_v1.xlsx ~/ArgusDropbox/Income_Statement.xlsx
+cp samples/balance_sheet_v1.xlsx    ~/ArgusDropbox/Balance_Sheet.xlsx
 ```
 
-Click a commit → see the cascade; click a cell → walk the multi-hop dependency
-chain. **Two-user variant:** stop the daemon (Ctrl+C) and restart it as a
+Now make the edits **live** — the "poof" moment. Open either file from
+`~/ArgusDropbox` in Excel or LibreOffice, change **one** input cell, and save
+(keep `.xlsx`). Within ~3s the client flashes a toast and a new version appears
+at the top of the History rail with its real authored/computed split:
+
+| Workbook | Change this input | Ripples to |
+|---|---|---|
+| `Income_Statement.xlsx` | `Assumptions!B4` Revenue Growth %  (or `B8` Marketing %) | ~105 (72) computed — Assumptions + P&L |
+| `Balance_Sheet.xlsx` | `Assumptions!B17` Annual Capex `4000 → 9000` | 60 computed — Assumptions + BalanceSheet |
+
+Switch between the two files with the workbook picker (top-left). Click a commit
+→ see the cascade; click a cell → walk the multi-hop dependency chain.
+
+**Two-user variant:** stop the daemon (Ctrl+C) and restart it as a
 different author to attribute later saves to them — the history resumes, and the
 rail's **author filter** lets you show just one person's changes:
 

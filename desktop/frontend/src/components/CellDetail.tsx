@@ -1,5 +1,6 @@
 import type { CellChange, Cascade } from "../data/types";
 import { formatValue, formatDelta } from "../data/format";
+import { revisionsFor } from "../data/cellHistory";
 
 interface Props {
   change: CellChange;
@@ -8,13 +9,14 @@ interface Props {
   onClose: () => void;
 }
 
-// State 2 — "git log for a cell": formula, before/after, dependency chain, and
-// the classification-derived reassurance line.
+// State 2 — "git log for a cell": formula, before/after, dependency chain,
+// revision timeline, and the classification-derived reassurance line.
 export function CellDetail({ change, sheet, cascadeByOrigin, onClose }: Props) {
   const qualified = `${sheet}!${change.coord}`;
   const authored = change.classification === "authored";
   const origin = change.causedBy[0];
   const cascade = cascadeByOrigin.get(qualified);
+  const revisions = revisionsFor(qualified); // oldest→newest
 
   return (
     <div className="detail">
@@ -78,6 +80,38 @@ export function CellDetail({ change, sheet, cascadeByOrigin, onClose }: Props) {
           <div className="chain-step here">
             {qualified} <span className="tag-m">← you are here</span>
           </div>
+        </div>
+      )}
+
+      {/* Revision timeline — "git log for a cell". Newest first. */}
+      {revisions.length > 0 && (
+        <div className="timeline">
+          <div className="h">History — {revisions.length} revisions</div>
+          {revisions
+            .slice()
+            .reverse()
+            .map((r, i) => (
+              <div className="tl-row" key={r.commit + i}>
+                <span
+                  className={
+                    "tl-dot " + (r.classification === "authored" ? "a" : "c")
+                  }
+                />
+                <div className="tl-body">
+                  <div className="tl-val">
+                    {formatValue(r.oldValue, change.displayFormat)} →{" "}
+                    <b>{formatValue(r.newValue, change.displayFormat)}</b>
+                  </div>
+                  <div className="tl-meta">
+                    {r.author} ·{" "}
+                    <span className={r.classification === "authored" ? "tag-a" : "tag-c"}>
+                      {r.classification}
+                    </span>{" "}
+                    <span className="sha">{r.commit}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
         </div>
       )}
 

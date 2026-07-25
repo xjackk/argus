@@ -1,0 +1,1425 @@
+{
+  "schemaVersion": 1,
+  "workbook": {
+    "name": "Project Atlas \u2014 LBO Model",
+    "project": "Atlas Partners",
+    "branch": "deal-team/base"
+  },
+  "commits": [
+    {
+      "id": "c01",
+      "file": "atlas_c01_initial.xlsx",
+      "author": "J. Killilea",
+      "authorEmail": "jkillilea@atlaspartners.com",
+      "team": "Deal Team A",
+      "timestamp": "2026-07-06T09:14:00Z",
+      "message": "Initial model shared with deal team",
+      "parent": null,
+      "authoredCount": 0,
+      "computedCount": 0,
+      "touchedCells": [],
+      "signedOff": null,
+      "anomalyFlags": []
+    },
+    {
+      "id": "c02",
+      "file": "atlas_c02_growth_case.xlsx",
+      "author": "M. Rivera",
+      "authorEmail": "mrivera@atlaspartners.com",
+      "team": "Deal Team A",
+      "timestamp": "2026-07-06T14:44:00Z",
+      "message": "Revenue growth to 9.5% per mgmt meeting",
+      "parent": "c01",
+      "authoredCount": 1,
+      "computedCount": 40,
+      "touchedCells": [
+        "Assumptions!B11"
+      ],
+      "signedOff": null,
+      "anomalyFlags": []
+    },
+    {
+      "id": "c03",
+      "file": "atlas_c03_margin_tighten.xlsx",
+      "author": "A. Chen (Modeling)",
+      "authorEmail": "achen@atlaspartners.com",
+      "team": "Modeling",
+      "timestamp": "2026-07-07T11:14:00Z",
+      "message": "Tightened exit EBITDA margin to 23.5%",
+      "parent": "c02",
+      "authoredCount": 1,
+      "computedCount": 35,
+      "touchedCells": [
+        "Assumptions!B13"
+      ],
+      "signedOff": null,
+      "anomalyFlags": []
+    },
+    {
+      "id": "c04",
+      "file": "atlas_c04_debt_repricing.xlsx",
+      "author": "A. Chen (Modeling)",
+      "authorEmail": "achen@atlaspartners.com",
+      "team": "Modeling",
+      "timestamp": "2026-07-07T14:14:00Z",
+      "message": "Debt repricing: interest 8.25%, paydown 12.5%",
+      "parent": "c03",
+      "authoredCount": 2,
+      "computedCount": 35,
+      "touchedCells": [
+        "Assumptions!B16",
+        "Assumptions!B17"
+      ],
+      "signedOff": null,
+      "anomalyFlags": []
+    },
+    {
+      "id": "c05",
+      "file": "atlas_c05_add_sbc_line.xlsx",
+      "author": "M. Rivera",
+      "authorEmail": "mrivera@atlaspartners.com",
+      "team": "Deal Team A",
+      "timestamp": "2026-07-08T12:14:00Z",
+      "message": "Added stock-based comp line to P&L",
+      "parent": "c04",
+      "authoredCount": 42,
+      "computedCount": 0,
+      "touchedCells": [
+        "P&L!A10",
+        "P&L!A11",
+        "P&L!A12",
+        "P&L!A7",
+        "P&L!A8",
+        "P&L!A9",
+        "P&L!B10",
+        "P&L!B11",
+        "P&L!B12",
+        "P&L!B7",
+        "P&L!B8",
+        "P&L!B9",
+        "P&L!C10",
+        "P&L!C11",
+        "P&L!C12",
+        "P&L!C7",
+        "P&L!C8",
+        "P&L!C9",
+        "P&L!D10",
+        "P&L!D11",
+        "P&L!D12",
+        "P&L!D7",
+        "P&L!D8",
+        "P&L!D9",
+        "P&L!E10",
+        "P&L!E11",
+        "P&L!E12",
+        "P&L!E7",
+        "P&L!E8",
+        "P&L!E9",
+        "P&L!F10",
+        "P&L!F11",
+        "P&L!F12",
+        "P&L!F7",
+        "P&L!F8",
+        "P&L!F9",
+        "P&L!G10",
+        "P&L!G11",
+        "P&L!G12",
+        "P&L!G7",
+        "P&L!G8",
+        "P&L!G9"
+      ],
+      "signedOff": null,
+      "anomalyFlags": []
+    },
+    {
+      "id": "c06",
+      "file": "atlas_c06_exit_multiple.xlsx",
+      "author": "S. Patel (VP)",
+      "authorEmail": "spatel@atlaspartners.com",
+      "team": "IC / Partners",
+      "timestamp": "2026-07-09T11:44:00Z",
+      "message": "Marked exit multiple down to 9.5x per comp set",
+      "parent": "c05",
+      "authoredCount": 1,
+      "computedCount": 4,
+      "touchedCells": [
+        "Assumptions!B5"
+      ],
+      "signedOff": {
+        "by": "S. Patel (VP)",
+        "at": "2026-07-09T13:44:00Z"
+      },
+      "anomalyFlags": []
+    },
+    {
+      "id": "c07",
+      "file": "atlas_c07_hardcode_flag.xlsx",
+      "author": "M. Rivera",
+      "authorEmail": "mrivera@atlaspartners.com",
+      "team": "Deal Team A",
+      "timestamp": "2026-07-09T14:14:00Z",
+      "message": "Manual Exit EV override pending diligence",
+      "parent": "c06",
+      "authoredCount": 1,
+      "computedCount": 3,
+      "touchedCells": [
+        "Returns!B9"
+      ],
+      "signedOff": null,
+      "anomalyFlags": [
+        "formula_replaced_by_constant"
+      ]
+    }
+  ],
+  "cellHistory": [
+    {
+      "ref": "Returns!B14",
+      "label": "IRR",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 0.274630266670474,
+          "newValue": 0.295042823890628,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 0.295042823890628,
+          "newValue": 0.276724090133886,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 0.276724090133886,
+          "newValue": 0.282885360830104,
+          "classification": "computed"
+        },
+        {
+          "commit": "c06",
+          "author": "S. Patel (VP)",
+          "timestamp": "2026-07-09T11:44:00Z",
+          "oldValue": 0.282885360830104,
+          "newValue": 0.254023705778798,
+          "classification": "computed"
+        },
+        {
+          "commit": "c07",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-09T14:14:00Z",
+          "oldValue": 0.254023705778798,
+          "newValue": 0.305602489659952,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "Returns!B13",
+      "label": "MOIC",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 3.36450465818182,
+          "newValue": 3.64267687368963,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 3.64267687368963,
+          "newValue": 3.39222980126825,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 3.39222980126825,
+          "newValue": 3.47487548266474,
+          "classification": "computed"
+        },
+        {
+          "commit": "c06",
+          "author": "S. Patel (VP)",
+          "timestamp": "2026-07-09T11:44:00Z",
+          "oldValue": 3.47487548266474,
+          "newValue": 3.10119254921062,
+          "classification": "computed"
+        },
+        {
+          "commit": "c07",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-09T14:14:00Z",
+          "oldValue": 3.10119254921062,
+          "newValue": 3.79362892382073,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "Returns!B11",
+      "label": "Exit Equity",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 1665.4298058,
+          "newValue": 1803.12505247637,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 1803.12505247637,
+          "newValue": 1679.15375162778,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 1679.15375162778,
+          "newValue": 1720.06336391904,
+          "classification": "computed"
+        },
+        {
+          "commit": "c06",
+          "author": "S. Patel (VP)",
+          "timestamp": "2026-07-09T11:44:00Z",
+          "oldValue": 1720.06336391904,
+          "newValue": 1535.09031185926,
+          "classification": "computed"
+        },
+        {
+          "commit": "c07",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-09T14:14:00Z",
+          "oldValue": 1535.09031185926,
+          "newValue": 1877.84631729126,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!C11",
+      "label": "Less: Tax",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -16.756875,
+          "newValue": -17.105625,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": -17.105625,
+          "newValue": -16.695,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -16.695,
+          "newValue": -16.114921875,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -16.114921875,
+          "newValue": 91.98,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!C12",
+      "label": "Net Income",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 50.270625,
+          "newValue": 51.316875,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 51.316875,
+          "newValue": 50.085,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 50.085,
+          "newValue": 48.344765625,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 48.344765625,
+          "newValue": 0,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!E10",
+      "label": "EBT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 97.647363,
+          "newValue": 102.916180125,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 102.916180125,
+          "newValue": 97.0079844375,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 97.0079844375,
+          "newValue": 96.7141748671875,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 96.7141748671875,
+          "newValue": -27.3579345703125,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!E11",
+      "label": "Less: Tax",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -24.41184075,
+          "newValue": -25.72904503125,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": -25.72904503125,
+          "newValue": -24.251996109375,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -24.251996109375,
+          "newValue": -24.1785437167969,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -24.1785437167969,
+          "newValue": 114.225116625,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "Returns!B9",
+      "label": "Exit EV",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 1928.4931008,
+          "newValue": 2066.18834747637,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 2066.18834747637,
+          "newValue": 1942.21704662778,
+          "classification": "computed"
+        },
+        {
+          "commit": "c06",
+          "author": "S. Patel (VP)",
+          "timestamp": "2026-07-09T11:44:00Z",
+          "oldValue": 1942.21704662778,
+          "newValue": 1757.243994568,
+          "classification": "computed"
+        },
+        {
+          "commit": "c07",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-09T14:14:00Z",
+          "oldValue": 1757.243994568,
+          "newValue": 2100,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!D10",
+      "label": "EBT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 81.90315,
+          "newValue": 85.03515,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 85.03515,
+          "newValue": 81.438075,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 81.438075,
+          "newValue": 80.2431140625,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 80.2431140625,
+          "newValue": -31.2662109375,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!G11",
+      "label": "Less: Tax",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -33.0893767035,
+          "newValue": -35.8432816370273,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": -35.8432816370273,
+          "newValue": -32.8915839977754,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -32.8915839977754,
+          "newValue": -33.1355896464265,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -33.1355896464265,
+          "newValue": 141.681486684094,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!G12",
+      "label": "Net Income",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 99.2681301105,
+          "newValue": 107.529844911082,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 107.529844911082,
+          "newValue": 98.6747519933261,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 98.6747519933261,
+          "newValue": 99.4067689392795,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 99.4067689392795,
+          "newValue": 0,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!F11",
+      "label": "Less: Tax",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -28.603040355,
+          "newValue": -30.5709261159375,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": -30.5709261159375,
+          "newValue": -28.41443469,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -28.41443469,
+          "newValue": -28.5193146277441,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -28.5193146277441,
+          "newValue": 127.232994130312,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!F12",
+      "label": "Net Income",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 85.809121065,
+          "newValue": 91.7127783478125,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 91.7127783478125,
+          "newValue": 85.24330407,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 85.24330407,
+          "newValue": 85.5579438832324,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 85.5579438832324,
+          "newValue": 0,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!E12",
+      "label": "Net Income",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 73.23552225,
+          "newValue": 77.18713509375,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 77.18713509375,
+          "newValue": 72.755988328125,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 72.755988328125,
+          "newValue": 72.5356311503906,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 72.5356311503906,
+          "newValue": 0,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!F10",
+      "label": "EBT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 114.41216142,
+          "newValue": 122.28370446375,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 122.28370446375,
+          "newValue": 113.65773876,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 113.65773876,
+          "newValue": 114.077258510977,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 114.077258510977,
+          "newValue": -23.9381927490234,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!G10",
+      "label": "EBT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 132.357506814,
+          "newValue": 143.373126548109,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 143.373126548109,
+          "newValue": 131.566335991102,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 131.566335991102,
+          "newValue": 132.542358585706,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 132.542358585706,
+          "newValue": -20.9459186553955,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!C10",
+      "label": "EBT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 67.0275,
+          "newValue": 68.4225,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 68.4225,
+          "newValue": 66.78,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 66.78,
+          "newValue": 64.4596875,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 64.4596875,
+          "newValue": -35.7328125,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!D12",
+      "label": "Net Income",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 61.4273625,
+          "newValue": 63.7763625,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 63.7763625,
+          "newValue": 61.07855625,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": 61.07855625,
+          "newValue": 60.182335546875,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 60.182335546875,
+          "newValue": 0,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!D11",
+      "label": "Less: Tax",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -20.4757875,
+          "newValue": -21.2587875,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": -21.2587875,
+          "newValue": -20.35951875,
+          "classification": "computed"
+        },
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -20.35951875,
+          "newValue": -20.060778515625,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -20.060778515625,
+          "newValue": 102.5166375,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!D8",
+      "label": "EBIT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 111.9744,
+          "newValue": 115.1064,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 115.1064,
+          "newValue": 111.509325,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 111.509325,
+          "newValue": -23.9805,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!C8",
+      "label": "EBIT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 100.44,
+          "newValue": 101.835,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 101.835,
+          "newValue": 100.1925,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 100.1925,
+          "newValue": -21.9,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!E8",
+      "label": "EBIT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 124.711488,
+          "newValue": 129.980305125,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 129.980305125,
+          "newValue": 124.0721094375,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 124.0721094375,
+          "newValue": -26.2586475,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!F8",
+      "label": "EBIT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 138.76987392,
+          "newValue": 146.64141696375,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 146.64141696375,
+          "newValue": 138.01545126,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 138.01545126,
+          "newValue": -28.7532190125,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!G8",
+      "label": "EBIT",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 154.279448064,
+          "newValue": 165.295067798109,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 165.295067798109,
+          "newValue": 153.488277241102,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": 153.488277241102,
+          "newValue": -31.4847748186875,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!D7",
+      "label": "Less: D&A (4% rev)",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -23.328,
+          "newValue": -23.9805,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -23.9805,
+          "newValue": -8.9926875,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!F7",
+      "label": "Less: D&A (4% rev)",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -27.2097792,
+          "newValue": -28.7532190125,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -28.7532190125,
+          "newValue": -10.7824571296875,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!E6",
+      "label": "EBITDA",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 149.905728,
+          "newValue": 156.238952625,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 156.238952625,
+          "newValue": 150.3307569375,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!F6",
+      "label": "EBITDA",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 165.97965312,
+          "newValue": 175.39463597625,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 175.39463597625,
+          "newValue": 166.7686702725,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!C6",
+      "label": "EBITDA",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 122.04,
+          "newValue": 123.735,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 123.735,
+          "newValue": 122.0925,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!E7",
+      "label": "Less: D&A (4% rev)",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -25.19424,
+          "newValue": -26.2586475,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -26.2586475,
+          "newValue": -9.8469928125,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "Returns!B8",
+      "label": "Exit EBITDA",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 183.6660096,
+          "newValue": 196.779842616797,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 196.779842616797,
+          "newValue": 184.973052059789,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!G6",
+      "label": "EBITDA",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 183.6660096,
+          "newValue": 196.779842616797,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 196.779842616797,
+          "newValue": 184.973052059789,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!G7",
+      "label": "Less: D&A (4% rev)",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -29.386561536,
+          "newValue": -31.4847748186875,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -31.4847748186875,
+          "newValue": -11.8067905570078,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!C7",
+      "label": "Less: D&A (4% rev)",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": -21.6,
+          "newValue": -21.9,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -21.9,
+          "newValue": -8.2125,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!D6",
+      "label": "EBITDA",
+      "revisions": [
+        {
+          "commit": "c02",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-06T14:44:00Z",
+          "oldValue": 135.3024,
+          "newValue": 139.0869,
+          "classification": "computed"
+        },
+        {
+          "commit": "c03",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T11:14:00Z",
+          "oldValue": 139.0869,
+          "newValue": 135.489825,
+          "classification": "computed"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!G9",
+      "label": "Less: Interest",
+      "revisions": [
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -21.92194125,
+          "newValue": -20.9459186553955,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -20.9459186553955,
+          "newValue": 173.166261502781,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!E9",
+      "label": "Less: Interest",
+      "revisions": [
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -27.064125,
+          "newValue": -27.3579345703125,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -27.3579345703125,
+          "newValue": 140.483764125,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!F9",
+      "label": "Less: Interest",
+      "revisions": [
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -24.3577125,
+          "newValue": -23.9381927490234,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -23.9381927490234,
+          "newValue": 155.986213142812,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!C9",
+      "label": "Less: Interest",
+      "revisions": [
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -33.4125,
+          "newValue": -35.7328125,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -35.7328125,
+          "newValue": 113.88,
+          "classification": "authored"
+        }
+      ]
+    },
+    {
+      "ref": "P&L!D9",
+      "label": "Less: Interest",
+      "revisions": [
+        {
+          "commit": "c04",
+          "author": "A. Chen (Modeling)",
+          "timestamp": "2026-07-07T14:14:00Z",
+          "oldValue": -30.07125,
+          "newValue": -31.2662109375,
+          "classification": "computed"
+        },
+        {
+          "commit": "c05",
+          "author": "M. Rivera",
+          "timestamp": "2026-07-08T12:14:00Z",
+          "oldValue": -31.2662109375,
+          "newValue": 126.4971375,
+          "classification": "authored"
+        }
+      ]
+    }
+  ],
+  "notes": "Linear chain: each file derived from its parent. Any two commits are comparable; cellHistory powers the per-cell \"history over time\" view."
+}

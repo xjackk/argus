@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./styles.css";
-import { loadDiff } from "./data/loadDiff";
+import { diffForCommit } from "./data/diffs";
 import { COMMIT_HISTORY } from "./data/history";
 import type { DiffResult, CellChange, Cascade, Anomaly } from "./data/types";
 import { TopBar } from "./components/TopBar";
@@ -22,10 +22,19 @@ export default function App() {
     sheet: string;
   } | null>(null);
 
-  // ── The single data source. Swap loadDiff()'s body for the engine later. ──
+  // ── Load the selected commit's diff. Reloads whenever a different commit is
+  // picked in the rail. Clears any open cell and keeps the sheet selection if
+  // that sheet still exists in the new diff, else jumps to the first one. ──
   useEffect(() => {
-    loadDiff().then(setDiff);
-  }, []);
+    const d = diffForCommit(selectedCommitId);
+    setDiff(d);
+    setSelectedCell(null);
+    if (d && d.sheets.length) {
+      setSelectedSheet((prev) =>
+        d.sheets.some((s) => s.name === prev) ? prev : d.sheets[0].name
+      );
+    }
+  }, [selectedCommitId]);
 
   // Lookup maps derived once per diff.
   const { changeByRef, cascadeByOrigin, anomaliesByRef } = useMemo(() => {
@@ -71,6 +80,8 @@ export default function App() {
           commits={COMMIT_HISTORY}
           selectedId={selectedCommitId}
           onSelect={setSelectedCommitId}
+          diff={diff}
+          onSelectCell={handleSelectCell}
         />
         {diff ? (
           <DiffColumn
@@ -89,15 +100,15 @@ export default function App() {
             onHover={setHover}
           />
         ) : (
-          <div
-            style={{
-              flex: 1,
-              display: "grid",
-              placeItems: "center",
-              color: "var(--tx2)",
-            }}
-          >
-            Loading diff…
+          <div className="empty-diff">
+            <div className="empty-diff-title">
+              {commit.base ? "Initial version" : "No diff"}
+            </div>
+            <div className="empty-diff-sub">
+              {commit.base
+                ? `${commit.message} — this is the first commit, so there's nothing before it to compare against.`
+                : "No changes to show for this commit."}
+            </div>
           </div>
         )}
       </div>

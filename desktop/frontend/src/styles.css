@@ -798,3 +798,89 @@ body {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Base/empty diff state (e.g. selecting the initial commit c01) */
+.empty-diff {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px;
+  text-align: center;
+}
+.empty-diff-title {
+  font-size: 15px;
+  color: var(--tx);
+  font-weight: 600;
+}
+.empty-diff-sub {
+  font-size: 13px;
+  color: var(--tx2);
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+/* Revision timeline (CellDetail — "git log for a cell") */
+.timeline {
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+.timeline .h {
+  font-size: 10px;
+  color: var(--tx2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.tl-row {
+  display: flex;
+  gap: 9px;
+  padding: 5px 0;
+}
+.tl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex: none;
+}
+.tl-dot.a { background: var(--green); }
+.tl-dot.c { background: var(--purple); }
+.tl-body { min-width: 0; }
+.tl-val {
+  color: var(--tx);
+  font-variant-numeric: tabular-nums;
+}
+.tl-meta {
+  font-size: 11px;
+  color: var(--tx2);
+  margin-top: 2px;
+}
+
+/* Rail anomaly badge on commit rows */
+.anom-badge { color: var(--amber); }
+.rail-empty { padding: 16px 13px; color: var(--tx2); font-size: 12px; }
+
+/* Changes tab: flat changed-cell list */
+.chrow {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line2);
+  cursor: pointer;
+}
+.chrow:hover { background: var(--bg3); }
+.ch-dot {
+  width: 7px; height: 7px; border-radius: 50%; margin-top: 4px; flex: none;
+}
+.ch-dot.a { background: var(--green); }
+.ch-dot.c { background: var(--purple); }
+.ch-main { min-width: 0; }
+.ch-ref { color: var(--tx); font-size: 11.5px; }
+.ch-val {
+  font-size: 11px; color: var(--tx2); margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,1138 @@
+{
+  "schemaVersion": 1,
+  "from": {
+    "label": "atlas_c03_margin_tighten.xlsx",
+    "path": "/Users/emo/Downloads/argus-files/test-workbooks/atlas_c03_margin_tighten.xlsx",
+    "committedAt": "",
+    "author": ""
+  },
+  "to": {
+    "label": "atlas_c04_debt_repricing.xlsx",
+    "path": "/Users/emo/Downloads/argus-files/test-workbooks/atlas_c04_debt_repricing.xlsx",
+    "committedAt": "",
+    "author": ""
+  },
+  "summary": {
+    "authoredCount": 2,
+    "computedCount": 35,
+    "sheetsAffected": [
+      "Assumptions",
+      "P\u0026L",
+      "Debt",
+      "Returns"
+    ],
+    "narrative": "A human raised the Interest Rate on Debt from 7.5% to 8.2% and the Mandatory Debt Paydown from 10.0% to 12.5% per annum. The higher rate pushes early-year interest up — the first Less: Interest line moves from -33.41 to -35.73, cutting EBT from 66.78 to 64.46, tax from -16.70 to -16.11, and Net Income from 50.09 to 48.34. Faster paydown then shrinks the debt balance in later years, so interest falls from -21.92 to -20.95 and -24.36 to -23.94, Net Income in that year goes from 61.08 to 60.18, and Closing Debt drops across the schedule — $401 to $379, $361 to $332, $325 to $290, $292 to $254, and $263 to $222, with Exit Net Debt following the last of these from $263 to $222."
+  },
+  "sheets": [
+    {
+      "name": "Assumptions",
+      "changes": [
+        {
+          "coord": "B16",
+          "row": 16,
+          "col": 2,
+          "label": "Interest Rate on Debt (%)",
+          "classification": "authored",
+          "oldValue": 0.075,
+          "newValue": 0.0825,
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "0.0%",
+          "dependsOn": [],
+          "dependents": [
+            "'P\u0026L'!C9",
+            "'P\u0026L'!D9",
+            "'P\u0026L'!E9",
+            "'P\u0026L'!F9",
+            "'P\u0026L'!G9"
+          ],
+          "causedBy": [],
+          "magnitude": 0.1
+        },
+        {
+          "coord": "B17",
+          "row": 17,
+          "col": 2,
+          "label": "Mandatory Debt Paydown (% p.a.)",
+          "classification": "authored",
+          "oldValue": 0.1,
+          "newValue": 0.125,
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "0.0%",
+          "dependsOn": [],
+          "dependents": [
+            "Debt!B5",
+            "Debt!C5",
+            "Debt!D5",
+            "Debt!E5",
+            "Debt!F5",
+            "Debt!G5"
+          ],
+          "causedBy": [],
+          "magnitude": 0.25
+        }
+      ],
+      "rowsInserted": [],
+      "rowsDeleted": []
+    },
+    {
+      "name": "P\u0026L",
+      "changes": [
+        {
+          "coord": "C9",
+          "row": 9,
+          "col": 3,
+          "label": "Less: Interest",
+          "classification": "computed",
+          "oldValue": -33.4125,
+          "newValue": -35.7328125,
+          "oldFormula": "=-Debt!C4*Assumptions!$B$16",
+          "newFormula": "=-Debt!C4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!C4"
+          ],
+          "dependents": [
+            "'P\u0026L'!C10"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0694
+        },
+        {
+          "coord": "D9",
+          "row": 9,
+          "col": 4,
+          "label": "Less: Interest",
+          "classification": "computed",
+          "oldValue": -30.07125,
+          "newValue": -31.2662109375,
+          "oldFormula": "=-Debt!D4*Assumptions!$B$16",
+          "newFormula": "=-Debt!D4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!D4"
+          ],
+          "dependents": [
+            "'P\u0026L'!D10"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0397
+        },
+        {
+          "coord": "E9",
+          "row": 9,
+          "col": 5,
+          "label": "Less: Interest",
+          "classification": "computed",
+          "oldValue": -27.064125,
+          "newValue": -27.3579345703125,
+          "oldFormula": "=-Debt!E4*Assumptions!$B$16",
+          "newFormula": "=-Debt!E4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!E4"
+          ],
+          "dependents": [
+            "'P\u0026L'!E10"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0109
+        },
+        {
+          "coord": "F9",
+          "row": 9,
+          "col": 6,
+          "label": "Less: Interest",
+          "classification": "computed",
+          "oldValue": -24.3577125,
+          "newValue": -23.9381927490234,
+          "oldFormula": "=-Debt!F4*Assumptions!$B$16",
+          "newFormula": "=-Debt!F4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!F4"
+          ],
+          "dependents": [
+            "'P\u0026L'!F10"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0172
+        },
+        {
+          "coord": "G9",
+          "row": 9,
+          "col": 7,
+          "label": "Less: Interest",
+          "classification": "computed",
+          "oldValue": -21.92194125,
+          "newValue": -20.9459186553955,
+          "oldFormula": "=-Debt!G4*Assumptions!$B$16",
+          "newFormula": "=-Debt!G4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!G4"
+          ],
+          "dependents": [
+            "'P\u0026L'!G10"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0445
+        },
+        {
+          "coord": "C10",
+          "row": 10,
+          "col": 3,
+          "label": "EBT",
+          "classification": "computed",
+          "oldValue": 66.78,
+          "newValue": 64.4596875,
+          "oldFormula": "=C8+C9",
+          "newFormula": "=C8+C9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C8",
+            "'P\u0026L'!C9"
+          ],
+          "dependents": [
+            "'P\u0026L'!C11",
+            "'P\u0026L'!C12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0347
+        },
+        {
+          "coord": "D10",
+          "row": 10,
+          "col": 4,
+          "label": "EBT",
+          "classification": "computed",
+          "oldValue": 81.438075,
+          "newValue": 80.2431140625,
+          "oldFormula": "=D8+D9",
+          "newFormula": "=D8+D9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D8",
+            "'P\u0026L'!D9"
+          ],
+          "dependents": [
+            "'P\u0026L'!D11",
+            "'P\u0026L'!D12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0147
+        },
+        {
+          "coord": "E10",
+          "row": 10,
+          "col": 5,
+          "label": "EBT",
+          "classification": "computed",
+          "oldValue": 97.0079844375,
+          "newValue": 96.7141748671875,
+          "oldFormula": "=E8+E9",
+          "newFormula": "=E8+E9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E8",
+            "'P\u0026L'!E9"
+          ],
+          "dependents": [
+            "'P\u0026L'!E11",
+            "'P\u0026L'!E12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.003
+        },
+        {
+          "coord": "F10",
+          "row": 10,
+          "col": 6,
+          "label": "EBT",
+          "classification": "computed",
+          "oldValue": 113.65773876,
+          "newValue": 114.077258510977,
+          "oldFormula": "=F8+F9",
+          "newFormula": "=F8+F9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F8",
+            "'P\u0026L'!F9"
+          ],
+          "dependents": [
+            "'P\u0026L'!F11",
+            "'P\u0026L'!F12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0037
+        },
+        {
+          "coord": "G10",
+          "row": 10,
+          "col": 7,
+          "label": "EBT",
+          "classification": "computed",
+          "oldValue": 131.566335991102,
+          "newValue": 132.542358585706,
+          "oldFormula": "=G8+G9",
+          "newFormula": "=G8+G9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G8",
+            "'P\u0026L'!G9"
+          ],
+          "dependents": [
+            "'P\u0026L'!G11",
+            "'P\u0026L'!G12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0074
+        },
+        {
+          "coord": "C11",
+          "row": 11,
+          "col": 3,
+          "label": "Less: Tax",
+          "classification": "computed",
+          "oldValue": -16.695,
+          "newValue": -16.114921875,
+          "oldFormula": "=-MAX(C10,0)*Assumptions!$B$18",
+          "newFormula": "=-MAX(C10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C10",
+            "Assumptions!B18"
+          ],
+          "dependents": [
+            "'P\u0026L'!C12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0347
+        },
+        {
+          "coord": "D11",
+          "row": 11,
+          "col": 4,
+          "label": "Less: Tax",
+          "classification": "computed",
+          "oldValue": -20.35951875,
+          "newValue": -20.060778515625,
+          "oldFormula": "=-MAX(D10,0)*Assumptions!$B$18",
+          "newFormula": "=-MAX(D10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D10",
+            "Assumptions!B18"
+          ],
+          "dependents": [
+            "'P\u0026L'!D12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0147
+        },
+        {
+          "coord": "E11",
+          "row": 11,
+          "col": 5,
+          "label": "Less: Tax",
+          "classification": "computed",
+          "oldValue": -24.251996109375,
+          "newValue": -24.1785437167969,
+          "oldFormula": "=-MAX(E10,0)*Assumptions!$B$18",
+          "newFormula": "=-MAX(E10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E10",
+            "Assumptions!B18"
+          ],
+          "dependents": [
+            "'P\u0026L'!E12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.003
+        },
+        {
+          "coord": "F11",
+          "row": 11,
+          "col": 6,
+          "label": "Less: Tax",
+          "classification": "computed",
+          "oldValue": -28.41443469,
+          "newValue": -28.5193146277441,
+          "oldFormula": "=-MAX(F10,0)*Assumptions!$B$18",
+          "newFormula": "=-MAX(F10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F10",
+            "Assumptions!B18"
+          ],
+          "dependents": [
+            "'P\u0026L'!F12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0037
+        },
+        {
+          "coord": "G11",
+          "row": 11,
+          "col": 7,
+          "label": "Less: Tax",
+          "classification": "computed",
+          "oldValue": -32.8915839977754,
+          "newValue": -33.1355896464265,
+          "oldFormula": "=-MAX(G10,0)*Assumptions!$B$18",
+          "newFormula": "=-MAX(G10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G10",
+            "Assumptions!B18"
+          ],
+          "dependents": [
+            "'P\u0026L'!G12"
+          ],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0074
+        },
+        {
+          "coord": "C12",
+          "row": 12,
+          "col": 3,
+          "label": "Net Income",
+          "classification": "computed",
+          "oldValue": 50.085,
+          "newValue": 48.344765625,
+          "oldFormula": "=C10+C11",
+          "newFormula": "=C10+C11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C10",
+            "'P\u0026L'!C11"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0347
+        },
+        {
+          "coord": "D12",
+          "row": 12,
+          "col": 4,
+          "label": "Net Income",
+          "classification": "computed",
+          "oldValue": 61.07855625,
+          "newValue": 60.182335546875,
+          "oldFormula": "=D10+D11",
+          "newFormula": "=D10+D11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D10",
+            "'P\u0026L'!D11"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0147
+        },
+        {
+          "coord": "E12",
+          "row": 12,
+          "col": 5,
+          "label": "Net Income",
+          "classification": "computed",
+          "oldValue": 72.755988328125,
+          "newValue": 72.5356311503906,
+          "oldFormula": "=E10+E11",
+          "newFormula": "=E10+E11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E10",
+            "'P\u0026L'!E11"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.003
+        },
+        {
+          "coord": "F12",
+          "row": 12,
+          "col": 6,
+          "label": "Net Income",
+          "classification": "computed",
+          "oldValue": 85.24330407,
+          "newValue": 85.5579438832324,
+          "oldFormula": "=F10+F11",
+          "newFormula": "=F10+F11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F10",
+            "'P\u0026L'!F11"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0037
+        },
+        {
+          "coord": "G12",
+          "row": 12,
+          "col": 7,
+          "label": "Net Income",
+          "classification": "computed",
+          "oldValue": 98.6747519933261,
+          "newValue": 99.4067689392795,
+          "oldFormula": "=G10+G11",
+          "newFormula": "=G10+G11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G10",
+            "'P\u0026L'!G11"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Assumptions!B16",
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0074
+        }
+      ],
+      "rowsInserted": [],
+      "rowsDeleted": []
+    },
+    {
+      "name": "Debt",
+      "changes": [
+        {
+          "coord": "C4",
+          "row": 4,
+          "col": 3,
+          "label": "Opening Debt",
+          "classification": "computed",
+          "oldValue": 445.5,
+          "newValue": 433.125,
+          "oldFormula": "=B5",
+          "newFormula": "=B5",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Debt!B5"
+          ],
+          "dependents": [
+            "'P\u0026L'!C9",
+            "Debt!C5"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0278
+        },
+        {
+          "coord": "D4",
+          "row": 4,
+          "col": 4,
+          "label": "Opening Debt",
+          "classification": "computed",
+          "oldValue": 400.95,
+          "newValue": 378.984375,
+          "oldFormula": "=C5",
+          "newFormula": "=C5",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Debt!C5"
+          ],
+          "dependents": [
+            "'P\u0026L'!D9",
+            "Debt!D5"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0548
+        },
+        {
+          "coord": "E4",
+          "row": 4,
+          "col": 5,
+          "label": "Opening Debt",
+          "classification": "computed",
+          "oldValue": 360.855,
+          "newValue": 331.611328125,
+          "oldFormula": "=D5",
+          "newFormula": "=D5",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Debt!D5"
+          ],
+          "dependents": [
+            "'P\u0026L'!E9",
+            "Debt!E5"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.081
+        },
+        {
+          "coord": "F4",
+          "row": 4,
+          "col": 6,
+          "label": "Opening Debt",
+          "classification": "computed",
+          "oldValue": 324.7695,
+          "newValue": 290.159912109375,
+          "oldFormula": "=E5",
+          "newFormula": "=E5",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Debt!E5"
+          ],
+          "dependents": [
+            "'P\u0026L'!F9",
+            "Debt!F5"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.1066
+        },
+        {
+          "coord": "G4",
+          "row": 4,
+          "col": 7,
+          "label": "Opening Debt",
+          "classification": "computed",
+          "oldValue": 292.29255,
+          "newValue": 253.889923095703,
+          "oldFormula": "=F5",
+          "newFormula": "=F5",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Debt!F5"
+          ],
+          "dependents": [
+            "'P\u0026L'!G9",
+            "Debt!G5"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.1314
+        },
+        {
+          "coord": "B5",
+          "row": 5,
+          "col": 2,
+          "label": "Closing Debt",
+          "classification": "computed",
+          "oldValue": 445.5,
+          "newValue": 433.125,
+          "oldFormula": "=B4*(1-Assumptions!$B$17)",
+          "newFormula": "=B4*(1-Assumptions!$B$17)",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B17",
+            "Debt!B4"
+          ],
+          "dependents": [
+            "Debt!C4"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0278
+        },
+        {
+          "coord": "C5",
+          "row": 5,
+          "col": 3,
+          "label": "Closing Debt",
+          "classification": "computed",
+          "oldValue": 400.95,
+          "newValue": 378.984375,
+          "oldFormula": "=C4*(1-Assumptions!$B$17)",
+          "newFormula": "=C4*(1-Assumptions!$B$17)",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B17",
+            "Debt!C4"
+          ],
+          "dependents": [
+            "Debt!D4"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.0548
+        },
+        {
+          "coord": "D5",
+          "row": 5,
+          "col": 4,
+          "label": "Closing Debt",
+          "classification": "computed",
+          "oldValue": 360.855,
+          "newValue": 331.611328125,
+          "oldFormula": "=D4*(1-Assumptions!$B$17)",
+          "newFormula": "=D4*(1-Assumptions!$B$17)",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B17",
+            "Debt!D4"
+          ],
+          "dependents": [
+            "Debt!E4"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.081
+        },
+        {
+          "coord": "E5",
+          "row": 5,
+          "col": 5,
+          "label": "Closing Debt",
+          "classification": "computed",
+          "oldValue": 324.7695,
+          "newValue": 290.159912109375,
+          "oldFormula": "=E4*(1-Assumptions!$B$17)",
+          "newFormula": "=E4*(1-Assumptions!$B$17)",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B17",
+            "Debt!E4"
+          ],
+          "dependents": [
+            "Debt!F4"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.1066
+        },
+        {
+          "coord": "F5",
+          "row": 5,
+          "col": 6,
+          "label": "Closing Debt",
+          "classification": "computed",
+          "oldValue": 292.29255,
+          "newValue": 253.889923095703,
+          "oldFormula": "=F4*(1-Assumptions!$B$17)",
+          "newFormula": "=F4*(1-Assumptions!$B$17)",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B17",
+            "Debt!F4"
+          ],
+          "dependents": [
+            "Debt!G4"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.1314
+        },
+        {
+          "coord": "G5",
+          "row": 5,
+          "col": 7,
+          "label": "Closing Debt",
+          "classification": "computed",
+          "oldValue": 263.063295,
+          "newValue": 222.15368270874,
+          "oldFormula": "=G4*(1-Assumptions!$B$17)",
+          "newFormula": "=G4*(1-Assumptions!$B$17)",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B17",
+            "Debt!G4"
+          ],
+          "dependents": [
+            "Returns!B10"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.1555
+        }
+      ],
+      "rowsInserted": [],
+      "rowsDeleted": []
+    },
+    {
+      "name": "Returns",
+      "changes": [
+        {
+          "coord": "B10",
+          "row": 10,
+          "col": 2,
+          "label": "Exit Net Debt",
+          "classification": "computed",
+          "oldValue": 263.063295,
+          "newValue": 222.15368270874,
+          "oldFormula": "=Debt!G5",
+          "newFormula": "=Debt!G5",
+          "displayFormat": "\\$#,##0",
+          "dependsOn": [
+            "Debt!G5"
+          ],
+          "dependents": [
+            "Returns!B11"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": -0.1555
+        },
+        {
+          "coord": "B11",
+          "row": 11,
+          "col": 2,
+          "label": "Exit Equity",
+          "classification": "computed",
+          "oldValue": 1679.15375162778,
+          "newValue": 1720.06336391904,
+          "oldFormula": "=B9-B10",
+          "newFormula": "=B9-B10",
+          "displayFormat": "\\$#,##0",
+          "dependsOn": [
+            "Returns!B10",
+            "Returns!B9"
+          ],
+          "dependents": [
+            "Returns!B13",
+            "Returns!B14"
+          ],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0244
+        },
+        {
+          "coord": "B13",
+          "row": 13,
+          "col": 2,
+          "label": "MOIC",
+          "classification": "computed",
+          "oldValue": 3.39222980126825,
+          "newValue": 3.47487548266474,
+          "oldFormula": "=B11/B6",
+          "newFormula": "=B11/B6",
+          "displayFormat": "0.00\\x",
+          "dependsOn": [
+            "Returns!B11",
+            "Returns!B6"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0244
+        },
+        {
+          "coord": "B14",
+          "row": 14,
+          "col": 2,
+          "label": "IRR",
+          "classification": "computed",
+          "oldValue": 0.276724090133886,
+          "newValue": 0.282885360830104,
+          "oldFormula": "=(B11/B6)^(1/Assumptions!B7)-1",
+          "newFormula": "=(B11/B6)^(1/Assumptions!B7)-1",
+          "displayFormat": "0.0%",
+          "dependsOn": [
+            "Assumptions!B7",
+            "Returns!B11",
+            "Returns!B6"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Assumptions!B17"
+          ],
+          "magnitude": 0.0223
+        }
+      ],
+      "rowsInserted": [],
+      "rowsDeleted": []
+    }
+  ],
+  "cascades": [
+    {
+      "origin": "Assumptions!B16",
+      "originLabel": "Interest Rate on Debt (%)",
+      "oldValue": 0.075,
+      "newValue": 0.0825,
+      "affectedCount": 20,
+      "affected": [
+        "'P\u0026L'!C10",
+        "'P\u0026L'!C11",
+        "'P\u0026L'!C12",
+        "'P\u0026L'!C9",
+        "'P\u0026L'!D10",
+        "'P\u0026L'!D11",
+        "'P\u0026L'!D12",
+        "'P\u0026L'!D9",
+        "'P\u0026L'!E10",
+        "'P\u0026L'!E11",
+        "'P\u0026L'!E12",
+        "'P\u0026L'!E9",
+        "'P\u0026L'!F10",
+        "'P\u0026L'!F11",
+        "'P\u0026L'!F12",
+        "'P\u0026L'!F9",
+        "'P\u0026L'!G10",
+        "'P\u0026L'!G11",
+        "'P\u0026L'!G12",
+        "'P\u0026L'!G9"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!C9",
+          "label": "Less: Interest",
+          "oldValue": -33.4125,
+          "newValue": -35.7328125,
+          "magnitude": -0.0694
+        },
+        {
+          "ref": "'P\u0026L'!G9",
+          "label": "Less: Interest",
+          "oldValue": -21.92194125,
+          "newValue": -20.9459186553955,
+          "magnitude": 0.0445
+        },
+        {
+          "ref": "'P\u0026L'!D9",
+          "label": "Less: Interest",
+          "oldValue": -30.07125,
+          "newValue": -31.2662109375,
+          "magnitude": -0.0397
+        },
+        {
+          "ref": "'P\u0026L'!C10",
+          "label": "EBT",
+          "oldValue": 66.78,
+          "newValue": 64.4596875,
+          "magnitude": -0.0347
+        },
+        {
+          "ref": "'P\u0026L'!C11",
+          "label": "Less: Tax",
+          "oldValue": -16.695,
+          "newValue": -16.114921875,
+          "magnitude": 0.0347
+        },
+        {
+          "ref": "'P\u0026L'!C12",
+          "label": "Net Income",
+          "oldValue": 50.085,
+          "newValue": 48.344765625,
+          "magnitude": -0.0347
+        },
+        {
+          "ref": "'P\u0026L'!F9",
+          "label": "Less: Interest",
+          "oldValue": -24.3577125,
+          "newValue": -23.9381927490234,
+          "magnitude": 0.0172
+        },
+        {
+          "ref": "'P\u0026L'!D10",
+          "label": "EBT",
+          "oldValue": 81.438075,
+          "newValue": 80.2431140625,
+          "magnitude": -0.0147
+        },
+        {
+          "ref": "'P\u0026L'!D11",
+          "label": "Less: Tax",
+          "oldValue": -20.35951875,
+          "newValue": -20.060778515625,
+          "magnitude": 0.0147
+        },
+        {
+          "ref": "'P\u0026L'!D12",
+          "label": "Net Income",
+          "oldValue": 61.07855625,
+          "newValue": 60.182335546875,
+          "magnitude": -0.0147
+        }
+      ]
+    },
+    {
+      "origin": "Assumptions!B17",
+      "originLabel": "Mandatory Debt Paydown (% p.a.)",
+      "oldValue": 0.1,
+      "newValue": 0.125,
+      "affectedCount": 35,
+      "affected": [
+        "'P\u0026L'!C10",
+        "'P\u0026L'!C11",
+        "'P\u0026L'!C12",
+        "'P\u0026L'!C9",
+        "'P\u0026L'!D10",
+        "'P\u0026L'!D11",
+        "'P\u0026L'!D12",
+        "'P\u0026L'!D9",
+        "'P\u0026L'!E10",
+        "'P\u0026L'!E11",
+        "'P\u0026L'!E12",
+        "'P\u0026L'!E9",
+        "'P\u0026L'!F10",
+        "'P\u0026L'!F11",
+        "'P\u0026L'!F12",
+        "'P\u0026L'!F9",
+        "'P\u0026L'!G10",
+        "'P\u0026L'!G11",
+        "'P\u0026L'!G12",
+        "'P\u0026L'!G9",
+        "Debt!B5",
+        "Debt!C4",
+        "Debt!C5",
+        "Debt!D4",
+        "Debt!D5",
+        "Debt!E4",
+        "Debt!E5",
+        "Debt!F4",
+        "Debt!F5",
+        "Debt!G4",
+        "Debt!G5",
+        "Returns!B10",
+        "Returns!B11",
+        "Returns!B13",
+        "Returns!B14"
+      ],
+      "topMovers": [
+        {
+          "ref": "Debt!G5",
+          "label": "Closing Debt",
+          "oldValue": 263.063295,
+          "newValue": 222.15368270874,
+          "magnitude": -0.1555
+        },
+        {
+          "ref": "Returns!B10",
+          "label": "Exit Net Debt",
+          "oldValue": 263.063295,
+          "newValue": 222.15368270874,
+          "magnitude": -0.1555
+        },
+        {
+          "ref": "Debt!F5",
+          "label": "Closing Debt",
+          "oldValue": 292.29255,
+          "newValue": 253.889923095703,
+          "magnitude": -0.1314
+        },
+        {
+          "ref": "Debt!G4",
+          "label": "Opening Debt",
+          "oldValue": 292.29255,
+          "newValue": 253.889923095703,
+          "magnitude": -0.1314
+        },
+        {
+          "ref": "Debt!E5",
+          "label": "Closing Debt",
+          "oldValue": 324.7695,
+          "newValue": 290.159912109375,
+          "magnitude": -0.1066
+        },
+        {
+          "ref": "Debt!F4",
+          "label": "Opening Debt",
+          "oldValue": 324.7695,
+          "newValue": 290.159912109375,
+          "magnitude": -0.1066
+        },
+        {
+          "ref": "Debt!D5",
+          "label": "Closing Debt",
+          "oldValue": 360.855,
+          "newValue": 331.611328125,
+          "magnitude": -0.081
+        },
+        {
+          "ref": "Debt!E4",
+          "label": "Opening Debt",
+          "oldValue": 360.855,
+          "newValue": 331.611328125,
+          "magnitude": -0.081
+        },
+        {
+          "ref": "'P\u0026L'!C9",
+          "label": "Less: Interest",
+          "oldValue": -33.4125,
+          "newValue": -35.7328125,
+          "magnitude": -0.0694
+        },
+        {
+          "ref": "Debt!C5",
+          "label": "Closing Debt",
+          "oldValue": 400.95,
+          "newValue": 378.984375,
+          "magnitude": -0.0548
+        }
+      ]
+    }
+  ],
+  "anomalies": []
+}

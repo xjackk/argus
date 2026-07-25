@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "from": {
+    "label": "atlas_c06_exit_multiple.xlsx",
+    "path": "/Users/emo/Downloads/argus-files/test-workbooks/atlas_c06_exit_multiple.xlsx",
+    "committedAt": "",
+    "author": ""
+  },
+  "to": {
+    "label": "atlas_c07_hardcode_flag.xlsx",
+    "path": "/Users/emo/Downloads/argus-files/test-workbooks/atlas_c07_hardcode_flag.xlsx",
+    "committedAt": "",
+    "author": ""
+  },
+  "summary": {
+    "authoredCount": 1,
+    "computedCount": 3,
+    "sheetsAffected": [
+      "Returns"
+    ],
+    "narrative": "Exit EV was raised from $1,757 to $2,100. That flowed through to Exit Equity, which rose from $1,535 to $1,878, lifting MOIC from 3.10x to 3.79x and IRR from 25.4% to 30.6%."
+  },
+  "sheets": [
+    {
+      "name": "Returns",
+      "changes": [
+        {
+          "coord": "B9",
+          "row": 9,
+          "col": 2,
+          "label": "Exit EV",
+          "classification": "authored",
+          "oldValue": 1757.243994568,
+          "newValue": 2100,
+          "oldFormula": "=Assumptions!B5*B8",
+          "newFormula": null,
+          "displayFormat": "\\$#,##0",
+          "dependsOn": [],
+          "dependents": [
+            "Returns!B11"
+          ],
+          "causedBy": [],
+          "magnitude": 0.1951
+        },
+        {
+          "coord": "B11",
+          "row": 11,
+          "col": 2,
+          "label": "Exit Equity",
+          "classification": "computed",
+          "oldValue": 1535.09031185926,
+          "newValue": 1877.84631729126,
+          "oldFormula": "=B9-B10",
+          "newFormula": "=B9-B10",
+          "displayFormat": "\\$#,##0",
+          "dependsOn": [
+            "Returns!B10",
+            "Returns!B9"
+          ],
+          "dependents": [
+            "Returns!B13",
+            "Returns!B14"
+          ],
+          "causedBy": [
+            "Returns!B9"
+          ],
+          "magnitude": 0.2233
+        },
+        {
+          "coord": "B13",
+          "row": 13,
+          "col": 2,
+          "label": "MOIC",
+          "classification": "computed",
+          "oldValue": 3.10119254921062,
+          "newValue": 3.79362892382073,
+          "oldFormula": "=B11/B6",
+          "newFormula": "=B11/B6",
+          "displayFormat": "0.00\\x",
+          "dependsOn": [
+            "Returns!B11",
+            "Returns!B6"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Returns!B9"
+          ],
+          "magnitude": 0.2233
+        },
+        {
+          "coord": "B14",
+          "row": 14,
+          "col": 2,
+          "label": "IRR",
+          "classification": "computed",
+          "oldValue": 0.254023705778798,
+          "newValue": 0.305602489659952,
+          "oldFormula": "=(B11/B6)^(1/Assumptions!B7)-1",
+          "newFormula": "=(B11/B6)^(1/Assumptions!B7)-1",
+          "displayFormat": "0.0%",
+          "dependsOn": [
+            "Assumptions!B7",
+            "Returns!B11",
+            "Returns!B6"
+          ],
+          "dependents": [],
+          "causedBy": [
+            "Returns!B9"
+          ],
+          "magnitude": 0.203
+        }
+      ],
+      "rowsInserted": [],
+      "rowsDeleted": []
+    }
+  ],
+  "cascades": [
+    {
+      "origin": "Returns!B9",
+      "originLabel": "Exit EV",
+      "oldValue": 1757.243994568,
+      "newValue": 2100,
+      "affectedCount": 3,
+      "affected": [
+        "Returns!B11",
+        "Returns!B13",
+        "Returns!B14"
+      ],
+      "topMovers": [
+        {
+          "ref": "Returns!B11",
+          "label": "Exit Equity",
+          "oldValue": 1535.09031185926,
+          "newValue": 1877.84631729126,
+          "magnitude": 0.2233
+        },
+        {
+          "ref": "Returns!B13",
+          "label": "MOIC",
+          "oldValue": 3.10119254921062,
+          "newValue": 3.79362892382073,
+          "magnitude": 0.2233
+        },
+        {
+          "ref": "Returns!B14",
+          "label": "IRR",
+          "oldValue": 0.254023705778798,
+          "newValue": 0.305602489659952,
+          "magnitude": 0.203
+        }
+      ]
+    }
+  ],
+  "anomalies": [
+    {
+      "type": "formula_replaced_by_constant",
+      "ref": "Returns!B9",
+      "label": "Exit EV",
+      "severity": "high",
+      "message": "Formula '=Assumptions!B5*B8' was replaced with the hardcoded value 2100.",
+      "oldFormula": "=Assumptions!B5*B8",
+      "newValue": 2100
+    }
+  ]
+}

@@ -22,6 +22,17 @@ export interface CommitRow {
 
 export const COMMIT_HISTORY: CommitRow[] = [
   {
+    id: "c07",
+    author: "M. Rivera",
+    message: "Manual Exit EV override pending diligence",
+    description:
+      "Hardcoded Exit EV to 2,100 while we confirm the comp set. Will re-link to the formula before IC.",
+    when: "20m ago",
+    authoredCount: 1,
+    computedCount: 3,
+    anomaly: true,
+  },
+  {
     id: "c06",
     author: "S. Patel (VP)",
     message: "Marked exit multiple down to 9.5x per comp set",

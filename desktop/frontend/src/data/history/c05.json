@@ -1,0 +1,1764 @@
+{
+  "schemaVersion": 1,
+  "from": {
+    "label": "atlas_c04_debt_repricing.xlsx",
+    "path": "/Users/emo/Downloads/argus-files/test-workbooks/atlas_c04_debt_repricing.xlsx",
+    "committedAt": "",
+    "author": ""
+  },
+  "to": {
+    "label": "atlas_c05_add_sbc_line.xlsx",
+    "path": "/Users/emo/Downloads/argus-files/test-workbooks/atlas_c05_add_sbc_line.xlsx",
+    "committedAt": "",
+    "author": ""
+  },
+  "summary": {
+    "authoredCount": 49,
+    "computedCount": 0,
+    "sheetsAffected": [
+      "P\u0026L"
+    ],
+    "narrative": null
+  },
+  "sheets": [
+    {
+      "name": "P\u0026L",
+      "changes": [
+        {
+          "coord": "A7",
+          "row": 7,
+          "col": 1,
+          "label": "Less: Stock-Based Comp",
+          "classification": "authored",
+          "oldValue": "Less: D\u0026A (4% rev)",
+          "newValue": "Less: Stock-Based Comp",
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "General",
+          "dependsOn": [],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "B7",
+          "row": 7,
+          "col": 2,
+          "label": "Less: Stock-Based Comp",
+          "classification": "authored",
+          "oldValue": -20,
+          "newValue": -7.5,
+          "oldFormula": "=-B4*0.04",
+          "newFormula": "=-B4*0.015",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!B4"
+          ],
+          "dependents": [
+            "'P\u0026L'!B9"
+          ],
+          "causedBy": [],
+          "magnitude": 0.625
+        },
+        {
+          "coord": "C7",
+          "row": 7,
+          "col": 3,
+          "label": "Less: Stock-Based Comp",
+          "classification": "authored",
+          "oldValue": -21.9,
+          "newValue": -8.2125,
+          "oldFormula": "=-C4*0.04",
+          "newFormula": "=-C4*0.015",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C4"
+          ],
+          "dependents": [
+            "'P\u0026L'!C9"
+          ],
+          "causedBy": [],
+          "magnitude": 0.625
+        },
+        {
+          "coord": "D7",
+          "row": 7,
+          "col": 4,
+          "label": "Less: Stock-Based Comp",
+          "classification": "authored",
+          "oldValue": -23.9805,
+          "newValue": -8.9926875,
+          "oldFormula": "=-D4*0.04",
+          "newFormula": "=-D4*0.015",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D4"
+          ],
+          "dependents": [
+            "'P\u0026L'!D9"
+          ],
+          "causedBy": [],
+          "magnitude": 0.625
+        },
+        {
+          "coord": "E7",
+          "row": 7,
+          "col": 5,
+          "label": "Less: Stock-Based Comp",
+          "classification": "authored",
+          "oldValue": -26.2586475,
+          "newValue": -9.8469928125,
+          "oldFormula": "=-E4*0.04",
+          "newFormula": "=-E4*0.015",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E4"
+          ],
+          "dependents": [
+            "'P\u0026L'!E9"
+          ],
+          "causedBy": [],
+          "magnitude": 0.625
+        },
+        {
+          "coord": "F7",
+          "row": 7,
+          "col": 6,
+          "label": "Less: Stock-Based Comp",
+          "classification": "authored",
+          "oldValue": -28.7532190125,
+          "newValue": -10.7824571296875,
+          "oldFormula": "=-F4*0.04",
+          "newFormula": "=-F4*0.015",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F4"
+          ],
+          "dependents": [
+            "'P\u0026L'!F9"
+          ],
+          "causedBy": [],
+          "magnitude": 0.625
+        },
+        {
+          "coord": "G7",
+          "row": 7,
+          "col": 7,
+          "label": "Less: Stock-Based Comp",
+          "classification": "authored",
+          "oldValue": -31.4847748186875,
+          "newValue": -11.8067905570078,
+          "oldFormula": "=-G4*0.04",
+          "newFormula": "=-G4*0.015",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G4"
+          ],
+          "dependents": [
+            "'P\u0026L'!G9"
+          ],
+          "causedBy": [],
+          "magnitude": 0.625
+        },
+        {
+          "coord": "A8",
+          "row": 8,
+          "col": 1,
+          "label": "Less: D\u0026A (4% rev)",
+          "classification": "authored",
+          "oldValue": "EBIT",
+          "newValue": "Less: D\u0026A (4% rev)",
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "General",
+          "dependsOn": [],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "B8",
+          "row": 8,
+          "col": 2,
+          "label": "Less: D\u0026A (4% rev)",
+          "classification": "authored",
+          "oldValue": 90,
+          "newValue": -20,
+          "oldFormula": "=B6+B7",
+          "newFormula": "=-B4*0.04",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!B4"
+          ],
+          "dependents": [
+            "'P\u0026L'!B11"
+          ],
+          "causedBy": [],
+          "magnitude": -1.2222
+        },
+        {
+          "coord": "C8",
+          "row": 8,
+          "col": 3,
+          "label": "Less: D\u0026A (4% rev)",
+          "classification": "authored",
+          "oldValue": 100.1925,
+          "newValue": -21.9,
+          "oldFormula": "=C6+C7",
+          "newFormula": "=-C4*0.04",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C4"
+          ],
+          "dependents": [
+            "'P\u0026L'!C11"
+          ],
+          "causedBy": [],
+          "magnitude": -1.2186
+        },
+        {
+          "coord": "D8",
+          "row": 8,
+          "col": 4,
+          "label": "Less: D\u0026A (4% rev)",
+          "classification": "authored",
+          "oldValue": 111.509325,
+          "newValue": -23.9805,
+          "oldFormula": "=D6+D7",
+          "newFormula": "=-D4*0.04",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D4"
+          ],
+          "dependents": [
+            "'P\u0026L'!D11"
+          ],
+          "causedBy": [],
+          "magnitude": -1.2151
+        },
+        {
+          "coord": "E8",
+          "row": 8,
+          "col": 5,
+          "label": "Less: D\u0026A (4% rev)",
+          "classification": "authored",
+          "oldValue": 124.0721094375,
+          "newValue": -26.2586475,
+          "oldFormula": "=E6+E7",
+          "newFormula": "=-E4*0.04",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E4"
+          ],
+          "dependents": [
+            "'P\u0026L'!E11"
+          ],
+          "causedBy": [],
+          "magnitude": -1.2116
+        },
+        {
+          "coord": "F8",
+          "row": 8,
+          "col": 6,
+          "label": "Less: D\u0026A (4% rev)",
+          "classification": "authored",
+          "oldValue": 138.01545126,
+          "newValue": -28.7532190125,
+          "oldFormula": "=F6+F7",
+          "newFormula": "=-F4*0.04",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F4"
+          ],
+          "dependents": [
+            "'P\u0026L'!F11"
+          ],
+          "causedBy": [],
+          "magnitude": -1.2083
+        },
+        {
+          "coord": "G8",
+          "row": 8,
+          "col": 7,
+          "label": "Less: D\u0026A (4% rev)",
+          "classification": "authored",
+          "oldValue": 153.488277241102,
+          "newValue": -31.4847748186875,
+          "oldFormula": "=G6+G7",
+          "newFormula": "=-G4*0.04",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G4"
+          ],
+          "dependents": [
+            "'P\u0026L'!G11"
+          ],
+          "causedBy": [],
+          "magnitude": -1.2051
+        },
+        {
+          "coord": "A9",
+          "row": 9,
+          "col": 1,
+          "label": "EBIT",
+          "classification": "authored",
+          "oldValue": "Less: Interest",
+          "newValue": "EBIT",
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "General",
+          "dependsOn": [],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "B9",
+          "row": 9,
+          "col": 2,
+          "label": "EBIT",
+          "classification": "authored",
+          "oldValue": 0,
+          "newValue": 102.5,
+          "oldFormula": null,
+          "newFormula": "=B6+B7",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!B6",
+            "'P\u0026L'!B7"
+          ],
+          "dependents": [
+            "'P\u0026L'!B11"
+          ],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "C9",
+          "row": 9,
+          "col": 3,
+          "label": "EBIT",
+          "classification": "authored",
+          "oldValue": -35.7328125,
+          "newValue": 113.88,
+          "oldFormula": "=-Debt!C4*Assumptions!$B$16",
+          "newFormula": "=C6+C7",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C6",
+            "'P\u0026L'!C7"
+          ],
+          "dependents": [
+            "'P\u0026L'!C11"
+          ],
+          "causedBy": [],
+          "magnitude": 4.187
+        },
+        {
+          "coord": "D9",
+          "row": 9,
+          "col": 4,
+          "label": "EBIT",
+          "classification": "authored",
+          "oldValue": -31.2662109375,
+          "newValue": 126.4971375,
+          "oldFormula": "=-Debt!D4*Assumptions!$B$16",
+          "newFormula": "=D6+D7",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D6",
+            "'P\u0026L'!D7"
+          ],
+          "dependents": [
+            "'P\u0026L'!D11"
+          ],
+          "causedBy": [],
+          "magnitude": 5.0458
+        },
+        {
+          "coord": "E9",
+          "row": 9,
+          "col": 5,
+          "label": "EBIT",
+          "classification": "authored",
+          "oldValue": -27.3579345703125,
+          "newValue": 140.483764125,
+          "oldFormula": "=-Debt!E4*Assumptions!$B$16",
+          "newFormula": "=E6+E7",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E6",
+            "'P\u0026L'!E7"
+          ],
+          "dependents": [
+            "'P\u0026L'!E11"
+          ],
+          "causedBy": [],
+          "magnitude": 6.135
+        },
+        {
+          "coord": "F9",
+          "row": 9,
+          "col": 6,
+          "label": "EBIT",
+          "classification": "authored",
+          "oldValue": -23.9381927490234,
+          "newValue": 155.986213142812,
+          "oldFormula": "=-Debt!F4*Assumptions!$B$16",
+          "newFormula": "=F6+F7",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F6",
+            "'P\u0026L'!F7"
+          ],
+          "dependents": [
+            "'P\u0026L'!F11"
+          ],
+          "causedBy": [],
+          "magnitude": 7.5162
+        },
+        {
+          "coord": "G9",
+          "row": 9,
+          "col": 7,
+          "label": "EBIT",
+          "classification": "authored",
+          "oldValue": -20.9459186553955,
+          "newValue": 173.166261502781,
+          "oldFormula": "=-Debt!G4*Assumptions!$B$16",
+          "newFormula": "=G6+G7",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G6",
+            "'P\u0026L'!G7"
+          ],
+          "dependents": [
+            "'P\u0026L'!G11"
+          ],
+          "causedBy": [],
+          "magnitude": 9.2673
+        },
+        {
+          "coord": "A10",
+          "row": 10,
+          "col": 1,
+          "label": "Less: Interest",
+          "classification": "authored",
+          "oldValue": "EBT",
+          "newValue": "Less: Interest",
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "General",
+          "dependsOn": [],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "B10",
+          "row": 10,
+          "col": 2,
+          "label": "Less: Interest",
+          "classification": "authored",
+          "oldValue": 90,
+          "newValue": 0,
+          "oldFormula": "=B8+B9",
+          "newFormula": null,
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [],
+          "dependents": [
+            "'P\u0026L'!B12",
+            "'P\u0026L'!B13"
+          ],
+          "causedBy": [],
+          "magnitude": -1
+        },
+        {
+          "coord": "C10",
+          "row": 10,
+          "col": 3,
+          "label": "Less: Interest",
+          "classification": "authored",
+          "oldValue": 64.4596875,
+          "newValue": -35.7328125,
+          "oldFormula": "=C8+C9",
+          "newFormula": "=-Debt!C4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!C4"
+          ],
+          "dependents": [
+            "'P\u0026L'!C12",
+            "'P\u0026L'!C13"
+          ],
+          "causedBy": [],
+          "magnitude": -1.5543
+        },
+        {
+          "coord": "D10",
+          "row": 10,
+          "col": 4,
+          "label": "Less: Interest",
+          "classification": "authored",
+          "oldValue": 80.2431140625,
+          "newValue": -31.2662109375,
+          "oldFormula": "=D8+D9",
+          "newFormula": "=-Debt!D4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!D4"
+          ],
+          "dependents": [
+            "'P\u0026L'!D12",
+            "'P\u0026L'!D13"
+          ],
+          "causedBy": [],
+          "magnitude": -1.3896
+        },
+        {
+          "coord": "E10",
+          "row": 10,
+          "col": 5,
+          "label": "Less: Interest",
+          "classification": "authored",
+          "oldValue": 96.7141748671875,
+          "newValue": -27.3579345703125,
+          "oldFormula": "=E8+E9",
+          "newFormula": "=-Debt!E4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!E4"
+          ],
+          "dependents": [
+            "'P\u0026L'!E12",
+            "'P\u0026L'!E13"
+          ],
+          "causedBy": [],
+          "magnitude": -1.2829
+        },
+        {
+          "coord": "F10",
+          "row": 10,
+          "col": 6,
+          "label": "Less: Interest",
+          "classification": "authored",
+          "oldValue": 114.077258510977,
+          "newValue": -23.9381927490234,
+          "oldFormula": "=F8+F9",
+          "newFormula": "=-Debt!F4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!F4"
+          ],
+          "dependents": [
+            "'P\u0026L'!F12",
+            "'P\u0026L'!F13"
+          ],
+          "causedBy": [],
+          "magnitude": -1.2098
+        },
+        {
+          "coord": "G10",
+          "row": 10,
+          "col": 7,
+          "label": "Less: Interest",
+          "classification": "authored",
+          "oldValue": 132.542358585706,
+          "newValue": -20.9459186553955,
+          "oldFormula": "=G8+G9",
+          "newFormula": "=-Debt!G4*Assumptions!$B$16",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "Assumptions!B16",
+            "Debt!G4"
+          ],
+          "dependents": [
+            "'P\u0026L'!G12",
+            "'P\u0026L'!G13"
+          ],
+          "causedBy": [],
+          "magnitude": -1.158
+        },
+        {
+          "coord": "A11",
+          "row": 11,
+          "col": 1,
+          "label": "EBT",
+          "classification": "authored",
+          "oldValue": "Less: Tax",
+          "newValue": "EBT",
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "General",
+          "dependsOn": [],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "B11",
+          "row": 11,
+          "col": 2,
+          "label": "EBT",
+          "classification": "authored",
+          "oldValue": -22.5,
+          "newValue": 82.5,
+          "oldFormula": "=-MAX(B10,0)*Assumptions!$B$18",
+          "newFormula": "=B8+B9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!B8",
+            "'P\u0026L'!B9"
+          ],
+          "dependents": [
+            "'P\u0026L'!B13"
+          ],
+          "causedBy": [],
+          "magnitude": 4.6667
+        },
+        {
+          "coord": "C11",
+          "row": 11,
+          "col": 3,
+          "label": "EBT",
+          "classification": "authored",
+          "oldValue": -16.114921875,
+          "newValue": 91.98,
+          "oldFormula": "=-MAX(C10,0)*Assumptions!$B$18",
+          "newFormula": "=C8+C9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C8",
+            "'P\u0026L'!C9"
+          ],
+          "dependents": [
+            "'P\u0026L'!C13"
+          ],
+          "causedBy": [],
+          "magnitude": 6.7078
+        },
+        {
+          "coord": "D11",
+          "row": 11,
+          "col": 4,
+          "label": "EBT",
+          "classification": "authored",
+          "oldValue": -20.060778515625,
+          "newValue": 102.5166375,
+          "oldFormula": "=-MAX(D10,0)*Assumptions!$B$18",
+          "newFormula": "=D8+D9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D8",
+            "'P\u0026L'!D9"
+          ],
+          "dependents": [
+            "'P\u0026L'!D13"
+          ],
+          "causedBy": [],
+          "magnitude": 6.1103
+        },
+        {
+          "coord": "E11",
+          "row": 11,
+          "col": 5,
+          "label": "EBT",
+          "classification": "authored",
+          "oldValue": -24.1785437167969,
+          "newValue": 114.225116625,
+          "oldFormula": "=-MAX(E10,0)*Assumptions!$B$18",
+          "newFormula": "=E8+E9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E8",
+            "'P\u0026L'!E9"
+          ],
+          "dependents": [
+            "'P\u0026L'!E13"
+          ],
+          "causedBy": [],
+          "magnitude": 5.7242
+        },
+        {
+          "coord": "F11",
+          "row": 11,
+          "col": 6,
+          "label": "EBT",
+          "classification": "authored",
+          "oldValue": -28.5193146277441,
+          "newValue": 127.232994130312,
+          "oldFormula": "=-MAX(F10,0)*Assumptions!$B$18",
+          "newFormula": "=F8+F9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F8",
+            "'P\u0026L'!F9"
+          ],
+          "dependents": [
+            "'P\u0026L'!F13"
+          ],
+          "causedBy": [],
+          "magnitude": 5.4613
+        },
+        {
+          "coord": "G11",
+          "row": 11,
+          "col": 7,
+          "label": "EBT",
+          "classification": "authored",
+          "oldValue": -33.1355896464265,
+          "newValue": 141.681486684094,
+          "oldFormula": "=-MAX(G10,0)*Assumptions!$B$18",
+          "newFormula": "=G8+G9",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G8",
+            "'P\u0026L'!G9"
+          ],
+          "dependents": [
+            "'P\u0026L'!G13"
+          ],
+          "causedBy": [],
+          "magnitude": 5.2758
+        },
+        {
+          "coord": "A12",
+          "row": 12,
+          "col": 1,
+          "label": "Less: Tax",
+          "classification": "authored",
+          "oldValue": "Net Income",
+          "newValue": "Less: Tax",
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "General",
+          "dependsOn": [],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "B12",
+          "row": 12,
+          "col": 2,
+          "label": "Less: Tax",
+          "classification": "authored",
+          "oldValue": 67.5,
+          "newValue": -0,
+          "oldFormula": "=B10+B11",
+          "newFormula": "=-MAX(B10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!B10",
+            "Assumptions!B18"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": -1
+        },
+        {
+          "coord": "C12",
+          "row": 12,
+          "col": 3,
+          "label": "Less: Tax",
+          "classification": "authored",
+          "oldValue": 48.344765625,
+          "newValue": -0,
+          "oldFormula": "=C10+C11",
+          "newFormula": "=-MAX(C10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C10",
+            "Assumptions!B18"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": -1
+        },
+        {
+          "coord": "D12",
+          "row": 12,
+          "col": 4,
+          "label": "Less: Tax",
+          "classification": "authored",
+          "oldValue": 60.182335546875,
+          "newValue": -0,
+          "oldFormula": "=D10+D11",
+          "newFormula": "=-MAX(D10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D10",
+            "Assumptions!B18"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": -1
+        },
+        {
+          "coord": "E12",
+          "row": 12,
+          "col": 5,
+          "label": "Less: Tax",
+          "classification": "authored",
+          "oldValue": 72.5356311503906,
+          "newValue": -0,
+          "oldFormula": "=E10+E11",
+          "newFormula": "=-MAX(E10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E10",
+            "Assumptions!B18"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": -1
+        },
+        {
+          "coord": "F12",
+          "row": 12,
+          "col": 6,
+          "label": "Less: Tax",
+          "classification": "authored",
+          "oldValue": 85.5579438832324,
+          "newValue": -0,
+          "oldFormula": "=F10+F11",
+          "newFormula": "=-MAX(F10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F10",
+            "Assumptions!B18"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": -1
+        },
+        {
+          "coord": "G12",
+          "row": 12,
+          "col": 7,
+          "label": "Less: Tax",
+          "classification": "authored",
+          "oldValue": 99.4067689392795,
+          "newValue": -0,
+          "oldFormula": "=G10+G11",
+          "newFormula": "=-MAX(G10,0)*Assumptions!$B$18",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G10",
+            "Assumptions!B18"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": -1
+        },
+        {
+          "coord": "A13",
+          "row": 13,
+          "col": 1,
+          "label": "Net Income",
+          "classification": "authored",
+          "oldValue": null,
+          "newValue": "Net Income",
+          "oldFormula": null,
+          "newFormula": null,
+          "displayFormat": "General",
+          "dependsOn": [],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "B13",
+          "row": 13,
+          "col": 2,
+          "label": "Net Income",
+          "classification": "authored",
+          "oldValue": null,
+          "newValue": 82.5,
+          "oldFormula": null,
+          "newFormula": "=B10+B11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!B10",
+            "'P\u0026L'!B11"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "C13",
+          "row": 13,
+          "col": 3,
+          "label": "Net Income",
+          "classification": "authored",
+          "oldValue": null,
+          "newValue": 56.2471875,
+          "oldFormula": null,
+          "newFormula": "=C10+C11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!C10",
+            "'P\u0026L'!C11"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "D13",
+          "row": 13,
+          "col": 4,
+          "label": "Net Income",
+          "classification": "authored",
+          "oldValue": null,
+          "newValue": 71.2504265625,
+          "oldFormula": null,
+          "newFormula": "=D10+D11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!D10",
+            "'P\u0026L'!D11"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "E13",
+          "row": 13,
+          "col": 5,
+          "label": "Net Income",
+          "classification": "authored",
+          "oldValue": null,
+          "newValue": 86.8671820546875,
+          "oldFormula": null,
+          "newFormula": "=E10+E11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!E10",
+            "'P\u0026L'!E11"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "F13",
+          "row": 13,
+          "col": 6,
+          "label": "Net Income",
+          "classification": "authored",
+          "oldValue": null,
+          "newValue": 103.294801381289,
+          "oldFormula": null,
+          "newFormula": "=F10+F11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!F10",
+            "'P\u0026L'!F11"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        },
+        {
+          "coord": "G13",
+          "row": 13,
+          "col": 7,
+          "label": "Net Income",
+          "classification": "authored",
+          "oldValue": null,
+          "newValue": 120.735568028698,
+          "oldFormula": null,
+          "newFormula": "=G10+G11",
+          "displayFormat": "\\$#,##0;\"($\"#,##0\\);\\-",
+          "dependsOn": [
+            "'P\u0026L'!G10",
+            "'P\u0026L'!G11"
+          ],
+          "dependents": [],
+          "causedBy": [],
+          "magnitude": null
+        }
+      ],
+      "rowsInserted": [],
+      "rowsDeleted": []
+    }
+  ],
+  "cascades": [
+    {
+      "origin": "'P\u0026L'!A10",
+      "originLabel": "Less: Interest",
+      "oldValue": "EBT",
+      "newValue": "Less: Interest",
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!A11",
+      "originLabel": "EBT",
+      "oldValue": "Less: Tax",
+      "newValue": "EBT",
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!A12",
+      "originLabel": "Less: Tax",
+      "oldValue": "Net Income",
+      "newValue": "Less: Tax",
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!A13",
+      "originLabel": "Net Income",
+      "oldValue": null,
+      "newValue": "Net Income",
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!A7",
+      "originLabel": "Less: Stock-Based Comp",
+      "oldValue": "Less: D\u0026A (4% rev)",
+      "newValue": "Less: Stock-Based Comp",
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!A8",
+      "originLabel": "Less: D\u0026A (4% rev)",
+      "oldValue": "EBIT",
+      "newValue": "Less: D\u0026A (4% rev)",
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!A9",
+      "originLabel": "EBIT",
+      "oldValue": "Less: Interest",
+      "newValue": "EBIT",
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!B10",
+      "originLabel": "Less: Interest",
+      "oldValue": 90,
+      "newValue": 0,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!B12",
+        "'P\u0026L'!B13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!B12",
+          "label": "Less: Tax",
+          "oldValue": 67.5,
+          "newValue": -0,
+          "magnitude": -1
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!B11",
+      "originLabel": "EBT",
+      "oldValue": -22.5,
+      "newValue": 82.5,
+      "affectedCount": 1,
+      "affected": [
+        "'P\u0026L'!B13"
+      ],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!B12",
+      "originLabel": "Less: Tax",
+      "oldValue": 67.5,
+      "newValue": -0,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!B13",
+      "originLabel": "Net Income",
+      "oldValue": null,
+      "newValue": 82.5,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!B7",
+      "originLabel": "Less: Stock-Based Comp",
+      "oldValue": -20,
+      "newValue": -7.5,
+      "affectedCount": 3,
+      "affected": [
+        "'P\u0026L'!B11",
+        "'P\u0026L'!B13",
+        "'P\u0026L'!B9"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!B11",
+          "label": "EBT",
+          "oldValue": -22.5,
+          "newValue": 82.5,
+          "magnitude": 4.6667
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!B8",
+      "originLabel": "Less: D\u0026A (4% rev)",
+      "oldValue": 90,
+      "newValue": -20,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!B11",
+        "'P\u0026L'!B13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!B11",
+          "label": "EBT",
+          "oldValue": -22.5,
+          "newValue": 82.5,
+          "magnitude": 4.6667
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!B9",
+      "originLabel": "EBIT",
+      "oldValue": 0,
+      "newValue": 102.5,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!B11",
+        "'P\u0026L'!B13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!B11",
+          "label": "EBT",
+          "oldValue": -22.5,
+          "newValue": 82.5,
+          "magnitude": 4.6667
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!C10",
+      "originLabel": "Less: Interest",
+      "oldValue": 64.4596875,
+      "newValue": -35.7328125,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!C12",
+        "'P\u0026L'!C13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!C12",
+          "label": "Less: Tax",
+          "oldValue": 48.344765625,
+          "newValue": -0,
+          "magnitude": -1
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!C11",
+      "originLabel": "EBT",
+      "oldValue": -16.114921875,
+      "newValue": 91.98,
+      "affectedCount": 1,
+      "affected": [
+        "'P\u0026L'!C13"
+      ],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!C12",
+      "originLabel": "Less: Tax",
+      "oldValue": 48.344765625,
+      "newValue": -0,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!C13",
+      "originLabel": "Net Income",
+      "oldValue": null,
+      "newValue": 56.2471875,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!C7",
+      "originLabel": "Less: Stock-Based Comp",
+      "oldValue": -21.9,
+      "newValue": -8.2125,
+      "affectedCount": 3,
+      "affected": [
+        "'P\u0026L'!C11",
+        "'P\u0026L'!C13",
+        "'P\u0026L'!C9"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!C11",
+          "label": "EBT",
+          "oldValue": -16.114921875,
+          "newValue": 91.98,
+          "magnitude": 6.7078
+        },
+        {
+          "ref": "'P\u0026L'!C9",
+          "label": "EBIT",
+          "oldValue": -35.7328125,
+          "newValue": 113.88,
+          "magnitude": 4.187
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!C8",
+      "originLabel": "Less: D\u0026A (4% rev)",
+      "oldValue": 100.1925,
+      "newValue": -21.9,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!C11",
+        "'P\u0026L'!C13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!C11",
+          "label": "EBT",
+          "oldValue": -16.114921875,
+          "newValue": 91.98,
+          "magnitude": 6.7078
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!C9",
+      "originLabel": "EBIT",
+      "oldValue": -35.7328125,
+      "newValue": 113.88,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!C11",
+        "'P\u0026L'!C13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!C11",
+          "label": "EBT",
+          "oldValue": -16.114921875,
+          "newValue": 91.98,
+          "magnitude": 6.7078
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!D10",
+      "originLabel": "Less: Interest",
+      "oldValue": 80.2431140625,
+      "newValue": -31.2662109375,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!D12",
+        "'P\u0026L'!D13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!D12",
+          "label": "Less: Tax",
+          "oldValue": 60.182335546875,
+          "newValue": -0,
+          "magnitude": -1
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!D11",
+      "originLabel": "EBT",
+      "oldValue": -20.060778515625,
+      "newValue": 102.5166375,
+      "affectedCount": 1,
+      "affected": [
+        "'P\u0026L'!D13"
+      ],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!D12",
+      "originLabel": "Less: Tax",
+      "oldValue": 60.182335546875,
+      "newValue": -0,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!D13",
+      "originLabel": "Net Income",
+      "oldValue": null,
+      "newValue": 71.2504265625,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!D7",
+      "originLabel": "Less: Stock-Based Comp",
+      "oldValue": -23.9805,
+      "newValue": -8.9926875,
+      "affectedCount": 3,
+      "affected": [
+        "'P\u0026L'!D11",
+        "'P\u0026L'!D13",
+        "'P\u0026L'!D9"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!D11",
+          "label": "EBT",
+          "oldValue": -20.060778515625,
+          "newValue": 102.5166375,
+          "magnitude": 6.1103
+        },
+        {
+          "ref": "'P\u0026L'!D9",
+          "label": "EBIT",
+          "oldValue": -31.2662109375,
+          "newValue": 126.4971375,
+          "magnitude": 5.0458
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!D8",
+      "originLabel": "Less: D\u0026A (4% rev)",
+      "oldValue": 111.509325,
+      "newValue": -23.9805,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!D11",
+        "'P\u0026L'!D13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!D11",
+          "label": "EBT",
+          "oldValue": -20.060778515625,
+          "newValue": 102.5166375,
+          "magnitude": 6.1103
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!D9",
+      "originLabel": "EBIT",
+      "oldValue": -31.2662109375,
+      "newValue": 126.4971375,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!D11",
+        "'P\u0026L'!D13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!D11",
+          "label": "EBT",
+          "oldValue": -20.060778515625,
+          "newValue": 102.5166375,
+          "magnitude": 6.1103
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!E10",
+      "originLabel": "Less: Interest",
+      "oldValue": 96.7141748671875,
+      "newValue": -27.3579345703125,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!E12",
+        "'P\u0026L'!E13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!E12",
+          "label": "Less: Tax",
+          "oldValue": 72.5356311503906,
+          "newValue": -0,
+          "magnitude": -1
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!E11",
+      "originLabel": "EBT",
+      "oldValue": -24.1785437167969,
+      "newValue": 114.225116625,
+      "affectedCount": 1,
+      "affected": [
+        "'P\u0026L'!E13"
+      ],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!E12",
+      "originLabel": "Less: Tax",
+      "oldValue": 72.5356311503906,
+      "newValue": -0,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!E13",
+      "originLabel": "Net Income",
+      "oldValue": null,
+      "newValue": 86.8671820546875,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!E7",
+      "originLabel": "Less: Stock-Based Comp",
+      "oldValue": -26.2586475,
+      "newValue": -9.8469928125,
+      "affectedCount": 3,
+      "affected": [
+        "'P\u0026L'!E11",
+        "'P\u0026L'!E13",
+        "'P\u0026L'!E9"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!E9",
+          "label": "EBIT",
+          "oldValue": -27.3579345703125,
+          "newValue": 140.483764125,
+          "magnitude": 6.135
+        },
+        {
+          "ref": "'P\u0026L'!E11",
+          "label": "EBT",
+          "oldValue": -24.1785437167969,
+          "newValue": 114.225116625,
+          "magnitude": 5.7242
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!E8",
+      "originLabel": "Less: D\u0026A (4% rev)",
+      "oldValue": 124.0721094375,
+      "newValue": -26.2586475,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!E11",
+        "'P\u0026L'!E13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!E11",
+          "label": "EBT",
+          "oldValue": -24.1785437167969,
+          "newValue": 114.225116625,
+          "magnitude": 5.7242
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!E9",
+      "originLabel": "EBIT",
+      "oldValue": -27.3579345703125,
+      "newValue": 140.483764125,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!E11",
+        "'P\u0026L'!E13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!E11",
+          "label": "EBT",
+          "oldValue": -24.1785437167969,
+          "newValue": 114.225116625,
+          "magnitude": 5.7242
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!F10",
+      "originLabel": "Less: Interest",
+      "oldValue": 114.077258510977,
+      "newValue": -23.9381927490234,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!F12",
+        "'P\u0026L'!F13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!F12",
+          "label": "Less: Tax",
+          "oldValue": 85.5579438832324,
+          "newValue": -0,
+          "magnitude": -1
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!F11",
+      "originLabel": "EBT",
+      "oldValue": -28.5193146277441,
+      "newValue": 127.232994130312,
+      "affectedCount": 1,
+      "affected": [
+        "'P\u0026L'!F13"
+      ],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!F12",
+      "originLabel": "Less: Tax",
+      "oldValue": 85.5579438832324,
+      "newValue": -0,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!F13",
+      "originLabel": "Net Income",
+      "oldValue": null,
+      "newValue": 103.294801381289,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!F7",
+      "originLabel": "Less: Stock-Based Comp",
+      "oldValue": -28.7532190125,
+      "newValue": -10.7824571296875,
+      "affectedCount": 3,
+      "affected": [
+        "'P\u0026L'!F11",
+        "'P\u0026L'!F13",
+        "'P\u0026L'!F9"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!F9",
+          "label": "EBIT",
+          "oldValue": -23.9381927490234,
+          "newValue": 155.986213142812,
+          "magnitude": 7.5162
+        },
+        {
+          "ref": "'P\u0026L'!F11",
+          "label": "EBT",
+          "oldValue": -28.5193146277441,
+          "newValue": 127.232994130312,
+          "magnitude": 5.4613
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!F8",
+      "originLabel": "Less: D\u0026A (4% rev)",
+      "oldValue": 138.01545126,
+      "newValue": -28.7532190125,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!F11",
+        "'P\u0026L'!F13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!F11",
+          "label": "EBT",
+          "oldValue": -28.5193146277441,
+          "newValue": 127.232994130312,
+          "magnitude": 5.4613
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!F9",
+      "originLabel": "EBIT",
+      "oldValue": -23.9381927490234,
+      "newValue": 155.986213142812,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!F11",
+        "'P\u0026L'!F13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!F11",
+          "label": "EBT",
+          "oldValue": -28.5193146277441,
+          "newValue": 127.232994130312,
+          "magnitude": 5.4613
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!G10",
+      "originLabel": "Less: Interest",
+      "oldValue": 132.542358585706,
+      "newValue": -20.9459186553955,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!G12",
+        "'P\u0026L'!G13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!G12",
+          "label": "Less: Tax",
+          "oldValue": 99.4067689392795,
+          "newValue": -0,
+          "magnitude": -1
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!G11",
+      "originLabel": "EBT",
+      "oldValue": -33.1355896464265,
+      "newValue": 141.681486684094,
+      "affectedCount": 1,
+      "affected": [
+        "'P\u0026L'!G13"
+      ],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!G12",
+      "originLabel": "Less: Tax",
+      "oldValue": 99.4067689392795,
+      "newValue": -0,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!G13",
+      "originLabel": "Net Income",
+      "oldValue": null,
+      "newValue": 120.735568028698,
+      "affectedCount": 0,
+      "affected": [],
+      "topMovers": []
+    },
+    {
+      "origin": "'P\u0026L'!G7",
+      "originLabel": "Less: Stock-Based Comp",
+      "oldValue": -31.4847748186875,
+      "newValue": -11.8067905570078,
+      "affectedCount": 3,
+      "affected": [
+        "'P\u0026L'!G11",
+        "'P\u0026L'!G13",
+        "'P\u0026L'!G9"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!G9",
+          "label": "EBIT",
+          "oldValue": -20.9459186553955,
+          "newValue": 173.166261502781,
+          "magnitude": 9.2673
+        },
+        {
+          "ref": "'P\u0026L'!G11",
+          "label": "EBT",
+          "oldValue": -33.1355896464265,
+          "newValue": 141.681486684094,
+          "magnitude": 5.2758
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!G8",
+      "originLabel": "Less: D\u0026A (4% rev)",
+      "oldValue": 153.488277241102,
+      "newValue": -31.4847748186875,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!G11",
+        "'P\u0026L'!G13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!G11",
+          "label": "EBT",
+          "oldValue": -33.1355896464265,
+          "newValue": 141.681486684094,
+          "magnitude": 5.2758
+        }
+      ]
+    },
+    {
+      "origin": "'P\u0026L'!G9",
+      "originLabel": "EBIT",
+      "oldValue": -20.9459186553955,
+      "newValue": 173.166261502781,
+      "affectedCount": 2,
+      "affected": [
+        "'P\u0026L'!G11",
+        "'P\u0026L'!G13"
+      ],
+      "topMovers": [
+        {
+          "ref": "'P\u0026L'!G11",
+          "label": "EBT",
+          "oldValue": -33.1355896464265,
+          "newValue": 141.681486684094,
+          "magnitude": 5.2758
+        }
+      ]
+    }
+  ],
+  "anomalies": [
+    {
+      "type": "formula_replaced_by_constant",
+      "ref": "'P\u0026L'!B10",
+      "label": "Less: Interest",
+      "severity": "high",
+      "message": "Formula '=B8+B9' was replaced with the hardcoded value 0.",
+      "oldFormula": "=B8+B9",
+      "newValue": 0
+    }
+  ]
+}

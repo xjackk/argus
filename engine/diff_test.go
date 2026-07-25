@@ -6,7 +6,9 @@ import (
 	"testing"
 )
 
-const testWorkbookDir = "/Users/emo/Downloads/argus-files/test-workbooks/"
+// testWorkbookDir points at fixtures committed under engine/testdata so the
+// suite runs on any machine / CI (no absolute home path).
+const testWorkbookDir = "testdata/"
 
 // TestAcceptanceV1toV2 encodes the DATA-CONTRACT acceptance test for
 // atlas_v1_base.xlsx -> atlas_v2_exit_multiple.xlsx. It is the regression net
@@ -74,6 +76,72 @@ func TestAcceptanceV1toV2(t *testing.T) {
 	}
 	if !reflect.DeepEqual(b14.CausedBy, []string{"Assumptions!B5"}) {
 		t.Errorf("Returns!B14 causedBy = %v, want [\"Assumptions!B5\"]", b14.CausedBy)
+	}
+}
+
+// TestHardcodeAnomalyV5 covers the formula_replaced_by_constant detector
+// (atlas_v5: Returns!B9 Exit EV formula overwritten with a hardcoded 2100).
+func TestHardcodeAnomalyV5(t *testing.T) {
+	res, err := Diff(testWorkbookDir+"atlas_v1_base.xlsx", testWorkbookDir+"atlas_v5_hardcode_override.xlsx")
+	if err != nil {
+		t.Fatalf("Diff error: %v", err)
+	}
+	var found *Anomaly
+	for i := range res.Anomalies {
+		if res.Anomalies[i].Type == "formula_replaced_by_constant" && res.Anomalies[i].Ref == "Returns!B9" {
+			found = &res.Anomalies[i]
+		}
+	}
+	if found == nil {
+		t.Fatalf("expected formula_replaced_by_constant on Returns!B9, got %+v", res.Anomalies)
+	}
+	if found.Severity != "high" {
+		t.Errorf("severity = %q, want high", found.Severity)
+	}
+	if !floatEquals(found.NewValue, 2100, 1e-9) {
+		t.Errorf("anomaly newValue = %v, want 2100", found.NewValue)
+	}
+}
+
+// TestMultiInputCausationV3 covers multiple authored inputs with overlapping
+// cascades (atlas_v3: growth, margin, interest all change).
+func TestMultiInputCausationV3(t *testing.T) {
+	res, err := Diff(testWorkbookDir+"atlas_v1_base.xlsx", testWorkbookDir+"atlas_v3_downside.xlsx")
+	if err != nil {
+		t.Fatalf("Diff error: %v", err)
+	}
+	if res.Summary.AuthoredCount != 3 {
+		t.Errorf("authoredCount = %d, want 3", res.Summary.AuthoredCount)
+	}
+	if len(res.Cascades) != 3 {
+		t.Errorf("len(cascades) = %d, want 3", len(res.Cascades))
+	}
+	// IRR is computed and must trace back to at least one authored origin.
+	b14 := findChange(res, "Returns", "B14")
+	if b14 == nil {
+		t.Fatal("expected a change at Returns!B14")
+	}
+	if b14.Classification != "computed" {
+		t.Errorf("Returns!B14 classification = %q, want computed", b14.Classification)
+	}
+	if len(b14.CausedBy) == 0 {
+		t.Errorf("Returns!B14 causedBy is empty, want >=1 authored origin")
+	}
+}
+
+// TestAuthoredCellsHaveNoCause asserts authored cells carry an empty causedBy
+// (the cause chain only applies to computed ripples).
+func TestAuthoredCellsHaveNoCause(t *testing.T) {
+	res, err := Diff(testWorkbookDir+"atlas_v1_base.xlsx", testWorkbookDir+"atlas_v2_exit_multiple.xlsx")
+	if err != nil {
+		t.Fatalf("Diff error: %v", err)
+	}
+	b5 := findChange(res, "Assumptions", "B5")
+	if b5 == nil {
+		t.Fatal("expected Assumptions!B5")
+	}
+	if len(b5.CausedBy) != 0 {
+		t.Errorf("authored cell causedBy = %v, want empty", b5.CausedBy)
 	}
 }
 

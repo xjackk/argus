@@ -609,6 +609,19 @@ body {
 .diffcell.rippled {
   box-shadow: inset 2px 0 0 var(--green), inset 0 0 0 1px var(--green);
 }
+.diffcell.anomalous {
+  outline: 1px solid var(--amber);
+  outline-offset: -1px;
+}
+.cell-warn {
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--amber);
+  cursor: help;
+}
 .dc-old {
   text-decoration: line-through;
   font-size: 10px;

@@ -208,6 +208,7 @@ export function DiffColumn(props: Props) {
             sheet={sheet}
             mode={mode}
             rippled={rippled}
+            anomaliesByRef={anomaliesByRef}
             selectedRef={
               selectedCell ? `${selectedCell.sheet}!${selectedCell.change.coord}` : null
             }
@@ -227,9 +228,6 @@ export function DiffColumn(props: Props) {
       </div>
     </div>
   );
-
-  // keep anomaliesByRef referenced (badges could key off it per-cell later)
-  void anomaliesByRef;
 }
 
 function titleFor(a: Anomaly): string {

@@ -1,3 +1,7 @@
 build/bin
 node_modules
 frontend/dist
+# compiled Wails binary (wails.json outputfilename)
+/argus
+/desktop
+*.app

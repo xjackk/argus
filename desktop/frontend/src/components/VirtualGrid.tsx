@@ -1,6 +1,6 @@
 import { useRef, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { CellChange, SheetDiff } from "../data/types";
+import type { CellChange, SheetDiff, Anomaly } from "../data/types";
 import { formatValue } from "../data/format";
 import { colLetter } from "../data/refs";
 import type { HoverState } from "./HoverCard";
@@ -16,6 +16,7 @@ interface Props {
   sheet: SheetDiff;
   mode: ViewMode;
   rippled: Set<string>; // qualified refs highlighted from a selected authored cell
+  anomaliesByRef: Map<string, Anomaly>; // qualified ref -> anomaly, for ⚠ badges
   selectedRef: string | null;
   onHover: (h: HoverState | null) => void;
   onSelectCell: (c: CellChange) => void;
@@ -25,6 +26,7 @@ export function VirtualGrid({
   sheet,
   mode,
   rippled,
+  anomaliesByRef,
   selectedRef,
   onHover,
   onSelectCell,
@@ -133,6 +135,7 @@ export function VirtualGrid({
                       sheet={sheet.name}
                       mode={mode}
                       rippled={rippled.has(`${sheet.name}!${ch.coord}`)}
+                      anomaly={anomaliesByRef.get(`${sheet.name}!${ch.coord}`)}
                       selected={selectedRef === `${sheet.name}!${ch.coord}`}
                       onHover={onHover}
                       onSelectCell={onSelectCell}
@@ -153,6 +156,7 @@ interface DiffCellProps {
   sheet: string;
   mode: ViewMode;
   rippled: boolean;
+  anomaly?: Anomaly;
   selected: boolean;
   onHover: (h: HoverState | null) => void;
   onSelectCell: (c: CellChange) => void;
@@ -163,6 +167,7 @@ function DiffCell({
   sheet,
   mode,
   rippled,
+  anomaly,
   selected,
   onHover,
   onSelectCell,
@@ -180,6 +185,7 @@ function DiffCell({
     "diffcell",
     showDiff ? change.classification : "plain",
     rippled ? "rippled" : "",
+    anomaly ? "anomalous" : "",
     selected ? "sel-ring" : "",
   ]
     .filter(Boolean)
@@ -196,6 +202,11 @@ function DiffCell({
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelectCell(change)}
     >
+      {anomaly && (
+        <span className="cell-warn" title={anomaly.message}>
+          ⚠
+        </span>
+      )}
       {isFormula && <span className="fmark-inline">ƒ</span>}
       {showDiff ? (
         <>

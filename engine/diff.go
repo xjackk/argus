@@ -232,7 +232,11 @@ func normalizeFormula(formula string) string {
 	return "=" + strings.TrimPrefix(formula, "=")
 }
 
-// displayFormat returns the cell's custom number-format code, or "General".
+// displayFormat returns the cell's number-format code, or "General". It handles
+// both custom format strings (e.g. openpyxl-authored "0.0%") and Excel's
+// built-in format IDs (e.g. 9="0%", 44=currency) that files formatted with
+// Excel's toolbar buttons use — without the built-in table, those would fall
+// back to "General" and the UI/narrator would render raw floats.
 func displayFormat(f *excelize.File, sheet, coord string) string {
 	styleID, err := f.GetCellStyle(sheet, coord)
 	if err != nil {
@@ -245,7 +249,38 @@ func displayFormat(f *excelize.File, sheet, coord string) string {
 	if style.CustomNumFmt != nil {
 		return *style.CustomNumFmt
 	}
+	if code, ok := builtinNumFmt[style.NumFmt]; ok {
+		return code
+	}
 	return "General"
+}
+
+// builtinNumFmt maps the ECMA-376 reserved built-in number-format IDs (0–49) to
+// their format codes. Only the IDs finance models actually use are included;
+// anything else falls back to "General". Date/time built-ins are intentionally
+// mapped so date cells at least render as dates rather than serial numbers.
+var builtinNumFmt = map[int]string{
+	0:  "General",
+	1:  "0",
+	2:  "0.00",
+	3:  "#,##0",
+	4:  "#,##0.00",
+	5:  "$#,##0_);($#,##0)",
+	6:  "$#,##0_);[Red]($#,##0)",
+	7:  "$#,##0.00_);($#,##0.00)",
+	8:  "$#,##0.00_);[Red]($#,##0.00)",
+	9:  "0%",
+	10: "0.00%",
+	11: "0.00E+00",
+	37: "#,##0_);(#,##0)",
+	38: "#,##0_);[Red](#,##0)",
+	39: "#,##0.00_);(#,##0.00)",
+	40: "#,##0.00_);[Red](#,##0.00)",
+	41: `_(* #,##0_);_(* \(#,##0\);_(* "-"_);_(@_)`,
+	42: `_($* #,##0_);_($* \(#,##0\);_($* "-"_);_(@_)`,
+	43: `_(* #,##0.00_);_(* \(#,##0.00\);_(* "-"??_);_(@_)`,
+	44: `_($* #,##0.00_);_($* \(#,##0.00\);_($* "-"??_);_(@_)`,
+	49: "@",
 }
 
 // classify decides authored vs computed from the old/new formula strings.
@@ -439,8 +474,11 @@ func detectAnomalies(sheets []SheetDiff) []Anomaly {
 			cc := sd.Changes[i]
 			ref := qualify(sd.Name, cc.Coord)
 
-			// formula_replaced_by_constant: a live calc overwritten with a typed number.
-			if cc.OldFormula != nil && cc.NewFormula == nil {
+			// formula_replaced_by_constant: a live calc overwritten with a typed
+			// number. Require NewValue != nil so a *deleted* formula cell (or a
+			// positional-diff artifact from an inserted/shifted row) doesn't
+			// spuriously flag as "replaced with the hardcoded value null/0".
+			if cc.OldFormula != nil && cc.NewFormula == nil && cc.NewValue != nil {
 				out = append(out, Anomaly{
 					Type:       "formula_replaced_by_constant",
 					Ref:        ref,

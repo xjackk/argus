@@ -45,3 +45,144 @@ correct, and it never does arithmetic. If narration fails, `narrative` stays
 cd desktop
 wails dev     # or: wails build
 ```
+
+---
+
+# Developer guide
+
+Everything you need to build, run, and iterate on Argus locally.
+
+## Prerequisites
+
+| Tool          | Version    | Notes                                                             |
+| ------------- | ---------- | ----------------------------------------------------------------- |
+| Go            | 1.25+      | `go version`                                                      |
+| Node + npm    | 20+ / 10+  | For the React frontend                                            |
+| Wails CLI     | v2.11+     | `go install github.com/wailsapp/wails/v2/cmd/wails@latest`        |
+| Xcode CLT     | any        | `xcode-select --install` — clang, required by Wails on macOS      |
+| LibreOffice   | optional   | Only to **regenerate test fixtures** (recalculates cached values) |
+
+You do **not** need Excel or LibreOffice to build or run Argus — `excelize` reads
+`.xlsx` directly, and the engine binary is pure Go (CGO-free). LibreOffice is
+only used to author/refresh test workbooks so their cached values are stored.
+
+## Repo structure — a Go workspace
+
+This repo is a **Go workspace** (`go.work`) with **two modules**:
+
+- **`argus`** (root) — the engine, CLI, and narrator. Lean dependency tree
+  (`excelize`, `efp`), so `go test ./engine/...` stays fast and clean.
+- **`desktop`** — the Wails app, which pulls in the full Wails/webview graph.
+
+The workspace is what lets `desktop` import `argus/engine` without polluting the
+engine module with Wails dependencies. `go.work` / `go.work.sum` are committed.
+
+> ⚠️ **Do not move `engine/` or `narrator/` under `internal/`.** Because
+> `desktop` is a separate module, Go would then forbid it from importing them and
+> the Wails↔engine binding would break.
+
+## Run the engine (CLI)
+
+```sh
+go build ./...                                   # build everything
+go test ./engine/...                             # acceptance + anomaly + multi-input tests
+go vet ./...                                     # should be clean
+
+# Diff two workbooks → DiffResult JSON on stdout
+go run ./cmd/argus-diff \
+  engine/testdata/atlas_v1_base.xlsx \
+  engine/testdata/atlas_v2_exit_multiple.xlsx
+
+# Inspect the grounded narration prompt (no model call):
+go run ./cmd/argus-diff --prompt-only  A.xlsx B.xlsx
+# Fill summary.narrative via a live `claude -p` call (~3s, needs network):
+go run ./cmd/argus-diff --narrate      A.xlsx B.xlsx
+```
+
+Test fixtures live in `engine/testdata/`; the full set (linear commit chain
+`c01–c07`, all `v*` variants, `commit-history.json`) is in
+`~/Downloads/argus-files/test-workbooks/`. The canonical demo pair is
+`atlas_v1_base.xlsx → atlas_v2_exit_multiple.xlsx` (1 authored input, 4 computed
+ripples).
+
+## Run the desktop app
+
+```sh
+cd desktop
+wails dev       # hot-reloading dev app (frontend deps auto-install on first run)
+# or
+wails build     # packages build/bin/argus.app
+```
+
+`wails dev` is the loop for UI work: edit anything under
+`desktop/frontend/src/` and it hot-reloads. If `wails dev` misbehaves, run
+`wails build` and open `build/bin/argus.app`.
+
+## The dev workflow — rapid iteration
+
+The engine is **not a server** — it's a one-shot CLI (or an in-process call
+inside Wails). So most UI work needs nothing but the browser. Three tiers:
+
+**Tier 1 — Pure UI, in the browser (90% of the work).**
+The whole current UI renders from a bundled static fixture and calls no Wails
+APIs, so it runs in a plain browser with instant hot-reload and full DevTools:
+
+```sh
+cd desktop/frontend
+npm run dev          # → http://localhost:5173, renders src/fixture.json
+```
+
+Edit anything under `desktop/frontend/src/` and it live-reloads. No engine, no
+second terminal.
+
+**Tier 2 — UI against REAL engine output, still in the browser.**
+When you want to see real diff data (or an edge case like the ⚠ anomaly badges),
+regenerate the fixture from the engine CLI — a one-shot command, not a running
+process — then let Vite HMR pick it up:
+
+```sh
+# from repo root:
+go run ./cmd/argus-diff \
+  engine/testdata/atlas_v1_base.xlsx \
+  engine/testdata/atlas_v5_hardcode_override.xlsx \
+  > desktop/frontend/src/fixture.json      # v5 → see the anomaly badges
+```
+
+Notes: the plain CLI emits `narrative: null` (the prose banner hides — add
+`--narrate` to include it). `fixture.json` is git-tracked, so
+`git checkout desktop/frontend/src/fixture.json` restores the curated demo one.
+
+**Tier 3 — Full native app (periodic + before shipping).**
+Verify the real WKWebView rendering and the live engine binding:
+
+```sh
+cd desktop
+wails dev            # real webview + live App.Diff; or `wails build` to package
+```
+
+Rule of thumb: **live in Tier 1**, drop to **Tier 2** to test real/edge data,
+and run **Tier 3** to confirm it looks and behaves right in the actual app.
+`loadDiff.ts` guards on the Wails runtime, so the same code path works in all
+three — the browser never breaks just because the engine binding exists.
+
+## Engine ⇄ UI integration state
+
+Today the frontend renders a **static fixture** — `desktop/frontend/src/fixture.json`,
+loaded via `desktop/frontend/src/data/loadDiff.ts`. This lets the UI be built and
+polished against stable data.
+
+The Go backend already exposes the engine to the frontend:
+`desktop/app.go` binds `App.Diff(pathA, pathB) → DiffResult`, and Wails
+auto-generates the JS binding at `desktop/frontend/wailsjs/go/main/App.js`
+(with the matching TS types in `wailsjs/go/models.ts`). To switch from the
+fixture to live engine output, `loadDiff.ts` calls
+`window.go.main.App.Diff(pathA, pathB)` instead of returning the fixture —
+nothing else in the UI changes.
+
+## Iterating on the UI
+
+The intended loop: run `wails dev`, edit `desktop/frontend/src/`, and compare the
+result against the target design. The three-pane layout, the authored↔cascade
+toggle, per-cell `ƒ`/⚠ markers, hover cards, and the cell-detail panel all live
+under `desktop/frontend/src/components/`; shared formatting/ref helpers are in
+`desktop/frontend/src/data/`.

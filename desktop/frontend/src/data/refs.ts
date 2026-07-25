@@ -1,5 +1,12 @@
 // Helpers for the fully-qualified "Sheet!Coord" refs used across the contract.
-// Sheet names with spaces/& are quoted: "'P&L'!B6".
+// Sheet names with spaces/& are quoted by the engine: "'P&L'!B6".
+//
+// The UI keys every lookup map (anomalies, cascades, ripples, cell history) by
+// a CANONICAL, UNQUOTED "Sheet!Coord". Build keys with `qualify(sheet, coord)`
+// (the UI always has an unquoted sheet name), and normalize any ref that came
+// from the engine (which may be quoted) with `canonRef(ref)` before use. This
+// is the single fix for the quoted-vs-unquoted mismatch that otherwise makes a
+// 'P&L' anomaly badge or cascade silently fail to resolve.
 
 export function splitRef(ref: string): { sheet: string; coord: string } {
   const bang = ref.lastIndexOf("!");
@@ -8,6 +15,17 @@ export function splitRef(ref: string): { sheet: string; coord: string } {
   const coord = ref.slice(bang + 1);
   if (sheet.startsWith("'") && sheet.endsWith("'")) sheet = sheet.slice(1, -1);
   return { sheet, coord };
+}
+
+/** Canonical unquoted lookup key from an unquoted sheet name + coord. */
+export function qualify(sheet: string, coord: string): string {
+  return `${sheet}!${coord}`;
+}
+
+/** Normalize any (possibly quoted) engine ref to the canonical unquoted key. */
+export function canonRef(ref: string): string {
+  const { sheet, coord } = splitRef(ref);
+  return qualify(sheet, coord);
 }
 
 // Column index (1-based) → spreadsheet letters (1 → A, 27 → AA).

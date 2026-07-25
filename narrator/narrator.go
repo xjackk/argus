@@ -39,11 +39,13 @@ func BuildPrompt(d engine.DiffResult) string {
 	var b strings.Builder
 
 	// Mover carries no displayFormat (see DATA-CONTRACT), so recover it by
-	// keying every changed cell by its fully-qualified ref "Sheet!Coord".
+	// keying every changed cell by its ref. Keys are canonical + unquoted, and
+	// Mover.Ref (which the engine quotes for names like 'P&L') is normalized the
+	// same way on lookup — otherwise a P&L mover's %/$/x format is silently lost.
 	fmtByRef := map[string]string{}
 	for _, s := range d.Sheets {
 		for _, c := range s.Changes {
-			fmtByRef[s.Name+"!"+c.Coord] = c.DisplayFormat
+			fmtByRef[canonRef(s.Name+"!"+c.Coord)] = c.DisplayFormat
 		}
 	}
 
@@ -70,7 +72,7 @@ func BuildPrompt(d engine.DiffResult) string {
 	for _, cas := range d.Cascades {
 		for _, m := range cas.TopMovers {
 			movers++
-			mf := fmtByRef[m.Ref]
+			mf := fmtByRef[canonRef(m.Ref)]
 			fmt.Fprintf(&b, "- %s: %s → %s\n",
 				labelOr(m.Label, m.Ref),
 				renderValue(m.OldValue, mf),
@@ -101,12 +103,28 @@ func renderValue(v any, format string) string {
 	case strings.Contains(format, "%"):
 		return trimNum(f*100, decimals(format)) + "%"
 	case strings.Contains(format, "$"):
-		return "$" + withThousands(trimNum(f, decimals(format)))
+		// Sign goes before the $, so a negative reads "-$1,745" not "$-1,745".
+		sign := ""
+		if f < 0 {
+			sign, f = "-", -f
+		}
+		return sign + "$" + withThousands(trimNum(f, decimals(format)))
 	case strings.Contains(strings.ToLower(format), "x"):
 		return trimNum(f, orDefault(decimals(format), 2)) + "x"
 	default:
 		return trimNum(f, 2)
 	}
+}
+
+// canonRef normalizes a possibly-quoted ref ('P&L'!B6) to the canonical
+// unquoted key (P&L!B6), matching how fmtByRef is keyed.
+func canonRef(ref string) string {
+	bang := strings.LastIndex(ref, "!")
+	if bang < 0 {
+		return ref
+	}
+	sheet := strings.TrimSuffix(strings.TrimPrefix(ref[:bang], "'"), "'")
+	return sheet + "!" + ref[bang+1:]
 }
 
 func labelOr(label *string, fallback string) string {

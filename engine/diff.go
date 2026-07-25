@@ -87,15 +87,15 @@ func Diff(pathA, pathB string) (DiffResult, error) {
 				Coord:          coord,
 				Row:            row,
 				Col:            col,
-				Label:          label(displaySide(a, b, sheet, "A"+strconv.Itoa(row))),
+				Label:          strPtr(displaySide(a, b, sheet, "A"+strconv.Itoa(row))),
 				Classification: class,
 				OldValue:       typedValue(ad.rawValue),
 				NewValue:       typedValue(bd.rawValue),
-				OldFormula:     formulaPtr(ad.formula),
-				NewFormula:     formulaPtr(bd.formula),
+				OldFormula:     strPtr(ad.formula),
+				NewFormula:     strPtr(bd.formula),
 				DisplayFormat:  chooseFormat(bd, ad),
-				DependsOn:      orEmpty(deps[key]),
-				Dependents:     orEmpty(dependents[key]),
+				DependsOn:      nonNil(deps[key]),
+				Dependents:     nonNil(dependents[key]),
 				CausedBy:       []string{},
 				Magnitude:      magnitude(ad.rawValue, bd.rawValue),
 			}
@@ -155,7 +155,7 @@ func Diff(pathA, pathB string) (DiffResult, error) {
 			OldValue:      originValue(originCC, true),
 			NewValue:      originValue(originCC, false),
 			AffectedCount: len(affected),
-			Affected:      orEmpty(affected),
+			Affected:      nonNil(affected),
 			TopMovers:     topMovers(affected, changeByKey),
 		})
 	}
@@ -176,12 +176,12 @@ func Diff(pathA, pathB string) (DiffResult, error) {
 		Summary: Summary{
 			AuthoredCount:  authoredCount,
 			ComputedCount:  computedCount,
-			SheetsAffected: orEmpty(sheetsAffected),
+			SheetsAffected: nonNil(sheetsAffected),
 			Narrative:      nil, // AI step adds this later; engine is correct with nil.
 		},
-		Sheets:    orEmptySheets(sheetDiffs),
-		Cascades:  orEmptyCascades(cascades),
-		Anomalies: orEmptyAnomalies(anomalies),
+		Sheets:    nonNil(sheetDiffs),
+		Cascades:  nonNil(cascades),
+		Anomalies: nonNil(anomalies),
 	}, nil
 }
 
@@ -256,9 +256,10 @@ func displayFormat(f *excelize.File, sheet, coord string) string {
 }
 
 // builtinNumFmt maps the ECMA-376 reserved built-in number-format IDs (0–49) to
-// their format codes. Only the IDs finance models actually use are included;
-// anything else falls back to "General". Date/time built-ins are intentionally
-// mapped so date cells at least render as dates rather than serial numbers.
+// their format codes. Only the IDs finance models actually use are included
+// (number, percent, currency, accounting); date/time built-ins are deliberately
+// omitted since these models don't diff dates, and anything absent falls back to
+// "General".
 var builtinNumFmt = map[int]string{
 	0:  "General",
 	1:  "0",
@@ -520,22 +521,18 @@ func typedValue(raw string) any {
 	if f, err := strconv.ParseFloat(raw, 64); err == nil {
 		return f
 	}
-	switch raw {
-	case "TRUE":
-		return true
-	case "FALSE":
-		return false
-	}
+	// Booleans arrive as raw "1"/"0" under RawCellValue and are parsed as floats
+	// above, so there's no "TRUE"/"FALSE" case to handle here.
 	return raw
 }
 
-// formulaPtr returns a pointer to the formula, or nil for a constant cell.
-func formulaPtr(formula string) *string {
-	if formula == "" {
+// strPtr wraps a non-empty string in a pointer, or nil for the empty string.
+// Used for optional contract fields (formula strings, row labels).
+func strPtr(s string) *string {
+	if s == "" {
 		return nil
 	}
-	f := formula
-	return &f
+	return &s
 }
 
 // magnitude computes (new-old)/abs(old) for numeric cells, rounded to 4dp.
@@ -573,15 +570,6 @@ func displaySide(a, b *workbook, sheet, coord string) string {
 		return cd.rawValue
 	}
 	return ""
-}
-
-// label wraps a non-empty label string in a pointer, else nil.
-func label(s string) *string {
-	if s == "" {
-		return nil
-	}
-	v := s
-	return &v
 }
 
 func originLabel(cc *CellChange) *string {
@@ -678,30 +666,11 @@ func sortedUnique(xs []string) []string {
 	return out
 }
 
-func orEmpty(xs []string) []string {
+// nonNil coerces a nil slice to an empty one so it marshals to a JSON []
+// rather than null — the contract requires empty arrays, not null.
+func nonNil[T any](xs []T) []T {
 	if xs == nil {
-		return []string{}
-	}
-	return xs
-}
-
-func orEmptySheets(xs []SheetDiff) []SheetDiff {
-	if xs == nil {
-		return []SheetDiff{}
-	}
-	return xs
-}
-
-func orEmptyCascades(xs []Cascade) []Cascade {
-	if xs == nil {
-		return []Cascade{}
-	}
-	return xs
-}
-
-func orEmptyAnomalies(xs []Anomaly) []Anomaly {
-	if xs == nil {
-		return []Anomaly{}
+		return []T{}
 	}
 	return xs
 }

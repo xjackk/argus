@@ -18,7 +18,7 @@
     "sheetsAffected": [
       "Returns"
     ],
-    "narrative": "Exit EV was raised from $1,757 to $2,100. That flowed through to Exit Equity, which rose from $1,535 to $1,878, lifting MOIC from 3.10x to 3.79x and IRR from 25.4% to 30.6%."
+    "narrative": "A reviewer changed the Exit EV input from $1,757 to $2,100. That flowed through to Exit Equity, which moved from $1,535 to $1,878, and MOIC, which went from 3.10x to 3.79x. IRR also updated, rising from 25.4% to 30.6%."
   },
   "sheets": [
     {

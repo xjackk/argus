@@ -1,8 +1,9 @@
-import { useRef, useMemo } from "react";
+import { memo, useRef, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CellChange, SheetDiff, Anomaly } from "../data/types";
 import { formatValue } from "../data/format";
-import { colLetter } from "../data/refs";
+import { colLetter, qualify } from "../data/refs";
+import { isAuthored } from "../data/classify";
 import type { HoverState } from "./HoverCard";
 
 export type ViewMode = "authored" | "cascade";
@@ -128,15 +129,16 @@ export function VirtualGrid({
                       </div>
                     );
                   }
+                  const ref = qualify(sheet.name, ch.coord);
                   return (
                     <DiffCell
                       key={c}
                       change={ch}
                       sheet={sheet.name}
                       mode={mode}
-                      rippled={rippled.has(`${sheet.name}!${ch.coord}`)}
-                      anomaly={anomaliesByRef.get(`${sheet.name}!${ch.coord}`)}
-                      selected={selectedRef === `${sheet.name}!${ch.coord}`}
+                      rippled={rippled.has(ref)}
+                      anomaly={anomaliesByRef.get(ref)}
+                      selected={selectedRef === ref}
                       onHover={onHover}
                       onSelectCell={onSelectCell}
                     />
@@ -162,7 +164,7 @@ interface DiffCellProps {
   onSelectCell: (c: CellChange) => void;
 }
 
-function DiffCell({
+const DiffCell = memo(function DiffCell({
   change,
   sheet,
   mode,
@@ -172,7 +174,7 @@ function DiffCell({
   onHover,
   onSelectCell,
 }: DiffCellProps) {
-  const authored = change.classification === "authored";
+  const authored = isAuthored(change);
   const isFormula = change.newFormula != null;
 
   // Authored-only view: filter to classification === "authored". Computed cells
@@ -222,4 +224,4 @@ function DiffCell({
       )}
     </div>
   );
-}
+});

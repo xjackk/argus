@@ -1,5 +1,12 @@
+import type { CSSProperties } from "react";
 import type { CellChange, Cascade } from "../data/types";
-import { formatValue } from "../data/format";
+import { qualify } from "../data/refs";
+import { isAuthored, classDot } from "../data/classify";
+import { ValueDelta } from "./ValueDelta";
+
+const CARD_W = 300;
+const CARD_H = 180;
+const GAP = 14;
 
 export interface HoverState {
   change: CellChange;
@@ -15,18 +22,18 @@ interface Props {
 
 export function HoverCard({ hover, cascadeByOrigin }: Props) {
   const { change, sheet, x, y } = hover;
-  const qualified = `${sheet}!${change.coord}`;
-  const authored = change.classification === "authored";
+  const qualified = qualify(sheet, change.coord);
+  const authored = isAuthored(change);
   const cascade = cascadeByOrigin.get(qualified);
 
   // Keep the card on-screen: flip left/up near the right/bottom edges.
-  const flipX = x > window.innerWidth - 300;
-  const flipY = y > window.innerHeight - 180;
-  const style: React.CSSProperties = {
-    left: flipX ? undefined : x + 14,
-    right: flipX ? window.innerWidth - x + 14 : undefined,
-    top: flipY ? undefined : y + 14,
-    bottom: flipY ? window.innerHeight - y + 14 : undefined,
+  const flipX = x > window.innerWidth - CARD_W;
+  const flipY = y > window.innerHeight - CARD_H;
+  const style: CSSProperties = {
+    left: flipX ? undefined : x + GAP,
+    right: flipX ? window.innerWidth - x + GAP : undefined,
+    top: flipY ? undefined : y + GAP,
+    bottom: flipY ? window.innerHeight - y + GAP : undefined,
   };
 
   return (
@@ -38,14 +45,17 @@ export function HoverCard({ hover, cascadeByOrigin }: Props) {
       <div className="hc-row">
         <span className="k">Change</span>
         <span className="val">
-          {formatValue(change.oldValue, change.displayFormat)} →{" "}
-          <b>{formatValue(change.newValue, change.displayFormat)}</b>
+          <ValueDelta
+            old={change.oldValue}
+            next={change.newValue}
+            fmt={change.displayFormat}
+          />
         </span>
       </div>
       <div className="hc-row">
         <span className="k">Type</span>
-        <span className={"pill " + (authored ? "a" : "c")}>
-          {authored ? "authored" : "computed"}
+        <span className={"pill " + classDot(change.classification)}>
+          {change.classification}
         </span>
       </div>
       {authored && cascade ? (

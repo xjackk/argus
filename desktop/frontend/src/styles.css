@@ -1112,3 +1112,7 @@ body {
 }
 .sso-btn:hover { background: #3a3a3a; }
 .ms-logo { color: #4cc2ff; font-size: 16px; }
+
+/* CellDetail change delta — red for a decrease, green for an increase */
+.d-delta { color: var(--red); }
+.d-delta.up { color: var(--green); }

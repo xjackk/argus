@@ -1,6 +1,6 @@
 import type { CellValue } from "./types";
 
-// Render a raw cell value using Excel displayFormat semantics, so the fixture's
+// Render a raw cell value using Excel displayFormat semantics, so the engine's
 // raw floats show as 2.99x / 24.5% / $1,745 rather than 2.9934... .
 // Pragmatic subset of Excel number formats — enough for the demo formats:
 //   "0.0\x"  "0.00\x"  "\$#,##0"  "0.0%"  "General"
@@ -28,8 +28,11 @@ export function formatValue(value: CellValue, fmt?: string | null): string {
   const suffixMatch = clean.match(/([A-Za-z]+)\s*$/);
   const suffix = suffixMatch ? suffixMatch[1] : "";
 
-  let num = isPercent ? n * 100 : n;
-  let out = num.toLocaleString("en-US", {
+  // Format the magnitude, then re-apply the sign so a negative currency reads
+  // "-$1,745" not "$-1,745" (and "-9.5x", "-24.5%").
+  const scaled = isPercent ? n * 100 : n;
+  const sign = scaled < 0 ? "-" : "";
+  let out = Math.abs(scaled).toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
     useGrouping: hasThousands,
@@ -38,7 +41,7 @@ export function formatValue(value: CellValue, fmt?: string | null): string {
   if (isCurrency) out = "$" + out;
   if (isPercent) out = out + "%";
   if (suffix) out = out + suffix;
-  return out;
+  return sign + out;
 }
 
 function formatGeneral(n: number): string {

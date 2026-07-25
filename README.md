@@ -124,33 +124,31 @@ The engine is **not a server** — it's a one-shot CLI (or an in-process call
 inside Wails). So most UI work needs nothing but the browser. Three tiers:
 
 **Tier 1 — Pure UI, in the browser (90% of the work).**
-The whole current UI renders from a bundled static fixture and calls no Wails
-APIs, so it runs in a plain browser with instant hot-reload and full DevTools:
+The whole current UI renders from bundled engine output (the `c01→c07` commit
+chain) and calls no Wails APIs, so it runs in a plain browser with instant
+hot-reload and full DevTools:
 
 ```sh
 cd desktop/frontend
-npm run dev          # → http://localhost:5173, renders src/fixture.json
+npm run dev          # → http://localhost:5173
 ```
 
 Edit anything under `desktop/frontend/src/` and it live-reloads. No engine, no
 second terminal.
 
-**Tier 2 — UI against REAL engine output, still in the browser.**
-When you want to see real diff data (or an edge case like the ⚠ anomaly badges),
-regenerate the fixture from the engine CLI — a one-shot command, not a running
-process — then let Vite HMR pick it up:
+**Tier 2 — Regenerate the bundled diffs from the engine.**
+The commit-chain diffs the UI renders live in `desktop/frontend/src/data/history/`
+and are generated straight from `argus-diff` — never hand-edited. To refresh them
+after an engine change (a one-shot command, not a running process), then let Vite
+HMR pick them up:
 
 ```sh
-# from repo root:
-go run ./cmd/argus-diff \
-  engine/testdata/atlas_v1_base.xlsx \
-  engine/testdata/atlas_v5_hardcode_override.xlsx \
-  > desktop/frontend/src/fixture.json      # v5 → see the anomaly badges
+make fixtures        # regenerates history/c0*.json for the whole chain
 ```
 
-Notes: the plain CLI emits `narrative: null` (the prose banner hides — add
-`--narrate` to include it). `fixture.json` is git-tracked, so
-`git checkout desktop/frontend/src/fixture.json` restores the curated demo one.
+It diffs each consecutive `atlas_c0N → atlas_c0(N+1)` pair and bakes in a live
+`claude -p` narrative for the single-input commits. Point it at a different
+workbook set with `ARGUS_WORKBOOKS=/path make fixtures`.
 
 **Tier 3 — Full native app (periodic + before shipping).**
 Verify the real WKWebView rendering and the live engine binding:
@@ -160,24 +158,22 @@ cd desktop
 wails dev            # real webview + live App.Diff; or `wails build` to package
 ```
 
-Rule of thumb: **live in Tier 1**, drop to **Tier 2** to test real/edge data,
-and run **Tier 3** to confirm it looks and behaves right in the actual app.
-`loadDiff.ts` guards on the Wails runtime, so the same code path works in all
-three — the browser never breaks just because the engine binding exists.
+Rule of thumb: **live in Tier 1**, run **Tier 2** after an engine change, and
+run **Tier 3** to confirm it looks and behaves right in the actual app.
 
 ## Engine ⇄ UI integration state
 
-Today the frontend renders a **static fixture** — `desktop/frontend/src/fixture.json`,
-loaded via `desktop/frontend/src/data/loadDiff.ts`. This lets the UI be built and
-polished against stable data.
+Today the frontend renders **bundled engine output** — the `c01→c07` diffs in
+`desktop/frontend/src/data/history/`, mapped commit→diff by
+`desktop/frontend/src/data/diffs.ts`. This lets the UI be built and polished
+against real, stable data with no backend running.
 
 The Go backend already exposes the engine to the frontend:
 `desktop/app.go` binds `App.Diff(pathA, pathB) → DiffResult`, and Wails
 auto-generates the JS binding at `desktop/frontend/wailsjs/go/main/App.js`
-(with the matching TS types in `wailsjs/go/models.ts`). To switch from the
-fixture to live engine output, `loadDiff.ts` calls
-`window.go.main.App.Diff(pathA, pathB)` instead of returning the fixture —
-nothing else in the UI changes.
+(with the matching TS types in `wailsjs/go/models.ts`). To switch from bundled
+diffs to live engine output, `diffs.ts` resolves a commit to its file pair and
+calls `window.go.main.App.Diff(...)` — nothing else in the UI changes.
 
 ## Iterating on the UI
 

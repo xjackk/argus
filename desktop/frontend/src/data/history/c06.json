@@ -19,7 +19,7 @@
       "Assumptions",
       "Returns"
     ],
-    "narrative": null
+    "narrative": "A reviewer changed the Exit EV/EBITDA multiple from 10.5x to 9.5x. That flows through to Exit EV, which moves from $1,942 to $1,757, and Exit Equity, which drops from $1,720 to $1,535. The returns metrics follow: MOIC goes from 3.47x to 3.10x and IRR from 28.3% to 25.4%."
   },
   "sheets": [
     {

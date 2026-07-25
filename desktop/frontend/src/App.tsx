@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import "./styles.css";
 import { diffForCommit } from "./data/diffs";
 import { COMMIT_HISTORY } from "./data/history";
+import { qualify, canonRef } from "./data/refs";
 import type { DiffResult, CellChange, Cascade, Anomaly } from "./data/types";
+
+// The commit shown on open — the signed-off exit-multiple cascade (the demo
+// centerpiece / UI-SPEC State 1). Falls back to the newest commit.
+const DEFAULT_COMMIT =
+  COMMIT_HISTORY.find((c) => c.id === "c06")?.id ?? COMMIT_HISTORY[0].id;
 import { TopBar } from "./components/TopBar";
 import { VersionRail } from "./components/VersionRail";
 import { DiffColumn } from "./components/DiffColumn";
@@ -11,9 +16,7 @@ import type { ViewMode } from "./components/VirtualGrid";
 
 export default function App() {
   const [diff, setDiff] = useState<DiffResult | null>(null);
-  const [selectedCommitId, setSelectedCommitId] = useState(
-    COMMIT_HISTORY.find((c) => c.isCurrentDiff)?.id ?? COMMIT_HISTORY[0].id
-  );
+  const [selectedCommitId, setSelectedCommitId] = useState(DEFAULT_COMMIT);
   const [selectedSheet, setSelectedSheet] = useState<string>("Returns");
   const [mode, setMode] = useState<ViewMode>("cascade"); // State 1: cascade active
   const [hover, setHover] = useState<HoverState | null>(null);
@@ -42,10 +45,12 @@ export default function App() {
     const casc = new Map<string, Cascade>();
     const anom = new Map<string, Anomaly>();
     if (diff) {
+      // Keys are canonical + unquoted; engine refs (origin/ref, possibly quoted)
+      // are normalized so 'P&L'-style refs resolve. See data/refs.ts.
       for (const s of diff.sheets)
-        for (const ch of s.changes) byRef.set(`${s.name}!${ch.coord}`, ch);
-      for (const c of diff.cascades) casc.set(c.origin, c);
-      for (const a of diff.anomalies) anom.set(a.ref, a);
+        for (const ch of s.changes) byRef.set(qualify(s.name, ch.coord), ch);
+      for (const c of diff.cascades) casc.set(canonRef(c.origin), c);
+      for (const a of diff.anomalies) anom.set(canonRef(a.ref), a);
     }
     return { changeByRef: byRef, cascadeByOrigin: casc, anomaliesByRef: anom };
   }, [diff]);
@@ -54,15 +59,18 @@ export default function App() {
   const rippled = useMemo(() => {
     const set = new Set<string>();
     if (selectedCell && selectedCell.change.classification === "authored") {
-      const origin = `${selectedCell.sheet}!${selectedCell.change.coord}`;
+      const origin = qualify(selectedCell.sheet, selectedCell.change.coord);
       const c = cascadeByOrigin.get(origin);
-      if (c) c.affected.forEach((r) => set.add(r));
+      if (c) c.affected.forEach((r) => set.add(canonRef(r)));
     }
     return set;
   }, [selectedCell, cascadeByOrigin]);
 
-  const commit =
-    COMMIT_HISTORY.find((c) => c.id === selectedCommitId) ?? COMMIT_HISTORY[0];
+  const commit = useMemo(
+    () =>
+      COMMIT_HISTORY.find((c) => c.id === selectedCommitId) ?? COMMIT_HISTORY[0],
+    [selectedCommitId]
+  );
 
   function handleSelectCell(change: CellChange, sheet: string) {
     setSelectedCell((prev) =>

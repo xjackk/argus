@@ -1,15 +1,15 @@
-import type {
-  DiffResult,
-  CellChange,
-  Cascade,
-  Anomaly,
-  Mover,
-} from "../data/types";
+import { useMemo } from "react";
+import type { DiffResult, CellChange, Cascade, Anomaly } from "../data/types";
 import type { CommitRow } from "../data/history";
 import { formatValue, formatDelta } from "../data/format";
+import { qualify } from "../data/refs";
+import { isAuthored } from "../data/classify";
 import { VirtualGrid, ViewMode } from "./VirtualGrid";
 import { CellDetail } from "./CellDetail";
 import type { HoverState } from "./HoverCard";
+
+// Sheets shown muted for structural context when they carry no changes.
+const CONTEXT_SHEETS = ["P&L", "Debt"];
 
 interface Props {
   diff: DiffResult;
@@ -28,9 +28,7 @@ interface Props {
 }
 
 function sheetCount(changes: CellChange[], mode: ViewMode): number {
-  return mode === "authored"
-    ? changes.filter((c) => c.classification === "authored").length
-    : changes.length;
+  return mode === "authored" ? changes.filter(isAuthored).length : changes.length;
 }
 
 export function DiffColumn(props: Props) {
@@ -54,10 +52,14 @@ export function DiffColumn(props: Props) {
   const narrative = diff.summary.narrative;
 
   // Up to three headline metrics from the cascade top-movers (highest |Δ|).
-  const movers: Mover[] = diff.cascades
-    .flatMap((c) => c.topMovers)
-    .sort((a, b) => Math.abs(b.magnitude ?? 0) - Math.abs(a.magnitude ?? 0))
-    .slice(0, 3);
+  const movers = useMemo(
+    () =>
+      diff.cascades
+        .flatMap((c) => c.topMovers)
+        .sort((a, b) => Math.abs(b.magnitude ?? 0) - Math.abs(a.magnitude ?? 0))
+        .slice(0, 3),
+    [diff]
+  );
 
   const visibleCount = sheetCount(sheet.changes, mode);
   const anomaly = diff.anomalies[0];
@@ -152,9 +154,9 @@ export function DiffColumn(props: Props) {
             );
           })}
           {/* Unchanged sheets, muted (structural context). */}
-          {["P&L", "Debt"]
-            .filter((n) => !diff.sheets.some((s) => s.name === n))
-            .map((n) => (
+          {CONTEXT_SHEETS.filter(
+            (n) => !diff.sheets.some((s) => s.name === n)
+          ).map((n) => (
               <div key={n} className="srow off">
                 <span>{n}</span>
               </div>
@@ -210,7 +212,9 @@ export function DiffColumn(props: Props) {
             rippled={rippled}
             anomaliesByRef={anomaliesByRef}
             selectedRef={
-              selectedCell ? `${selectedCell.sheet}!${selectedCell.change.coord}` : null
+              selectedCell
+                ? qualify(selectedCell.sheet, selectedCell.change.coord)
+                : null
             }
             onHover={onHover}
             onSelectCell={(c) => onSelectCell(c, sheet.name)}

@@ -1,5 +1,5 @@
 import history from "./commit-history.json";
-import type { CellValue } from "./types";
+import type { CellValue, Classification } from "./types";
 
 // Per-cell revision timeline — powers State 2's "git log for a cell". Sourced
 // from commit-history.json (test-workbooks): every time a cell moved across the
@@ -10,7 +10,7 @@ export interface Revision {
   timestamp: string;
   oldValue: CellValue;
   newValue: CellValue;
-  classification: string; // "authored" | "computed"
+  classification: Classification;
 }
 
 interface CellHistoryEntry {

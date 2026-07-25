@@ -1,6 +1,6 @@
 // TypeScript model mirroring the Go DiffResult types in DATA-CONTRACT.md.
-// The engine's stdout JSON has exactly this shape, so the real output drops in
-// later with no other changes (see loadDiff.ts for the single swap point).
+// The engine's stdout JSON has exactly this shape, so real output drops in with
+// no other changes (data/diffs.ts is the single swap point to the live engine).
 
 export type Classification = "authored" | "computed";
 
@@ -70,10 +70,10 @@ export type AnomalyType =
 export type Severity = "high" | "medium" | "low";
 
 export interface Anomaly {
-  type: AnomalyType | string;
+  type: AnomalyType;
   ref: string;
   label: string | null;
-  severity: Severity | string;
+  severity: Severity;
   message: string;
   oldFormula?: string | null;
   newValue?: CellValue;

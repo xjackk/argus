@@ -20,7 +20,7 @@
       "P\u0026L",
       "Returns"
     ],
-    "narrative": "A human changed the Revenue Growth (% p.a.) input from 8.0% to 9.5%. That flowed through the model to lift Revenue from 734.66 to 787.12 and EBITDA from 183.67 to 196.78, with D\u0026A moving from -29.39 to -31.48 and EBIT from 154.28 to 165.30; EBT rose from 132.36 to 143.37, tax from -33.09 to -35.84, and Net Income from 99.27 to 107.53. On the returns side, Exit Equity went from $1,665 to $1,803, MOIC from 3.36x to 3.64x, and IRR from 27.5% to 29.5%."
+    "narrative": "A reviewer edited the Revenue Growth assumption from 8.0% to 9.5% p.a. That flows through the model to lift Revenue from $735 to $787 and EBITDA from $184 to $197, with D\u0026A moving from $-29 to $-31, EBIT from $154 to $165, EBT from $132 to $143, tax from $-33 to $-36, and Net Income from $99 to $108. At the returns level, Exit Equity rises from $1,665 to $1,803, MOIC from 3.36x to 3.64x, and IRR from 27.5% to 29.5%."
   },
   "sheets": [
     {

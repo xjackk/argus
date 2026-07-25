@@ -21,7 +21,7 @@
       "Debt",
       "Returns"
     ],
-    "narrative": "A human raised the Interest Rate on Debt from 7.5% to 8.2% and the Mandatory Debt Paydown from 10.0% to 12.5% per annum. The higher rate pushes early-year interest up — the first Less: Interest line moves from -33.41 to -35.73, cutting EBT from 66.78 to 64.46, tax from -16.70 to -16.11, and Net Income from 50.09 to 48.34. Faster paydown then shrinks the debt balance in later years, so interest falls from -21.92 to -20.95 and -24.36 to -23.94, Net Income in that year goes from 61.08 to 60.18, and Closing Debt drops across the schedule — $401 to $379, $361 to $332, $325 to $290, $292 to $254, and $263 to $222, with Exit Net Debt following the last of these from $263 to $222."
+    "narrative": "A user changed two authored inputs: the Interest Rate on Debt from 7.5% to 8.2%, and the Mandatory Debt Paydown from 10.0% to 12.5% per annum. The largest downstream shifts land in the debt balances — Closing Debt moves from $401 to $379, $361 to $332, $325 to $290, $292 to $254, and $263 to $222, with Opening Debt tracking the same figures ($361→$332, $325→$290, $292→$254) and Exit Net Debt falling from $263 to $222. On the income statement, Less: Interest lines move from $-33 to $-36, $-22 to $-21, $-30 to $-31, and $-24 to $-24, carrying EBT from $67 to $64 and $81 to $80, Less: Tax from $-17 to $-16 and $-20 to $-20, and Net Income from $50 to $48 and $61 to $60."
   },
   "sheets": [
     {

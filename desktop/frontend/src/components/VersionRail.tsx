@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { CommitRow } from "../data/history";
 import type { CellChange, DiffResult } from "../data/types";
-import { formatValue } from "../data/format";
+import { qualify } from "../data/refs";
+import { classDot } from "../data/classify";
+import { ValueDelta } from "./ValueDelta";
 
 interface Props {
   commits: CommitRow[];
@@ -21,16 +23,22 @@ export function VersionRail({
   const [tab, setTab] = useState<"changes" | "history">("history");
   const [filter, setFilter] = useState("");
 
-  const rows = commits.filter((c) =>
-    (c.message + " " + c.author).toLowerCase().includes(filter.toLowerCase())
+  const rows = useMemo(
+    () =>
+      commits.filter((c) =>
+        (c.message + " " + c.author).toLowerCase().includes(filter.toLowerCase())
+      ),
+    [commits, filter]
   );
 
   // Flatten the current diff into a per-cell changed list for the Changes tab.
-  const changed: { sheet: string; change: CellChange }[] = [];
-  if (diff) {
-    for (const s of diff.sheets)
-      for (const ch of s.changes) changed.push({ sheet: s.name, change: ch });
-  }
+  const changed = useMemo(() => {
+    const out: { sheet: string; change: CellChange }[] = [];
+    if (diff)
+      for (const s of diff.sheets)
+        for (const ch of s.changes) out.push({ sheet: s.name, change: ch });
+    return out;
+  }, [diff]);
 
   return (
     <div className="rail">
@@ -75,8 +83,6 @@ export function VersionRail({
                 <div className="cnt">
                   {c.base ? (
                     <span className="tag-m">base version</span>
-                  ) : c.structural ? (
-                    <span className="tag-m">structural — row inserted</span>
                   ) : (
                     <>
                       <span className="tag-a">{c.authoredCount} authored</span>
@@ -111,26 +117,22 @@ export function VersionRail({
           )}
           {changed.map(({ sheet, change }) => (
             <div
-              key={sheet + "!" + change.coord}
+              key={qualify(sheet, change.coord)}
               className="chrow"
               onClick={() => onSelectCell(change, sheet)}
             >
-              <span
-                className={
-                  "ch-dot " +
-                  (change.classification === "authored" ? "a" : "c")
-                }
-              />
+              <span className={"ch-dot " + classDot(change.classification)} />
               <div className="ch-main">
                 <div className="ch-ref">
-                  <span className="sha">
-                    {sheet}!{change.coord}
-                  </span>
+                  <span className="sha">{qualify(sheet, change.coord)}</span>
                   {change.label ? ` ${change.label}` : ""}
                 </div>
                 <div className="ch-val">
-                  {formatValue(change.oldValue, change.displayFormat)} →{" "}
-                  <b>{formatValue(change.newValue, change.displayFormat)}</b>
+                  <ValueDelta
+                    old={change.oldValue}
+                    next={change.newValue}
+                    fmt={change.displayFormat}
+                  />
                 </div>
               </div>
             </div>

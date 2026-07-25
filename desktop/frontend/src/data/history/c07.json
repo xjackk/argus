@@ -161,5 +161,11 @@
       "oldFormula": "=Assumptions!B5*B8",
       "newValue": 2100
     }
+  ],
+  "allSheets": [
+    "Assumptions",
+    "P\u0026L",
+    "Debt",
+    "Returns"
   ]
 }

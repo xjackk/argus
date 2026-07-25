@@ -182,6 +182,9 @@ func Diff(pathA, pathB string) (DiffResult, error) {
 		Sheets:    nonNil(sheetDiffs),
 		Cascades:  nonNil(cascades),
 		Anomalies: nonNil(anomalies),
+		// Excel's own tab order from the NEW workbook, so the UI can render the
+		// full tab strip (unchanged sheets included) instead of guessing.
+		AllSheets: nonNil(b.sheetOrder),
 	}, nil
 }
 

@@ -1,0 +1,158 @@
+/* Sheet tabs (Excel's bottom tab strip) + the two small styles that shipped
+ * with it: the grid-header breadcrumb and the "no changes in this sheet" state.
+ *
+ * NOTE: this project otherwise keeps all styling in src/styles.css. This block
+ * lives in its own file only because styles.css had uncommitted edits from a
+ * parallel session when the component was added. Fold it into styles.css and
+ * delete this file when convenient — nothing depends on the split. */
+
+/* An unchanged sheet row in the middle pane is now selectable. In styles.css
+ * `.srow.off` is declared after `.srow.on` at equal specificity, so its muted
+ * colour won and the selected row rendered dim-on-blue. Raise specificity here
+ * rather than reordering styles.css (which has uncommitted parallel edits). */
+.srow.off.on {
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Breadcrumb in the grid header: "Project Atlas — LBO › Returns". */
+.g-crumb {
+  color: var(--tx3);
+  font-size: 12px;
+  margin-right: 2px;
+}
+
+/* Shown when the tab strip opens a sheet this commit didn't change. Argus
+ * stores diffs, not whole sheets, so there is genuinely nothing to draw. */
+.nosheet {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 40px 20px;
+  text-align: center;
+}
+.nosheet-title {
+  color: var(--tx);
+  font-size: 14px;
+}
+.nosheet-sub {
+  color: var(--tx3);
+  font-size: 12px;
+  max-width: 380px;
+  line-height: 1.5;
+}
+
+/* "Open in Excel / LibreOffice" — the escape hatch to the real application. */
+.openx {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.openx-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg3);
+  color: var(--tx);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.openx-btn:hover:not(:disabled) {
+  border-color: var(--blue);
+  color: #fff;
+}
+.openx-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.openx-err {
+  color: var(--red);
+  font-size: 11px;
+  max-width: 380px;
+}
+
+.sheettabs {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0 8px;
+  min-height: 30px;
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: 0 0 auto;
+  scrollbar-width: thin;
+}
+
+/* A 30-sheet model scrolls horizontally, exactly like Excel. */
+.sheettabs::-webkit-scrollbar {
+  height: 6px;
+}
+.sheettabs::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+.stab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 0 12px;
+  border: none;
+  border-top: 2px solid transparent;
+  background: transparent;
+  color: var(--tx2);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.stab:hover {
+  background: var(--bg3);
+  color: var(--tx);
+}
+
+/* Active tab reads as the "front" tab: lifted to the grid's background with an
+ * accent edge, the way Excel raises the current sheet. */
+.stab.on {
+  background: var(--bg);
+  color: var(--tx);
+  border-top-color: var(--blue);
+}
+
+/* Sheets with no changes in this version stay reachable but recede — they are
+ * navigation, not review material. */
+.stab.unchanged {
+  color: var(--tx3);
+}
+.stab.unchanged:hover {
+  color: var(--tx2);
+}
+
+.stab-count {
+  min-width: 16px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--bg3);
+  color: var(--tx2);
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.stab.on .stab-count {
+  background: var(--blue);
+  color: #fff;
+}

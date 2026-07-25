@@ -6,10 +6,18 @@ import { qualify, canonRef } from "../data/refs";
 import { isAuthored } from "../data/classify";
 import { VirtualGrid, ViewMode } from "./VirtualGrid";
 import { CellDetail } from "./CellDetail";
+import { SheetTabs } from "./SheetTabs";
+import { OpenInExcel } from "./OpenInExcel";
 import type { HoverState } from "./HoverCard";
 
-// Sheets shown muted for structural context when they carry no changes.
-const CONTEXT_SHEETS = ["P&L", "Debt"];
+// Unchanged sheets used to be a hardcoded ["P&L", "Debt"] — the demo workbook's
+// tab names, which showed phantom rows for any other file. They now come from
+// DiffResult.allSheets (Excel's real tab order); this falls back to an empty
+// list for diffs generated before the engine emitted that field.
+function unchangedSheets(diff: DiffResult): string[] {
+  if (!diff.allSheets?.length) return [];
+  return diff.allSheets.filter((n) => !diff.sheets.some((s) => s.name === n));
+}
 
 interface Props {
   diff: DiffResult;
@@ -53,7 +61,11 @@ export function DiffColumn(props: Props) {
   } = props;
 
   const [summaryCollapsed, setSummaryCollapsed] = useState(false);
-  const sheet = diff.sheets.find((s) => s.name === selectedSheet) ?? diff.sheets[0];
+  // null when the selected sheet has no changes in this commit — reachable now
+  // that the tab strip lets you open any sheet, not just changed ones. Falling
+  // back to sheets[0] here would silently render a DIFFERENT sheet than the one
+  // the tab says is active.
+  const sheet = diff.sheets.find((s) => s.name === selectedSheet) ?? null;
   const narrative = diff.summary.narrative;
   // Up to three headline metrics from the cascade top-movers (highest |Δ|).
   const movers = useMemo(
@@ -71,8 +83,15 @@ export function DiffColumn(props: Props) {
   // agnostic instead of implying every sheet has KPIs.
   const showMetrics = movers.length > 0 && movers.every((m) => !!m.label);
   const hasSummary = !!narrative || showMetrics;
-  const visibleCount = sheetCount(sheet.changes, mode);
+  const visibleCount = sheet ? sheetCount(sheet.changes, mode) : 0;
   const anomaly = diff.anomalies[0];
+
+  // Per-sheet count for the tab strip: a number for sheets this commit touched,
+  // null for untouched ones (which the strip renders muted, without a badge).
+  const countFor = (name: string) => {
+    const s = diff.sheets.find((x) => x.name === name);
+    return s ? sheetCount(s.changes, mode) : null;
+  };
 
   return (
     <div className="diffcol">
@@ -175,14 +194,17 @@ export function DiffColumn(props: Props) {
               </div>
             );
           })}
-          {/* Unchanged sheets, muted (structural context). */}
-          {CONTEXT_SHEETS.filter(
-            (n) => !diff.sheets.some((s) => s.name === n)
-          ).map((n) => (
-              <div key={n} className="srow off">
-                <span>{n}</span>
-              </div>
-            ))}
+          {/* Unchanged sheets, muted — now clickable, so a reviewer can go look
+              at a sheet this commit didn't touch. */}
+          {unchangedSheets(diff).map((n) => (
+            <div
+              key={n}
+              className={"srow off" + (n === selectedSheet ? " on" : "")}
+              onClick={() => onSelectSheet(n)}
+            >
+              <span>{n}</span>
+            </div>
+          ))}
           {/* When the top banner is collapsed, keep the summary reachable here. */}
           {summaryCollapsed && narrative && (
             <div className="aibox">
@@ -194,10 +216,16 @@ export function DiffColumn(props: Props) {
 
         <div className="gridpane">
           <div className="ghead">
-            <span className="g-name">{sheet.name}</span>
+            {/* Breadcrumb: which workbook, then which sheet. Answers "where am
+                I?" right next to the data, instead of only in the top bar. */}
+            <span className="g-crumb">{commit.file} ›</span>
+            <span className="g-name">{selectedSheet}</span>
             <span className="g-sub">
-              {visibleCount} {mode === "authored" ? "authored" : "changed"}{" "}
-              {visibleCount === 1 ? "cell" : "cells"}
+              {sheet
+                ? `${visibleCount} ${mode === "authored" ? "authored" : "changed"} ${
+                    visibleCount === 1 ? "cell" : "cells"
+                  }`
+                : "no changes in this sheet"}
             </span>
             <div
               className="toggle"
@@ -215,20 +243,25 @@ export function DiffColumn(props: Props) {
             </div>
           </div>
 
-          <div className="legend">
-            <span className="key">
-              <span className="sw" style={{ background: "var(--green)" }} />{" "}
-              authored — a human typed it
-            </span>
-            <span className="key">
-              <span className="sw" style={{ background: "var(--purple)" }} />{" "}
-              computed — a formula recalculated
-            </span>
-            <span className="key">
-              <span className="fmark">ƒ</span> formula cell
-            </span>
-          </div>
+          {/* The legend explains the grid's colours, so it only earns its space
+              when there is a grid. */}
+          {sheet && (
+            <div className="legend">
+              <span className="key">
+                <span className="sw" style={{ background: "var(--green)" }} />{" "}
+                authored — a human typed it
+              </span>
+              <span className="key">
+                <span className="sw" style={{ background: "var(--purple)" }} />{" "}
+                computed — a formula recalculated
+              </span>
+              <span className="key">
+                <span className="fmark">ƒ</span> formula cell
+              </span>
+            </div>
+          )}
 
+          {sheet ? (
           <VirtualGrid
             sheet={sheet}
             mode={mode}
@@ -241,6 +274,32 @@ export function DiffColumn(props: Props) {
             }
             onHover={onHover}
             onSelectCell={(c) => onSelectCell(c, sheet.name)}
+          />
+          ) : (
+            // Reachable from the tab strip: a sheet this commit didn't touch.
+            // Argus stores diffs, not whole sheets, so there is nothing to
+            // render here — say so plainly rather than showing an empty grid.
+            <div className="nosheet">
+              <div className="nosheet-title">No changes in {selectedSheet}</div>
+              <div className="nosheet-sub">
+                This commit didn’t touch this sheet. Argus stores what changed,
+                so there’s nothing to draw here — open the workbook itself to
+                browse it in full.
+              </div>
+              <OpenInExcel
+                path={diff.to.path}
+                sheet={selectedSheet}
+                label={`${commit.file} @ ${commit.id}`}
+              />
+            </div>
+          )}
+
+          {/* Excel's tab strip, along the bottom edge where users expect it. */}
+          <SheetTabs
+            diff={diff}
+            selectedSheet={selectedSheet}
+            onSelectSheet={onSelectSheet}
+            countFor={countFor}
           />
         </div>
 

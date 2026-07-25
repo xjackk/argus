@@ -16,6 +16,16 @@ type DiffResult struct {
 	Sheets        []SheetDiff `json:"sheets"`
 	Cascades      []Cascade   `json:"cascades"`
 	Anomalies     []Anomaly   `json:"anomalies"`
+
+	// AllSheets is every sheet in the NEW workbook, in Excel's own tab order —
+	// including sheets with no changes, which never appear in Sheets. The UI
+	// needs it to render a full tab strip the way Excel does; without it the
+	// client can only know about sheets that happen to have changed.
+	//
+	// Additive and optional (DATA-CONTRACT: add fields, never repurpose them).
+	// Diffs produced before this field existed omit it, so consumers must
+	// tolerate an empty slice and fall back to the changed sheets.
+	AllSheets []string `json:"allSheets"`
 }
 
 type VersionMeta struct {

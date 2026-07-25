@@ -190,5 +190,11 @@
       ]
     }
   ],
-  "anomalies": []
+  "anomalies": [],
+  "allSheets": [
+    "Assumptions",
+    "P\u0026L",
+    "Debt",
+    "Returns"
+  ]
 }

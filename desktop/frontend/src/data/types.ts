@@ -87,4 +87,11 @@ export interface DiffResult {
   sheets: SheetDiff[];
   cascades: Cascade[];
   anomalies: Anomaly[];
+  /**
+   * Every sheet in the new workbook, in Excel's own tab order — unchanged
+   * sheets included (they never appear in `sheets`). Powers the bottom tab
+   * strip. Optional: diffs generated before the engine emitted this field omit
+   * it, so consumers must fall back to `sheets`.
+   */
+  allSheets?: string[];
 }

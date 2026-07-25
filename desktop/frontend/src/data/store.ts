@@ -19,7 +19,25 @@ interface StoreCommit {
   base: boolean;
 }
 
-const STORE = "/store";
+// Where the store lives.
+//
+// DEFAULT — and the only thing the demo, the dev server, and the Wails build
+// ever use — is the relative path "/store": the daemon's -store directory is
+// desktop/frontend/public/store, which Vite serves right there. Nothing about
+// that changed.
+//
+// OPTIONALLY, set VITE_ARGUS_STORE at build time to point at a daemon running
+// with -http on another machine, e.g.
+//
+//   VITE_ARGUS_STORE=http://argus.internal:7777/store npm run build
+//
+// argusd serves /store/history.json and /store/diffs/{id}.json with exactly
+// the bytes it writes to disk, so the two fetches below are unchanged — only
+// the prefix moves. If the variable is unset, empty, or whitespace, we fall
+// back to "/store" and behaviour is byte-identical to before this existed.
+const STORE = ((import.meta.env?.VITE_ARGUS_STORE as string | undefined) ?? "")
+  .trim()
+  .replace(/\/+$/, "") || "/store";
 
 /** Live commit history from the daemon store, or null if no daemon is running. */
 export async function fetchLiveHistory(): Promise<CommitRow[] | null> {

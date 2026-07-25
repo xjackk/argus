@@ -10,6 +10,7 @@ import { relativeTime } from "./refs";
 
 export interface CommitRow {
   id: string;
+  file: string; // the workbook (Excel file) this commit belongs to
   author: string;
   message: string;
   description?: string;
@@ -47,6 +48,8 @@ export const COMMIT_HISTORY: CommitRow[] = (manifest.commits as ManifestCommit[]
     const diff = diffForCommit(c.id);
     return {
       id: c.id,
+      // The bundled chain is one model's history, so it's a single workbook.
+      file: "Project Atlas — LBO",
       author: c.author,
       message: c.message,
       description: DESCRIPTIONS[c.id],

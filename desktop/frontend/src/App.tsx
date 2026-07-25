@@ -20,6 +20,7 @@ export default function App() {
   const [diff, setDiff] = useState<DiffResult | null>(null);
   const [commits, setCommits] = useState<CommitRow[]>(COMMIT_HISTORY);
   const [live, setLive] = useState(false); // true once a daemon store is found
+  const [selectedWorkbook, setSelectedWorkbook] = useState("Project Atlas — LBO");
   const [selectedCommitId, setSelectedCommitId] = useState(DEFAULT_COMMIT);
   const [selectedSheet, setSelectedSheet] = useState<string>("Returns");
   const [mode, setMode] = useState<ViewMode>("cascade"); // State 1: cascade active
@@ -28,6 +29,18 @@ export default function App() {
     change: CellChange;
     sheet: string;
   } | null>(null);
+
+  // The distinct workbooks (files) in the timeline, and the commits for the one
+  // currently selected in the workbook dropdown — the rail shows a single file's
+  // history, like GitHub Desktop shows one repo.
+  const workbooks = useMemo(
+    () => [...new Set(commits.map((c) => c.file))],
+    [commits]
+  );
+  const shownCommits = useMemo(
+    () => commits.filter((c) => c.file === selectedWorkbook),
+    [commits, selectedWorkbook]
+  );
 
   // ── Poll the live daemon store. If a daemon is running, its history replaces
   // the bundled chain and new saves appear automatically; if not, we stay on the
@@ -39,12 +52,6 @@ export default function App() {
       if (!active || !h) return;
       setCommits(h);
       setLive(true);
-      // Keep the selection valid; default to the newest non-base commit.
-      setSelectedCommitId((prev) =>
-        h.some((c) => c.id === prev)
-          ? prev
-          : h.find((c) => !c.base)?.id ?? h[0].id
-      );
     }
     poll();
     const t = window.setInterval(poll, 3000);
@@ -53,6 +60,23 @@ export default function App() {
       window.clearInterval(t);
     };
   }, []);
+
+  // Keep the selected workbook valid as the tracked files change.
+  useEffect(() => {
+    if (workbooks.length && !workbooks.includes(selectedWorkbook)) {
+      setSelectedWorkbook(workbooks[0]);
+    }
+  }, [workbooks, selectedWorkbook]);
+
+  // Keep the selected commit valid within the selected workbook (default to its
+  // newest non-base commit).
+  useEffect(() => {
+    if (shownCommits.length && !shownCommits.some((c) => c.id === selectedCommitId)) {
+      setSelectedCommitId(
+        shownCommits.find((c) => !c.base)?.id ?? shownCommits[0].id
+      );
+    }
+  }, [shownCommits, selectedCommitId]);
 
   // ── Load the selected commit's diff (live store or bundled). Clears any open
   // cell and keeps the sheet selection if it still exists in the new diff. ──
@@ -132,10 +156,15 @@ export default function App() {
 
   return (
     <div className="app">
-      <TopBar />
+      <TopBar
+        live={live}
+        workbooks={workbooks}
+        selected={selectedWorkbook}
+        onSelect={setSelectedWorkbook}
+      />
       <div className="body">
         <VersionRail
-          commits={commits}
+          commits={shownCommits}
           selectedId={selectedCommitId}
           onSelect={setSelectedCommitId}
           diff={diff}

@@ -34,6 +34,7 @@ export async function fetchLiveHistory(): Promise<CommitRow[] | null> {
       .reverse() // newest first
       .map((c) => ({
         id: c.id,
+        file: c.file,
         author: c.author,
         message: c.message,
         when: relativeTime(c.timestamp, now),

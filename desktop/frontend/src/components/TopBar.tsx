@@ -2,18 +2,17 @@ import { useState } from "react";
 import { Onboarding } from "./Onboarding";
 import { ThemePicker } from "./ThemePicker";
 
-const WORKBOOKS = [
-  "Project Atlas — LBO",
-  "Atlas — Ops Model",
-  "Meridian — Credit Model",
-];
+interface TopBarProps {
+  live: boolean; // true when connected to a running capture daemon
+  workbooks: string[]; // the files tracked in the folder
+  selected: string; // the currently viewed workbook
+  onSelect: (w: string) => void;
+}
 
-// Top bar: a workbook picker, sync status, and Commit. Deliberately NOT a
-// git-branch bar — finance reviewers think in "which model" + "what changed
-// over time", so there's no branch/scenario concept. Dropdown and Commit/Sync
-// are mocked (no persistence) but fully interactive so the chrome feels real.
-export function TopBar() {
-  const [workbook, setWorkbook] = useState(WORKBOOKS[0]);
+// Top bar: a workbook (file) picker, sync/connectivity status, and Commit.
+// Deliberately NOT a git-branch bar — finance reviewers think in "which file" +
+// "what changed over time". When a daemon is connected, the status goes live.
+export function TopBar({ live, workbooks, selected, onSelect }: TopBarProps) {
   const [open, setOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncedLabel, setSyncedLabel] = useState("Synced 2m ago");
@@ -51,17 +50,17 @@ export function TopBar() {
         <i className="ico">▤</i>
         <div className="tb-mid">
           <div className="l">Current workbook</div>
-          <div className="v">{workbook}</div>
+          <div className="v">{selected}</div>
         </div>
         <span className="caret">▾</span>
         {open && (
           <div className="menu" onClick={(e) => e.stopPropagation()}>
-            {WORKBOOKS.map((w) => (
+            {workbooks.map((w) => (
               <div
                 key={w}
-                className={"menu-item" + (w === workbook ? " on" : "")}
+                className={"menu-item" + (w === selected ? " on" : "")}
                 onClick={() => {
-                  setWorkbook(w);
+                  onSelect(w);
                   setOpen(false);
                 }}
               >
@@ -86,11 +85,20 @@ export function TopBar() {
 
       <div className="tb action">
         <ThemePicker />
-        <div className="synced" onClick={doSync} title="Pull latest">
-          {syncing ? "Syncing…" : syncedLabel}
-          <br />
-          via SharePoint
-        </div>
+        {live ? (
+          <div className="conn live" title="Connected to the capture daemon">
+            <span className="conn-dot" />
+            Live
+            <br />
+            watching for saves
+          </div>
+        ) : (
+          <div className="synced" onClick={doSync} title="Pull latest">
+            {syncing ? "Syncing…" : syncedLabel}
+            <br />
+            via SharePoint
+          </div>
+        )}
         <button className="primary" onClick={() => setShowCommit(true)}>
           Commit version
         </button>
@@ -105,7 +113,7 @@ export function TopBar() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-title">Commit a new version</div>
             <div className="modal-sub">
-              Snapshots the current state of {workbook}.
+              Snapshots the current state of {selected}.
             </div>
             <textarea
               className="modal-input"

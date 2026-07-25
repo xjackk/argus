@@ -22,13 +22,24 @@ export function VersionRail({
 }: Props) {
   const [tab, setTab] = useState<"changes" | "history">("history");
   const [filter, setFilter] = useState("");
+  const [author, setAuthor] = useState("all");
+
+  // Distinct authors in the timeline — powers the "changes by whom" filter.
+  const authors = useMemo(
+    () => [...new Set(commits.map((c) => c.author))],
+    [commits]
+  );
 
   const rows = useMemo(
     () =>
-      commits.filter((c) =>
-        (c.message + " " + c.author).toLowerCase().includes(filter.toLowerCase())
+      commits.filter(
+        (c) =>
+          (author === "all" || c.author === author) &&
+          (c.message + " " + c.author)
+            .toLowerCase()
+            .includes(filter.toLowerCase())
       ),
-    [commits, filter]
+    [commits, filter, author]
   );
 
   // Flatten the current diff into a per-cell changed list for the Changes tab.
@@ -65,6 +76,21 @@ export function VersionRail({
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
+            {authors.length > 1 && (
+              <select
+                className="author-filter"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                title="Filter by who changed it"
+              >
+                <option value="all">All people</option>
+                {authors.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="rail-list">
             {rows.map((c) => (

@@ -67,6 +67,46 @@ flowchart TD
 
 ---
 
+## Exact Demo
+
+The live "Dropbox" demo — no hardcoded data. Two terminals: the capture daemon,
+and the client. As `.xlsx` files land in the watched folder, tracked commits
+appear in the client in real time.
+
+```sh
+# 0. One-time: a clean watched folder
+rm -rf ~/ArgusDropbox
+
+# 1. Terminal A — the capture daemon (run from the repo root)
+go run ./cmd/argusd -author "Deal Team A"
+
+# 2. Terminal B — the client
+cd desktop/frontend && npm run dev            # → http://localhost:5173
+#    (the top bar shows a green "● Live — watching for saves" once connected)
+
+# 3. Build the story LIVE. Each copy = a save = a tracked commit with its real diff.
+WB=~/Downloads/argus-files/test-workbooks
+cp $WB/atlas_c01_initial.xlsx       ~/ArgusDropbox/Atlas_LBO.xlsx   # base version
+cp $WB/atlas_c02_growth_case.xlsx   ~/ArgusDropbox/Atlas_LBO.xlsx   # 1 authored · 40 computed
+cp $WB/atlas_c03_margin_tighten.xlsx ~/ArgusDropbox/Atlas_LBO.xlsx  # margin change ripples
+cp $WB/atlas_c06_exit_multiple.xlsx ~/ArgusDropbox/Atlas_LBO.xlsx   # the exit-multiple cascade
+cp $WB/atlas_c07_hardcode_flag.xlsx ~/ArgusDropbox/Atlas_LBO.xlsx   # ⚠ anomaly, live
+```
+
+Click a commit → see the cascade; click a cell → walk the multi-hop dependency
+chain. **Two-user variant:** stop the daemon (Ctrl+C) and restart it as a
+different author to attribute later saves to them — the history resumes, and the
+rail's **author filter** lets you show just one person's changes:
+
+```sh
+go run ./cmd/argusd -author "S. Patel (VP)"    # subsequent saves are attributed to Patel
+```
+
+> Demo with `npm run dev` (it fetches the live `/store`). `wails build` produces
+> the standalone single-binary client but bundles data at build time.
+
+---
+
 ## What Argus does
 
 ### Engine (`engine/`)

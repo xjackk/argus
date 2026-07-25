@@ -8,6 +8,13 @@
 // server for a team; the architecture is identical, only the store location and
 // transport change.
 //
+// The daemon is designed to never crash on bad input: a file that vanishes
+// mid-capture, a locked/corrupt .xlsx, a diff-engine error, or a store write
+// failure are all logged and skipped — the watch loop stays alive. On restart
+// it RESUMES the existing store (rebuilding its in-memory state from
+// history.json + the versions on disk) so relaunching — e.g. with a different
+// -author — continues the timeline instead of overwriting it.
+//
 // Usage:
 //
 //	argusd [-folder DIR] [-store DIR] [-author NAME]
@@ -28,6 +35,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -39,16 +47,16 @@ import (
 
 // Commit is one captured version in the store's timeline.
 type Commit struct {
-	ID             string `json:"id"`
-	File           string `json:"file"`
-	Author         string `json:"author"`
-	Message        string `json:"message"`
-	Timestamp      string `json:"timestamp"`
-	Parent         string `json:"parent"` // previous commit id for the same file, "" if base
-	AuthoredCount  int    `json:"authoredCount"`
-	ComputedCount  int    `json:"computedCount"`
-	Anomaly        bool   `json:"anomaly"`
-	Base           bool   `json:"base"` // first version of this file (no diff)
+	ID            string `json:"id"`
+	File          string `json:"file"`
+	Author        string `json:"author"`
+	Message       string `json:"message"`
+	Timestamp     string `json:"timestamp"`
+	Parent        string `json:"parent"` // previous commit id for the same file, "" if base
+	AuthoredCount int    `json:"authoredCount"`
+	ComputedCount int    `json:"computedCount"`
+	Anomaly       bool   `json:"anomaly"`
+	Base          bool   `json:"base"` // first version of this file (no diff)
 }
 
 // History is the store manifest the client reads.
@@ -68,6 +76,18 @@ type daemon struct {
 	seq          int
 }
 
+// newDaemon builds a daemon with initialized state. It does not touch the disk;
+// call run (or the individual ensureDirs/resume/scanFolder steps in tests).
+func newDaemon(folder, store, author string) *daemon {
+	return &daemon{
+		folder:       folder,
+		store:        store,
+		author:       author,
+		lastCommit:   map[string]string{},
+		lastSnapshot: map[string]string{},
+	}
+}
+
 func main() {
 	home, _ := os.UserHomeDir()
 	folder := flag.String("folder", filepath.Join(home, "ArgusDropbox"), "watched folder")
@@ -75,38 +95,121 @@ func main() {
 	author := flag.String("author", osUser(), "commit author")
 	flag.Parse()
 
-	d := &daemon{
-		folder:       *folder,
-		store:        *store,
-		author:       *author,
-		lastCommit:   map[string]string{},
-		lastSnapshot: map[string]string{},
-	}
+	d := newDaemon(*folder, *store, *author)
 	if err := d.run(); err != nil {
 		log.Fatalf("argusd: %v", err)
 	}
 }
 
 func (d *daemon) run() error {
+	if err := d.ensureDirs(); err != nil {
+		return err
+	}
+	log.Printf("argus daemon — watching %s", d.folder)
+	log.Printf("            store  %s   author %q", d.store, d.author)
+
+	// Resume any existing store so a restart continues the timeline.
+	if err := d.resume(); err != nil {
+		// A resume failure is not fatal: log loudly and start a fresh timeline
+		// rather than refusing to run.
+		log.Printf("! could not resume existing store: %v — starting fresh", err)
+	}
+
+	log.Printf("Drop .xlsx files into the watched folder (or save over one) to track them.")
+
+	// Snapshot any files already sitting in the folder. Files already tracked
+	// and unchanged (content identical to their last snapshot) are skipped, so
+	// a restart does not re-add every file as a new base commit.
+	d.scanFolder()
+	d.writeHistory()
+
+	return d.watch()
+}
+
+// ensureDirs creates the folder + store layout the daemon writes into.
+func (d *daemon) ensureDirs() error {
 	for _, dir := range []string{d.folder, d.store, filepath.Join(d.store, "diffs"), filepath.Join(d.store, "versions")} {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return fmt.Errorf("mkdir %s: %w", dir, err)
 		}
 	}
-	log.Printf("argus daemon — watching %s", d.folder)
-	log.Printf("            store  %s   author %q", d.store, d.author)
-	log.Printf("Drop .xlsx files into the watched folder (or save over one) to track them.")
+	return nil
+}
 
-	// Snapshot any files already sitting in the folder as their base version.
-	entries, _ := os.ReadDir(d.folder)
-	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
-	for _, e := range entries {
-		if isXlsx(e.Name()) {
-			d.capture(filepath.Join(d.folder, e.Name()))
+// resume loads an existing store into memory so a restart continues the
+// timeline instead of overwriting it. It rebuilds:
+//   - history         from store/history.json
+//   - lastCommit[key] the latest commit id per file
+//   - lastSnapshot[key] the latest snapshot path under store/versions/<key>/
+//   - seq             the highest snapshot number seen on disk
+//
+// It is a no-op (nil) when there is no history yet, and it degrades gracefully
+// (logs, starts fresh) if history.json is present but corrupt.
+func (d *daemon) resume() error {
+	histPath := filepath.Join(d.store, "history.json")
+	b, err := os.ReadFile(histPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil // fresh store — nothing to resume
+		}
+		return fmt.Errorf("reading %s: %w", histPath, err)
+	}
+
+	var h History
+	if err := json.Unmarshal(b, &h); err != nil {
+		// Corrupt history must not crash the daemon; start a fresh timeline.
+		log.Printf("! history.json is unreadable (%v) — starting a fresh timeline", err)
+		return nil
+	}
+
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.history = h
+
+	// lastCommit: commits are appended in order, so the last one for a file wins.
+	keys := map[string]bool{}
+	for _, c := range h.Commits {
+		key := fileKey(c.File)
+		d.lastCommit[key] = c.ID
+		keys[key] = true
+	}
+
+	// lastSnapshot + seq: read what is actually on disk under versions/<key>/.
+	for key := range keys {
+		snap, n := latestSnapshot(filepath.Join(d.store, "versions", key))
+		if snap != "" {
+			d.lastSnapshot[key] = snap
+		}
+		if n > d.seq {
+			d.seq = n
 		}
 	}
-	d.writeHistory()
 
+	log.Printf("resumed %d commit(s) across %d file(s) — next id c%03d, seq at %06d",
+		len(h.Commits), len(keys), len(h.Commits)+1, d.seq)
+	return nil
+}
+
+// scanFolder captures every .xlsx currently in the watched folder. New files
+// become base commits; already-tracked unchanged files are skipped by capture.
+func (d *daemon) scanFolder() {
+	entries, err := os.ReadDir(d.folder)
+	if err != nil {
+		log.Printf("! could not scan folder %s: %v", d.folder, err)
+		return
+	}
+	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
+	for _, e := range entries {
+		if e.IsDir() || !isXlsx(e.Name()) || isTemp(e.Name()) {
+			continue
+		}
+		d.capture(filepath.Join(d.folder, e.Name()))
+	}
+}
+
+// watch runs the fsnotify event loop until the watcher closes. Errors are
+// logged and the loop keeps running — the daemon never exits on a bad event.
+func (d *daemon) watch() error {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
@@ -121,7 +224,11 @@ func (d *daemon) run() error {
 	pending := map[string]*time.Timer{}
 	var pmu sync.Mutex
 	schedule := func(path string) {
-		if !isXlsx(path) || isTemp(path) {
+		if !isXlsx(path) {
+			return
+		}
+		if isTemp(path) {
+			// Excel/LibreOffice write ~$foo.xlsx / .~lock files next to the doc.
 			return
 		}
 		pmu.Lock()
@@ -133,10 +240,12 @@ func (d *daemon) run() error {
 			pmu.Lock()
 			delete(pending, path)
 			pmu.Unlock()
-			if _, err := os.Stat(path); err == nil {
-				d.capture(path)
-				d.writeHistory()
+			if _, err := os.Stat(path); err != nil {
+				log.Printf("· skip %s — gone before capture (%v)", filepath.Base(path), err)
+				return
 			}
+			d.capture(path)
+			d.writeHistory()
 		})
 	}
 
@@ -153,15 +262,22 @@ func (d *daemon) run() error {
 			if !ok {
 				return nil
 			}
-			log.Printf("watch error: %v", err)
+			log.Printf("watch error: %v", err) // logged — loop stays alive
 		}
 	}
 }
 
 // capture snapshots one file and, if it has a prior version, diffs and commits.
+// It is fully self-contained and panic-safe: any panic while handling one file
+// is recovered and logged, so a single bad file can never take down the daemon.
 func (d *daemon) capture(path string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("● skip %s — recovered from panic: %v", filepath.Base(path), r)
+		}
+	}()
 
 	key := fileKey(path)
 	name := filepath.Base(path)
@@ -169,20 +285,26 @@ func (d *daemon) capture(path string) {
 	// Copy the current file into the versions store (retry: it may be briefly
 	// locked mid-save by the editor).
 	snapDir := filepath.Join(d.store, "versions", key)
-	os.MkdirAll(snapDir, 0o755)
+	if err := os.MkdirAll(snapDir, 0o755); err != nil {
+		log.Printf("· skip %s — cannot create store dir: %v", name, err)
+		return
+	}
 	d.seq++
 	snap := filepath.Join(snapDir, fmt.Sprintf("%06d.xlsx", d.seq))
 	if err := copyFileRetry(path, snap, 5); err != nil {
-		log.Printf("skip %s: %v", name, err)
+		log.Printf("· skip %s — could not read/copy file: %v", name, err)
 		d.seq--
 		return
 	}
 
 	prevSnap, hadPrev := d.lastSnapshot[key]
-	// Ignore no-op saves (content identical to the last snapshot).
+	// Ignore no-op saves (content identical to the last snapshot). This is also
+	// what makes an unchanged, already-tracked file a no-op on restart instead
+	// of a duplicate base commit.
 	if hadPrev && sameContent(prevSnap, snap) {
 		os.Remove(snap)
 		d.seq--
+		log.Printf("· skip %s — no change since last snapshot", name)
 		return
 	}
 
@@ -198,11 +320,13 @@ func (d *daemon) capture(path string) {
 	if !hadPrev {
 		commit.Base = true
 		commit.Message = "Added " + name
-		log.Printf("＋ %s  tracked %s (base version)", id, name)
+		log.Printf("＋ %s  tracked %s (base version) — author %q", id, name, d.author)
 	} else {
 		res, err := engine.Diff(prevSnap, snap)
 		if err != nil {
-			log.Printf("diff %s: %v", name, err)
+			// The file copied fine but the engine could not diff it (corrupt or
+			// unsupported workbook). Record the save, log the reason, carry on.
+			log.Printf("● %s  %s — diff failed (%v); recording save without a diff", id, name, err)
 		} else {
 			commit.AuthoredCount = res.Summary.AuthoredCount
 			commit.ComputedCount = res.Summary.ComputedCount
@@ -214,7 +338,7 @@ func (d *daemon) capture(path string) {
 		if commit.Anomaly {
 			badge = " ⚠ anomaly"
 		}
-		log.Printf("● %s  %s — %d authored · %d computed%s", id, name, commit.AuthoredCount, commit.ComputedCount, badge)
+		log.Printf("● %s  %s — %d authored · %d computed%s — author %q", id, name, commit.AuthoredCount, commit.ComputedCount, badge, d.author)
 	}
 
 	d.history.Commits = append(d.history.Commits, commit)
@@ -223,15 +347,27 @@ func (d *daemon) capture(path string) {
 }
 
 func (d *daemon) writeDiff(id string, res engine.DiffResult) {
-	b, _ := json.MarshalIndent(res, "", "  ")
-	os.WriteFile(filepath.Join(d.store, "diffs", id+".json"), b, 0o644)
+	b, err := json.MarshalIndent(res, "", "  ")
+	if err != nil {
+		log.Printf("! could not encode diff %s: %v", id, err)
+		return
+	}
+	if err := os.WriteFile(filepath.Join(d.store, "diffs", id+".json"), b, 0o644); err != nil {
+		log.Printf("! could not write diff %s: %v", id, err)
+	}
 }
 
 func (d *daemon) writeHistory() {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	b, _ := json.MarshalIndent(d.history, "", "  ")
-	os.WriteFile(filepath.Join(d.store, "history.json"), b, 0o644)
+	b, err := json.MarshalIndent(d.history, "", "  ")
+	if err != nil {
+		log.Printf("! could not encode history: %v", err)
+		return
+	}
+	if err := os.WriteFile(filepath.Join(d.store, "history.json"), b, 0o644); err != nil {
+		log.Printf("! could not write history.json: %v", err)
+	}
 }
 
 // --- helpers ---
@@ -250,7 +386,8 @@ func isXlsx(name string) bool {
 	return strings.EqualFold(filepath.Ext(name), ".xlsx")
 }
 
-// isTemp filters editor lock/temp files (Excel/LibreOffice write ~$foo, .~lock).
+// isTemp filters editor lock/temp files (Excel/LibreOffice write ~$foo, .~lock)
+// and any dotfile.
 func isTemp(path string) bool {
 	b := filepath.Base(path)
 	return strings.HasPrefix(b, "~$") || strings.HasPrefix(b, ".~") || strings.HasPrefix(b, ".")
@@ -259,6 +396,34 @@ func isTemp(path string) bool {
 func fileKey(path string) string {
 	sum := sha1.Sum([]byte(filepath.Base(path)))
 	return hex.EncodeToString(sum[:6])
+}
+
+// latestSnapshot returns the highest-numbered %06d.xlsx snapshot in dir and its
+// numeric sequence. Returns ("", 0) if the dir is missing or has no snapshots.
+func latestSnapshot(dir string) (string, int) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", 0
+	}
+	best := -1
+	var bestName string
+	for _, e := range entries {
+		if e.IsDir() || !isXlsx(e.Name()) {
+			continue
+		}
+		n, err := strconv.Atoi(strings.TrimSuffix(e.Name(), filepath.Ext(e.Name())))
+		if err != nil {
+			continue
+		}
+		if n > best {
+			best = n
+			bestName = e.Name()
+		}
+	}
+	if best < 0 {
+		return "", 0
+	}
+	return filepath.Join(dir, bestName), best
 }
 
 func copyFileRetry(src, dst string, tries int) error {
@@ -283,8 +448,10 @@ func copyFile(src, dst string) error {
 		return err
 	}
 	defer out.Close()
-	_, err = io.Copy(out, in)
-	return err
+	if _, err := io.Copy(out, in); err != nil {
+		return err
+	}
+	return out.Close()
 }
 
 func sameContent(a, b string) bool {

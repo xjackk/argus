@@ -1,0 +1,9 @@
+/probe
+/desktop/build
+node_modules
+*.o
+
+# Built binaries (the bare pattern `argus-diff` also matched cmd/argus-diff/).
+/argus-diff
+/cmd/argus-diff/argus-diff
+.gstack/

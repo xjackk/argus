@@ -105,6 +105,28 @@ go run ./cmd/argusd -author "S. Patel (VP)"    # subsequent saves are attributed
 > Demo with `npm run dev` (it fetches the live `/store`). `wails build` produces
 > the standalone single-binary client but bundles data at build time.
 
+### Live demo test — edit a real file (the "poof" moment)
+
+The always-running, real-time flow — like leaving Slack open. Daemon + client
+running (steps above), then:
+
+1. Put a workbook in the folder so it's tracked:
+   ```sh
+   cp samples/income_statement_v1.xlsx ~/ArgusDropbox/Q3_Report.xlsx
+   ```
+2. Open `~/ArgusDropbox/Q3_Report.xlsx` in **Excel or LibreOffice**, change an
+   input cell (e.g. a growth or margin assumption), and **save** (⌘/Ctrl-S).
+3. Within a second the client flashes a **“New change tracked — <you> saved
+   Q3_Report.xlsx”** toast and the new version appears at the top of the History
+   rail — no refresh, no clicking.
+4. Click it → the cascade shows exactly what your one edit moved, and the AI
+   summary explains it in plain English.
+
+Attribute saves to different people by restarting the daemon with a different
+`-author`; the rail's author filter then isolates each person's changes. This is
+the model: the daemon is always running in the background (like Slack/Discord),
+and the client updates in real time.
+
 ---
 
 ## What Argus does

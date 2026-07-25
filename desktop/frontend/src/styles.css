@@ -1329,3 +1329,13 @@ body {
   outline: none;
   cursor: pointer;
 }
+
+/* Live "new change" toast — the real-time signal */
+.live-toast {
+  border-left: 3px solid var(--green);
+  animation: toast-in 0.25s ease-out;
+}
+@keyframes toast-in {
+  from { transform: translate(-50%, 12px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}

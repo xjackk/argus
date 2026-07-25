@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { diffForCommit } from "./data/diffs";
 import { COMMIT_HISTORY, type CommitRow } from "./data/history";
 import { fetchLiveHistory, fetchLiveDiff } from "./data/store";
@@ -29,6 +29,8 @@ export default function App() {
     change: CellChange;
     sheet: string;
   } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const lastTopId = useRef<string | null>(null); // newest commit id last seen live
 
   // The distinct workbooks (files) in the timeline, and the commits for the one
   // currently selected in the workbook dropdown — the rail shows a single file's
@@ -50,6 +52,15 @@ export default function App() {
     async function poll() {
       const h = await fetchLiveHistory();
       if (!active || !h) return;
+      // "Poof, it changed": when a new commit lands after the first live load,
+      // flash a toast — the real-time, always-running signal.
+      const topId = h[0]?.id ?? null;
+      if (lastTopId.current !== null && topId !== lastTopId.current) {
+        const c = h[0];
+        setToast(`New change tracked — ${c.author} saved ${c.file}`);
+        window.setTimeout(() => setToast(null), 4000);
+      }
+      lastTopId.current = topId;
       setCommits(h);
       setLive(true);
     }
@@ -202,6 +213,7 @@ export default function App() {
         )}
       </div>
       {hover && <HoverCard hover={hover} cascadeByOrigin={cascadeByOrigin} />}
+      {toast && <div className="toast live-toast">{toast}</div>}
     </div>
   );
 }

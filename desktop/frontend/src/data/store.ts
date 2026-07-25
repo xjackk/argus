@@ -41,7 +41,9 @@ export async function fetchLiveHistory(): Promise<CommitRow[] | null> {
         authoredCount: c.authoredCount,
         computedCount: c.computedCount,
         base: c.base,
-        anomaly: c.anomaly,
+        // Anomaly UI disabled for the demo (see diffs.ts) — force the rail badge
+        // off even when the daemon store recorded one.
+        anomaly: false,
       }));
   } catch {
     return null; // no daemon / not served → caller uses the bundled chain
@@ -53,7 +55,10 @@ export async function fetchLiveDiff(id: string): Promise<DiffResult | null> {
   try {
     const res = await fetch(`${STORE}/diffs/${id}.json`, { cache: "no-store" });
     if (!res.ok) return null;
-    return (await res.json()) as DiffResult;
+    const diff = (await res.json()) as DiffResult;
+    // Anomaly UI disabled for the demo (see diffs.ts) — strip anomalies from
+    // live daemon diffs too, so dropped-in workbooks don't surface false alarms.
+    return { ...diff, anomalies: [] };
   } catch {
     return null;
   }

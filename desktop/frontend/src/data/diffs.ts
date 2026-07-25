@@ -30,7 +30,13 @@ function asDiff(x: unknown, id: string): DiffResult {
   ) {
     throw new Error(`bundled diff ${id} is not a valid DiffResult`);
   }
-  return d;
+  // Anomaly detection is disabled for the demo: the magnitude heuristic flags
+  // legitimate input-driven cascades (e.g. capex doubles → PP&E moves 60%+) as
+  // "anomalies", which reads as a false alarm on a correct change. The cascade +
+  // blast-radius already show exactly what moved, so reviewers can judge the
+  // numbers themselves. Engine still computes anomalies (kept + tested); we drop
+  // them at ingestion. To re-enable, delete this line. See also store.ts.
+  return { ...d, anomalies: [] };
 }
 
 const DIFFS: Record<string, DiffResult> = {

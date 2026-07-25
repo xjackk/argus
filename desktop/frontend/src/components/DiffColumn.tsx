@@ -227,6 +227,24 @@ export function DiffColumn(props: Props) {
                   }`
                 : "no changes in this sheet"}
             </span>
+            {/* Blast radius — the differentiator, stated as a number: one edit
+                and everything it moved downstream. This is what Google Sheets /
+                xltrail can't show (no dependency model). */}
+            {diff.summary.authoredCount > 0 &&
+              diff.summary.computedCount > 0 && (
+                <span
+                  className="blast-radius"
+                  title="One authored edit and every cell it moved downstream"
+                >
+                  ⚡ {diff.summary.authoredCount} edit
+                  {diff.summary.authoredCount === 1 ? "" : "s"} rippled to{" "}
+                  {diff.summary.computedCount} cell
+                  {diff.summary.computedCount === 1 ? "" : "s"}
+                  {diff.summary.sheetsAffected.length > 1
+                    ? ` across ${diff.summary.sheetsAffected.length} sheets`
+                    : ""}
+                </span>
+              )}
             <div
               className="toggle"
               onClick={() =>

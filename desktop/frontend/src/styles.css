@@ -551,6 +551,21 @@ body {
   color: var(--tx2);
   font-size: 11px;
 }
+/* Blast-radius callout — the differentiator as a number, tied to the cascade
+   (purple = computed ripple). Prominent so a demo can't miss it. */
+.blast-radius {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--purple);
+  background: var(--purplebg);
+  border: 1px solid var(--purple);
+  border-radius: 20px;
+  padding: 3px 11px;
+  white-space: nowrap;
+}
 
 /* THE toggle */
 .toggle {

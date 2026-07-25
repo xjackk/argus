@@ -1,29 +1,38 @@
 #!/usr/bin/env bash
-# Reset Argus to a clean slate for a live demo.
+# Reset Argus to a known-good starting state for a live demo, and open the
+# workbooks in LibreOffice ready to edit.
 #
-# THE THING THAT BITES YOU: argusd holds the commit history in MEMORY and
-# rewrites history.json wholesale on every capture. Deleting the store while the
-# daemon is running does nothing — the next save restores every old commit from
-# memory and appends to it. The daemon must be stopped FIRST. This script does
-# that in the right order.
+# TWO THINGS THAT BITE YOU, both handled here:
+#
+# 1. argusd holds the commit history in MEMORY and rewrites history.json
+#    wholesale on every capture. Deleting the store while the daemon runs is a
+#    no-op — the next save writes every old commit straight back and appends to
+#    it, and leaves history.json referencing diff files that were removed (those
+#    rows then load as "No diff"). The daemon must be stopped FIRST.
+#
+# 2. argusd SCANS the watched folder at startup and files every workbook already
+#    there as a base commit. That is what we want here: restore all three
+#    workbooks, restart, and you get three clean base commits ready to edit.
 #
 # Usage:
-#   scripts/demo-reset.sh              # wipe store, keep watched workbooks
-#   scripts/demo-reset.sh --workbooks  # also reset workbooks to pristine samples
-#   scripts/demo-reset.sh --no-start   # wipe but don't relaunch the daemon
+#   scripts/demo-reset.sh              # restore all workbooks + open in LibreOffice
+#   scripts/demo-reset.sh --no-open    # same, but don't launch LibreOffice
+#   scripts/demo-reset.sh --empty      # true cold open: no workbooks, no commits
+#   scripts/demo-reset.sh --no-start   # wipe without relaunching the daemon
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
+ROOT="$(pwd)"
 STORE="desktop/frontend/public/store"
 FOLDER="${ARGUS_FOLDER:-$HOME/ArgusDropbox}"
 AUTHOR="${ARGUS_AUTHOR:-Avery (Analyst)}"
-STAGE_DIR="${ARGUS_STAGE:-$HOME/ArgusDemoWorkbooks}"
-RESET_WORKBOOKS=0
-START=1
+PRISTINE="$ROOT/demo-workbooks"     # committed, so the demo is reproducible
+EMPTY=0; START=1; OPEN=1
 for a in "$@"; do
   case "$a" in
-    --workbooks) RESET_WORKBOOKS=1 ;;
-    --no-start)  START=0 ;;
+    --empty)    EMPTY=1; OPEN=0 ;;
+    --no-open)  OPEN=0 ;;
+    --no-start) START=0 ;;
     *) echo "unknown flag: $a" >&2; exit 2 ;;
   esac
 done
@@ -31,16 +40,10 @@ done
 say() { printf '  %s\n' "$*"; }
 
 echo "── 1. Stop the daemon ───────────────────────────────────"
-# Must happen before the wipe, or in-memory history is written straight back.
 if pgrep -f '[a]rgusd' >/dev/null 2>&1; then
   pkill -f '[a]rgusd' || true
-  for _ in 1 2 3 4 5 6 7 8 9 10; do
-    pgrep -f '[a]rgusd' >/dev/null 2>&1 || break
-    sleep 0.3
-  done
-  if pgrep -f '[a]rgusd' >/dev/null 2>&1; then
-    echo "  ✗ argusd would not stop — kill it by hand and rerun"; exit 1
-  fi
+  for _ in $(seq 10); do pgrep -f '[a]rgusd' >/dev/null 2>&1 || break; sleep 0.3; done
+  pgrep -f '[a]rgusd' >/dev/null 2>&1 && { echo "  ✗ argusd would not stop"; exit 1; }
   say "✓ stopped"
 else
   say "✓ not running"
@@ -50,67 +53,74 @@ echo
 echo "── 2. Wipe the store ────────────────────────────────────"
 rm -rf "$STORE"
 mkdir -p "$STORE/diffs" "$STORE/versions"
-# An EMPTY commits array is treated by the client exactly like "no daemon"
-# (store.ts returns null on a zero-length list), so the app shows the bundled
-# Atlas chain and labels itself "Offline — showing saved history". That is the
-# intended cold-open: it flips to live the moment the first save is captured.
 printf '{"commits":[]}\n' > "$STORE/history.json"
 say "✓ $STORE emptied"
 
 echo
-echo "── 3. Watched folder ────────────────────────────────────"
+echo "── 3. Workbooks ─────────────────────────────────────────"
 mkdir -p "$FOLDER"
-# LibreOffice lock files confuse a clean start and linger after a crash.
+# LibreOffice lock files linger after a crash and clutter a clean start.
 find "$FOLDER" -maxdepth 1 -name '.~lock.*#' -delete 2>/dev/null || true
-say "✓ cleared editor lock files"
+rm -f "$FOLDER"/*.xlsx
 
-# argusd SCANS the folder at startup and files every workbook already sitting
-# there as a base commit. So "empty store + populated folder" is not a blank
-# slate: restart alone gives you N base commits and a dead "Initial version"
-# pane. A true cold open needs the folder empty too.
-if [ "$RESET_WORKBOOKS" = "1" ]; then
-  mkdir -p "$STAGE_DIR"
-  for f in "$FOLDER"/*.xlsx; do [ -e "$f" ] || continue; mv "$f" "$STAGE_DIR/"; done
-  [ -f samples/income_statement_v1.xlsx ] && cp -f samples/income_statement_v1.xlsx "$STAGE_DIR/Income_Statement.xlsx"
-  say "✓ folder emptied — TRUE cold open (no commits at all)"
-  say "  workbooks moved to: $STAGE_DIR"
-  say "  drag one in on stage → base commit → edit + save → cascade"
+if [ "$EMPTY" = "1" ]; then
+  say "✓ folder emptied — TRUE cold open, no commits at all"
+  say "  the app shows the bundled Atlas history badged \"Offline\";"
+  say "  drag a workbook from $PRISTINE to go live"
 else
-  n=$(find "$FOLDER" -maxdepth 1 -name '*.xlsx' | wc -l | tr -d ' ')
-  say "kept $n workbook(s) in $FOLDER"
-  if [ "$n" -gt 0 ]; then
-    say "  ⚠ argusd files each of these as a base commit on start, so the app"
-    say "    opens on an \"Initial version\" pane, NOT the Atlas fallback."
-    say "    Use --workbooks for a true blank slate."
+  if [ ! -d "$PRISTINE" ] || [ -z "$(ls -A "$PRISTINE"/*.xlsx 2>/dev/null)" ]; then
+    echo "  ✗ no pristine workbooks in $PRISTINE"; exit 1
   fi
+  cp "$PRISTINE"/*.xlsx "$FOLDER"/
+  n=$(find "$FOLDER" -maxdepth 1 -name '*.xlsx' | wc -l | tr -d ' ')
+  say "✓ restored $n pristine workbook(s) from demo-workbooks/"
+  for f in "$FOLDER"/*.xlsx; do say "    $(basename "$f")"; done
 fi
 
 echo
 echo "── 4. Restart the daemon ────────────────────────────────"
 if [ "$START" = "0" ]; then
   say "skipped (--no-start). Start it with:"
-  say "  go run ./cmd/argusd -store $STORE -author \"$AUTHOR\""
+  say "  go run ./cmd/argusd -store $STORE -folder $FOLDER -author \"$AUTHOR\""
 else
   go build -o /tmp/argusd-demo ./cmd/argusd
-  nohup /tmp/argusd-demo -store "$STORE" -folder "$FOLDER" -author "$AUTHOR" \
+  nohup /tmp/argusd-demo -store "$ROOT/$STORE" -folder "$FOLDER" -author "$AUTHOR" \
     >/tmp/argusd-demo.log 2>&1 &
-  sleep 1
-  if pgrep -f '[a]rgusd-demo' >/dev/null 2>&1; then
-    say "✓ running — watching $FOLDER as \"$AUTHOR\""
-    say "  log: /tmp/argusd-demo.log"
-  else
-    echo "  ✗ failed to start — see /tmp/argusd-demo.log"; tail -5 /tmp/argusd-demo.log; exit 1
-  fi
+  # Wait for the startup scan to file the base commits before reporting.
+  for _ in $(seq 20); do
+    c=$(python3 -c "import json;print(len(json.load(open('$STORE/history.json'))['commits']))" 2>/dev/null || echo 0)
+    [ "$c" != "0" ] && break
+    [ "$EMPTY" = "1" ] && break
+    sleep 0.4
+  done
+  pgrep -f '[a]rgusd-demo' >/dev/null 2>&1 || { echo "  ✗ failed to start"; tail -5 /tmp/argusd-demo.log; exit 1; }
+  say "✓ running — watching $FOLDER as \"$AUTHOR\""
+  python3 - <<PY
+import json
+h=json.load(open("$STORE/history.json"))
+for c in h["commits"]:
+    print(f"    {c['id']}  {c['message']}")
+print(f"  → {len(h['commits'])} base commit(s) ready")
+PY
+fi
+
+echo
+echo "── 5. Open in LibreOffice ───────────────────────────────"
+if [ "$OPEN" = "0" ]; then
+  say "skipped"
+elif [ -d "/Applications/LibreOffice.app" ]; then
+  # Open all workbooks in one call so LibreOffice starts once, not three times.
+  open -a "/Applications/LibreOffice.app" "$FOLDER"/*.xlsx
+  say "✓ opened $(find "$FOLDER" -maxdepth 1 -name '*.xlsx' | wc -l | tr -d ' ') workbook(s)"
+  say "  give it a few seconds to finish launching before you edit"
+else
+  say "⚠ LibreOffice not found at /Applications/LibreOffice.app — open them yourself"
 fi
 
 echo
 echo "── Ready ────────────────────────────────────────────────"
-if [ "$RESET_WORKBOOKS" = "1" ]; then
-  say "Cold open: the app shows the bundled Atlas history, badged \"Offline\"."
-  say "Drag a workbook from $STAGE_DIR into $FOLDER"
-  say "→ base commit appears (live). Edit + save → cascade."
-else
-  say "The app opens on the existing workbooks' base commits — live, but with"
-  say "no diffs yet. Save one in $FOLDER to produce a cascade."
-fi
-say "Hard-reload the browser (Cmd+Shift+R) so no stale state carries over."
+say "1. Launch the app:  scripts/demo-app.sh"
+say "2. Edit a value in LibreOffice and save (⌘S)"
+say "3. Toast fires within ~3s — THEN CLICK THE TOP ROW in the rail"
+say "   (the pane does not auto-advance)"
+say "Change a real value each time; identical content is deduped and ignored."

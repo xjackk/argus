@@ -3,6 +3,7 @@ package engine
 import (
 	"math"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -180,6 +181,85 @@ func TestUnlabeledWorkbook(t *testing.T) {
 	if c2.Classification != "computed" || len(c2.CausedBy) == 0 {
 		t.Errorf("C2 should be computed with a cause; got %s causedBy=%v", c2.Classification, c2.CausedBy)
 	}
+}
+
+// TestLargeMagnitudeAnomaly covers the large_magnitude_change detector: a
+// computed cell that swings more than 50% is flagged; a small move is not.
+func TestLargeMagnitudeAnomaly(t *testing.T) {
+	label := "Net Income"
+	big := 0.62
+	sheets := []SheetDiff{{
+		Name: "P&L",
+		Changes: []CellChange{{
+			Coord: "B12", Classification: "computed", Label: &label,
+			OldValue: 100.0, NewValue: 162.0, Magnitude: &big,
+		}},
+	}}
+	if !hasAnomalyType(detectAnomalies(sheets, nil), "large_magnitude_change") {
+		t.Fatalf("a 62%% computed swing should flag large_magnitude_change")
+	}
+	small := 0.1
+	sheets[0].Changes[0].Magnitude = &small
+	if hasAnomalyType(detectAnomalies(sheets, nil), "large_magnitude_change") {
+		t.Errorf("a 10%% swing should NOT flag large_magnitude_change")
+	}
+}
+
+// TestRelativeShape checks the fill-pattern normalization: cells filled with the
+// same logic share a shape; a broken one differs; anchors stay literal.
+func TestRelativeShape(t *testing.T) {
+	c4 := relativeShape("C4", "=B4*(1+$B$11)")
+	d4 := relativeShape("D4", "=C4*(1+$B$11)")
+	if c4 != d4 {
+		t.Errorf("consistent fills should share a shape:\n  %q\n  %q", c4, d4)
+	}
+	if broken := relativeShape("E4", "=D4*1.5"); broken == c4 {
+		t.Errorf("a broken fill should differ from the pattern: %q", broken)
+	}
+	if !strings.Contains(c4, "$B$11") {
+		t.Errorf("absolute ref should stay literal (an anchor): %q", c4)
+	}
+}
+
+// TestFormulaInconsistentInRow covers the broken-fill detector: one cell in a
+// consistently-filled row was hand-edited to a different formula.
+func TestFormulaInconsistentInRow(t *testing.T) {
+	// Row 4 filled left→right off the prior period × (1 + growth), except F4,
+	// which someone overwrote with a one-off "=E4*1.5".
+	wb := &workbook{cells: map[string]map[string]cellData{
+		"P&L": {
+			"B4": {formula: "=Assumptions!B10"}, // seed (cross-sheet)
+			"C4": {formula: "=B4*(1+$B$11)"},
+			"D4": {formula: "=C4*(1+$B$11)"},
+			"E4": {formula: "=D4*(1+$B$11)"},
+			"F4": {formula: "=E4*1.5"}, // BROKEN
+			"G4": {formula: "=F4*(1+$B$11)"},
+		},
+	}}
+	if !inconsistentInRow(wb, "P&L", "F4") {
+		t.Error("F4 breaks the row's fill pattern — should be flagged")
+	}
+	for _, ok := range []string{"C4", "D4", "E4"} {
+		if inconsistentInRow(wb, "P&L", ok) {
+			t.Errorf("%s follows the fill pattern — should NOT be flagged", ok)
+		}
+	}
+	// And through detectAnomalies, on a changed F4.
+	sheets := []SheetDiff{{Name: "P&L", Changes: []CellChange{{
+		Coord: "F4", Classification: "computed", NewFormula: strPtr("=E4*1.5"),
+	}}}}
+	if !hasAnomalyType(detectAnomalies(sheets, wb), "formula_inconsistent_in_row") {
+		t.Error("expected formula_inconsistent_in_row from detectAnomalies")
+	}
+}
+
+func hasAnomalyType(anoms []Anomaly, typ string) bool {
+	for _, a := range anoms {
+		if a.Type == typ {
+			return true
+		}
+	}
+	return false
 }
 
 // --- helpers ---

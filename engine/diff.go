@@ -161,7 +161,7 @@ func Diff(pathA, pathB string) (DiffResult, error) {
 	}
 
 	// --- Anomalies (rule-based) ---
-	anomalies := detectAnomalies(sheetDiffs)
+	anomalies := detectAnomalies(sheetDiffs, b)
 
 	// --- Summary ---
 	var sheetsAffected []string
@@ -470,8 +470,10 @@ func topMovers(affected []string, changeByKey map[string]*CellChange) []Mover {
 	return movers
 }
 
-// detectAnomalies runs the cheap rule-based smell detectors.
-func detectAnomalies(sheets []SheetDiff) []Anomaly {
+// detectAnomalies runs the cheap rule-based smell detectors. b is the new
+// workbook, used by the row-consistency check to compare a changed cell against
+// its row neighbours' formulas.
+func detectAnomalies(sheets []SheetDiff, b *workbook) []Anomaly {
 	var out []Anomaly
 	for _, sd := range sheets {
 		for i := range sd.Changes {
@@ -504,9 +506,105 @@ func detectAnomalies(sheets []SheetDiff) []Anomaly {
 					Message:  fmt.Sprintf("Computed value moved %.1f%% (%s -> %s).", *cc.Magnitude*100, valueString(cc.OldValue), valueString(cc.NewValue)),
 				})
 			}
+
+			// formula_inconsistent_in_row: this changed cell still HAS a formula,
+			// but it breaks the pattern of its row neighbours — the broken-fill
+			// silent error (someone edited one cell in a filled row).
+			if cc.NewFormula != nil && inconsistentInRow(b, sd.Name, cc.Coord) {
+				out = append(out, Anomaly{
+					Type:     "formula_inconsistent_in_row",
+					Ref:      ref,
+					Label:    cc.Label,
+					Severity: "medium",
+					Message:  fmt.Sprintf("Formula '%s' doesn't match the pattern of the other cells in its row (likely a broken fill).", *cc.NewFormula),
+				})
+			}
 		}
 	}
 	return out
+}
+
+// cellRefRe matches an A1 cell reference, capturing an optional sheet prefix and
+// the $ anchors, so relativeShape can transform only same-sheet relative refs.
+var cellRefRe = regexp.MustCompile(`((?:'[^']+'|[A-Za-z_][A-Za-z0-9_.]*)!)?(\$?)([A-Za-z]{1,3})(\$?)([0-9]+)`)
+
+// relativeShape normalizes a formula into its "fill pattern": same-sheet
+// RELATIVE cell refs become offset tokens ([Δcol,Δrow]) measured from coord,
+// while absolute ($) refs and cross-sheet refs stay literal. Two cells filled
+// with the same logic get the same shape — e.g. C4=B4*(1+$B$11) and
+// D4=C4*(1+$B$11) both become "[c-1,r0]*(1+$B$11)".
+func relativeShape(coord, formula string) string {
+	curCol, curRow, err := excelize.CellNameToCoordinates(coord)
+	if err != nil {
+		return formula
+	}
+	return cellRefRe.ReplaceAllStringFunc(formula, func(m string) string {
+		sub := cellRefRe.FindStringSubmatch(m)
+		sheetPrefix, colAbs, colLetters, rowAbs, rowDigits := sub[1], sub[2], sub[3], sub[4], sub[5]
+		// Cross-sheet refs and fully-absolute refs are anchors: keep them literal.
+		if sheetPrefix != "" || (colAbs == "$" && rowAbs == "$") {
+			return m
+		}
+		col, err1 := excelize.ColumnNameToNumber(colLetters)
+		row, err2 := strconv.Atoi(rowDigits)
+		if err1 != nil || err2 != nil {
+			return m
+		}
+		colTok := colLetters
+		if colAbs != "$" {
+			colTok = fmt.Sprintf("c%+d", col-curCol)
+		}
+		rowTok := rowDigits
+		if rowAbs != "$" {
+			rowTok = fmt.Sprintf("r%+d", row-curRow)
+		}
+		return "[" + colTok + "," + rowTok + "]"
+	})
+}
+
+// inconsistentInRow reports whether coord's formula breaks the fill pattern of
+// its horizontal neighbours. It only fires with strong evidence: at least two
+// neighbouring formula cells that AGREE on a shape which coord's shape differs
+// from — so an isolated cell or a row with no real pattern is never flagged.
+func inconsistentInRow(b *workbook, sheet, coord string) bool {
+	if b == nil {
+		return false
+	}
+	cells := b.cells[sheet]
+	cd, ok := cells[coord]
+	if !ok || cd.formula == "" {
+		return false
+	}
+	col, row, err := excelize.CellNameToCoordinates(coord)
+	if err != nil {
+		return false
+	}
+	myShape := relativeShape(coord, cd.formula)
+
+	var neighbours []string
+	for d := 1; d <= 3; d++ {
+		for _, c := range []int{col - d, col + d} {
+			if c < 1 {
+				continue
+			}
+			nCoord, err := excelize.CoordinatesToCellName(c, row)
+			if err != nil {
+				continue
+			}
+			if ncd, ok := cells[nCoord]; ok && ncd.formula != "" {
+				neighbours = append(neighbours, relativeShape(nCoord, ncd.formula))
+			}
+		}
+	}
+	if len(neighbours) < 2 {
+		return false // not enough context to call it a "row pattern"
+	}
+	for _, s := range neighbours {
+		if s != neighbours[0] {
+			return false // neighbours disagree → no clear pattern to break
+		}
+	}
+	return myShape != neighbours[0]
 }
 
 // --- small helpers ---

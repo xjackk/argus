@@ -18,9 +18,18 @@
 // Usage:
 //
 //	argusd [-folder DIR] [-store DIR] [-author NAME]
+//	       [-http ADDR] [-attribute-from-file]
 //
 // Defaults: folder=~/ArgusDropbox, store=./desktop/frontend/public/store
 // (so the dev client serves it at /store), author=the OS user.
+//
+// # Server mode
+//
+// With -http the daemon ALSO serves a read-only HTTP API over the very same
+// store it writes (see http.go). This is strictly additive: the files on disk
+// are written exactly as before, and with no -http flag not a single byte of
+// behaviour changes. The API reads what the daemon already produced; it is not
+// an alternative storage path.
 package main
 
 import (
@@ -69,10 +78,25 @@ type History struct {
 type daemon struct {
 	folder  string
 	store   string
-	author  string
+	author  string            // -author: the process-level fallback identity
 	narrate narrator.Narrator // fills summary.narrative per diff; nil = skip (tests)
 
-	mu           sync.Mutex
+	// httpAddr, when non-empty, is the address the read-only HTTP API listens
+	// on (see http.go). Empty — the default — means no listener is ever
+	// created and the daemon behaves exactly as it always has.
+	httpAddr string
+
+	// attributeFromFile turns on per-save attribution from the workbook's own
+	// docProps.LastModifiedBy (see attribution.go). Off by default so the
+	// no-flag path is byte-identical; defaults ON when -http is set, because a
+	// server watching one folder for a whole team is precisely the case where
+	// a single process-level -author is wrong.
+	attributeFromFile bool
+
+	// mu guards history/lastCommit/lastSnapshot/seq. It is an RWMutex so that
+	// concurrent HTTP readers can share it without serialising behind each
+	// other (only capture and writeHistory take the write lock).
+	mu           sync.RWMutex
 	history      History
 	lastCommit   map[string]string // file key -> last commit id
 	lastSnapshot map[string]string // file key -> last snapshot path
@@ -98,9 +122,23 @@ func main() {
 	author := flag.String("author", osUser(), "commit author")
 	narrate := flag.Bool("narrate", true, "fill each commit's plain-English summary via `claude -p` (grounded, async ~2-3s)")
 	model := flag.String("model", "", "model for narration (default: claude CLI default)")
+	httpAddr := flag.String("http", "", "also serve the read-only HTTP API on this `address` (e.g. :7777); empty = off, the default")
+	attribute := flag.Bool("attribute-from-file", false, "attribute each commit to the workbook's own docProps.LastModifiedBy, falling back to -author (defaults ON when -http is set)")
 	flag.Parse()
 
+	// -attribute-from-file defaults ON in server mode. One daemon serving a
+	// team over HTTP stamping every commit with one -author is the exact bug
+	// this fixes; but flipping the default unconditionally would change what
+	// the existing filesystem-only path writes, so the flip is scoped to the
+	// opt-in mode. An explicit -attribute-from-file=false still wins.
+	attributeFromFile := *attribute
+	if *httpAddr != "" && !flagWasSet("attribute-from-file") {
+		attributeFromFile = true
+	}
+
 	d := newDaemon(*folder, *store, *author)
+	d.httpAddr = *httpAddr
+	d.attributeFromFile = attributeFromFile
 	if *narrate {
 		// Fallback → Noop so a missing/failed claude CLI degrades to a null
 		// narrative instead of erroring the capture.
@@ -124,12 +162,24 @@ func (d *daemon) run() error {
 	}
 	log.Printf("argus daemon — watching %s", d.folder)
 	log.Printf("            store  %s   author %q", d.store, d.author)
+	if d.attributeFromFile {
+		log.Printf("            attribution: docProps.LastModifiedBy, falling back to %q", d.author)
+	}
 
 	// Resume any existing store so a restart continues the timeline.
 	if err := d.resume(); err != nil {
 		// A resume failure is not fatal: log loudly and start a fresh timeline
 		// rather than refusing to run.
 		log.Printf("! could not resume existing store: %v — starting fresh", err)
+	}
+
+	// Start the read-only API alongside — never instead of — the file writing.
+	// Started after ensureDirs/resume so the first request already sees a
+	// complete store. A bad -http address is fatal: the operator explicitly
+	// asked for a listener, so silently continuing without one would be worse
+	// than refusing to start.
+	if err := d.serveHTTP(); err != nil {
+		return err
 	}
 
 	log.Printf("Drop .xlsx files into the watched folder (or save over one) to track them.")
@@ -358,11 +408,16 @@ func (d *daemon) capture(path string) {
 		return
 	}
 
+	// Who saved it. Read from the snapshot we just took, never the live file:
+	// the original may still be locked by the editor mid-save, and the
+	// snapshot is the exact bytes this commit records.
+	author := d.authorFor(snap)
+
 	id := fmt.Sprintf("c%03d", len(d.history.Commits)+1)
 	commit := Commit{
 		ID:        id,
 		File:      name,
-		Author:    d.author,
+		Author:    author,
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Parent:    d.lastCommit[key],
 	}
@@ -370,7 +425,7 @@ func (d *daemon) capture(path string) {
 	if !hadPrev {
 		commit.Base = true
 		commit.Message = "Added " + name
-		log.Printf("＋ %s  tracked %s (base version) — author %q", id, name, d.author)
+		log.Printf("＋ %s  tracked %s (base version) — author %q", id, name, author)
 	} else {
 		res, err := engine.Diff(prevSnap, snap)
 		if err != nil {
@@ -395,7 +450,7 @@ func (d *daemon) capture(path string) {
 		if commit.Anomaly {
 			badge = " ⚠ anomaly"
 		}
-		log.Printf("● %s  %s — %d authored · %d computed%s — author %q", id, name, commit.AuthoredCount, commit.ComputedCount, badge, d.author)
+		log.Printf("● %s  %s — %d authored · %d computed%s — author %q", id, name, commit.AuthoredCount, commit.ComputedCount, badge, author)
 	}
 
 	d.history.Commits = append(d.history.Commits, commit)
@@ -431,7 +486,7 @@ func (d *daemon) writeDiff(id string, res engine.DiffResult) {
 		log.Printf("! could not encode diff %s: %v", id, err)
 		return
 	}
-	if err := os.WriteFile(filepath.Join(d.store, "diffs", id+".json"), b, 0o644); err != nil {
+	if err := writeFileAtomic(filepath.Join(d.store, "diffs", id+".json"), b, 0o644); err != nil {
 		log.Printf("! could not write diff %s: %v", id, err)
 	}
 }
@@ -444,12 +499,90 @@ func (d *daemon) writeHistory() {
 		log.Printf("! could not encode history: %v", err)
 		return
 	}
-	if err := os.WriteFile(filepath.Join(d.store, "history.json"), b, 0o644); err != nil {
+	if err := writeFileAtomic(filepath.Join(d.store, "history.json"), b, 0o644); err != nil {
 		log.Printf("! could not write history.json: %v", err)
 	}
 }
 
+// historySnapshot returns a copy of the in-memory timeline, safe to hand to a
+// reader (an HTTP handler) that runs concurrently with capture.
+func (d *daemon) historySnapshot() History {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	return History{Commits: append([]Commit(nil), d.history.Commits...)}
+}
+
+// commitByID looks up one commit in the in-memory timeline.
+func (d *daemon) commitByID(id string) (Commit, bool) {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	for _, c := range d.history.Commits {
+		if c.ID == id {
+			return c, true
+		}
+	}
+	return Commit{}, false
+}
+
 // --- helpers ---
+
+// writeFileAtomic writes b to path so that a concurrent reader — an HTTP
+// handler here, the client's fetch of /store/history.json in the browser —
+// only ever sees the complete old file or the complete new one, never a
+// truncated one. os.WriteFile truncates in place, which leaves a window where
+// history.json is valid JSON's worth of nothing.
+//
+// The temp file is created in the destination directory so the rename is a
+// same-filesystem operation, which POSIX makes atomic.
+func writeFileAtomic(path string, b []byte, perm os.FileMode) error {
+	dir, base := filepath.Dir(path), filepath.Base(path)
+	f, err := os.CreateTemp(dir, "."+base+".tmp")
+	if err != nil {
+		return err
+	}
+	tmp := f.Name()
+	// Any failure past this point must not leave the partial file behind.
+	defer func() {
+		if tmp != "" {
+			_ = os.Remove(tmp)
+		}
+	}()
+
+	if _, err := f.Write(b); err != nil {
+		f.Close()
+		return err
+	}
+	// Flush to the platter before the rename, so a crash cannot publish a name
+	// that points at unwritten bytes.
+	if err := f.Sync(); err != nil {
+		f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tmp, perm); err != nil {
+		return err
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		return err
+	}
+	tmp = "" // published — do not remove
+	return nil
+}
+
+// flagWasSet reports whether name was given explicitly on the command line, as
+// opposed to sitting at its default. Used to tell "the operator chose false"
+// from "nobody said", which is what lets -http flip a default safely.
+func flagWasSet(name string) bool {
+	found := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
+}
 
 func osUser() string {
 	if u, err := user.Current(); err == nil {

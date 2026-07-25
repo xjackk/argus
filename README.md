@@ -355,6 +355,47 @@ the store and the new version appears live. Run the daemon as different
 `-author`s to show per-person attribution. (Real multi-user auth/SSO is the
 server-side piece — see Architecture.)
 
+### 5.1 Server mode — `-http` (optional, off by default)
+
+Everything above is unchanged and remains the default. Adding `-http` makes the
+daemon **also** serve a read-only API over the very same store it writes; the
+files still land in `-store` exactly as before.
+
+```sh
+go run ./cmd/argusd -folder /srv/deals -store /var/lib/argus -http :7777
+```
+
+| Endpoint                    | What it returns                                     |
+| --------------------------- | --------------------------------------------------- |
+| `GET /api/version`          | API major/minor for the client handshake             |
+| `GET /api/commits`          | the timeline — same `History` shape as `history.json`|
+| `GET /api/diff/{id}`        | one commit's `DiffResult` (`engine/types.go`)        |
+| `GET /api/diff/{from}/{to}` | the same, where `{from}` must be `{to}`'s parent     |
+| `GET /store/history.json`   | byte-identical mirror of the file on disk            |
+| `GET /store/diffs/{id}.json`| byte-identical mirror of the file on disk            |
+
+The `/store/*` mirror exists so an existing client can be pointed at a remote
+daemon by moving one base URL and changing no parsing:
+
+```sh
+VITE_ARGUS_STORE=http://argus.internal:7777/store npm run build
+```
+
+Unset, that variable defaults to `/store` and nothing changes.
+
+**Per-save attribution.** With `-http` the daemon attributes each commit to the
+workbook's own `docProps.LastModifiedBy` — the display name the saving copy of
+Excel wrote into the file — falling back to `-author` and then the OS user when
+it is absent. That is what lets one daemon on a server credit the right person
+per save instead of stamping the service account on everything. Toggle it
+independently with `-attribute-from-file`.
+
+> ⚠️ **This is metadata, not authentication.** `LastModifiedBy` is a
+> self-reported string that anyone who can write to the watched folder can set
+> to anything. It is good attribution for a cooperating team and is *not* an
+> audit or access-control primitive. See the header comment in
+> `cmd/argusd/attribution.go`.
+
 ## 6. Project layout
 
 | Path                          | What it is                                                              |

@@ -124,6 +124,20 @@ export default function App() {
     localStorage.setItem("argus.mode", mode);
   }, [mode]);
 
+  // ⌘/Ctrl-R reloads and re-reads the store — matches the browser, and gives the
+  // desktop app the same "pull fresh data now" gesture (it also auto-polls /store
+  // every 3s, so this is a convenience, not a requirement).
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && (e.key === "r" || e.key === "R")) {
+        e.preventDefault();
+        window.location.reload();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   // ── Load the selected commit's diff (live store or bundled). Clears any open
   // cell and keeps the sheet selection if it still exists in the new diff. ──
   useEffect(() => {
@@ -248,6 +262,7 @@ export default function App() {
           selectedId={selectedCommitId}
           onSelect={setSelectedCommitId}
           diff={diff}
+          mode={mode}
           onSelectCell={handleSelectCell}
         />
         {diff ? (

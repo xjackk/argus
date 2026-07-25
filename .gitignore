@@ -16,3 +16,11 @@ desktop/frontend/public/store/
 
 # argusd daemon build output
 /argusd
+
+# Submission archive (regenerate with /zipup)
+/argus-submission.zip
+
+# Claude Code: machine-local settings, and agent worktrees (~115MB of live
+# checkouts). Project skills under .claude/skills/ ARE tracked.
+.claude/settings.local.json
+.claude/worktrees/

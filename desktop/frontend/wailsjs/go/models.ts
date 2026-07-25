@@ -204,6 +204,7 @@ export namespace engine {
 	    sheets: SheetDiff[];
 	    cascades: Cascade[];
 	    anomalies: Anomaly[];
+	    allSheets: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new DiffResult(source);
@@ -218,6 +219,7 @@ export namespace engine {
 	        this.sheets = this.convertValues(source["sheets"], SheetDiff);
 	        this.cascades = this.convertValues(source["cascades"], Cascade);
 	        this.anomalies = this.convertValues(source["anomalies"], Anomaly);
+	        this.allSheets = source["allSheets"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { DiffResult, CellChange, Cascade, Anomaly } from "../data/types";
+import type { DiffResult, CellChange, Cascade, Anomaly, Mover } from "../data/types";
 import type { CommitRow } from "../data/history";
 import { formatValue, formatDelta } from "../data/format";
 import { qualify, canonRef } from "../data/refs";
@@ -69,15 +69,24 @@ export function DiffColumn(props: Props) {
   // the tab says is active.
   const sheet = diff.sheets.find((s) => s.name === selectedSheet) ?? null;
   const narrative = diff.summary.narrative;
-  // Up to three headline metrics from the cascade top-movers (highest |Δ|).
-  const movers = useMemo(
-    () =>
-      diff.cascades
-        .flatMap((c) => c.topMovers)
-        .sort((a, b) => Math.abs(b.magnitude ?? 0) - Math.abs(a.magnitude ?? 0))
-        .slice(0, 3),
-    [diff]
-  );
+  // Up to three headline metrics from the cascade top-movers (highest |Δ|),
+  // deduped by label. Without the dedupe, one line item that moved hard across
+  // several periods (e.g. G&A after an 800% edit) fills all three cards with the
+  // same heading; keeping only the biggest mover per distinct label shows three
+  // *different* metrics instead.
+  const movers = useMemo(() => {
+    const best = new Map<string, Mover>();
+    for (const m of diff.cascades.flatMap((c) => c.topMovers)) {
+      const key = m.label ?? m.ref;
+      const prev = best.get(key);
+      if (!prev || Math.abs(m.magnitude ?? 0) > Math.abs(prev.magnitude ?? 0)) {
+        best.set(key, m);
+      }
+    }
+    return [...best.values()]
+      .sort((a, b) => Math.abs(b.magnitude ?? 0) - Math.abs(a.magnitude ?? 0))
+      .slice(0, 3);
+  }, [diff]);
 
   // Metric cards only make sense when the top movers have human labels (a
   // model-like sheet with named outputs). For plain/unlabeled sheets we skip
@@ -359,6 +368,7 @@ export function DiffColumn(props: Props) {
               sheet={selectedCell.sheet}
               cascadeByOrigin={cascadeByOrigin}
               changeByRef={changeByRef}
+              toPath={diff.to.path}
               onNavigate={onNavigate}
               isNavigable={isNavigable}
               onClose={() => onSelectCell(selectedCell.change, selectedCell.sheet)}

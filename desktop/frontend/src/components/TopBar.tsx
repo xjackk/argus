@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ThemePicker } from "./ThemePicker";
+import { ZoomControl } from "./ZoomControl";
 
 interface TopBarProps {
   live: boolean; // true when connected to a running capture daemon
@@ -58,6 +59,7 @@ export function TopBar({ live, workbooks, selected, onSelect }: TopBarProps) {
       <div className="spacer" />
 
       <div className="tb action">
+        <ZoomControl />
         <ThemePicker />
         {live ? (
           <div className="conn live" title="Connected to the capture daemon">

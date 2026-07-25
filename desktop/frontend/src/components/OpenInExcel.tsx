@@ -21,17 +21,37 @@ interface Props {
 
 export function OpenInExcel({ path, sheet, label, className }: Props) {
   const [appName, setAppName] = useState<string | null>(null);
+  const [hasBinding, setHasBinding] = useState(available());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const enabled = available() && !!path;
+  const enabled = hasBinding && !!path;
 
+  // The Wails runtime injects window.go shortly after the page loads; in a
+  // production build the first render can beat it. Checking once at render used
+  // to latch `false` forever (button permanently greyed). Poll briefly instead.
   useEffect(() => {
+    if (hasBinding) return;
+    let n = 0;
+    const t = window.setInterval(() => {
+      if (available()) {
+        setHasBinding(true);
+        window.clearInterval(t);
+      } else if (++n > 25) {
+        window.clearInterval(t); // ~5s — genuinely not the desktop app
+      }
+    }, 200);
+    return () => window.clearInterval(t);
+  }, [hasBinding]);
+
+  // Resolve the installed app's name once the binding is present.
+  useEffect(() => {
+    if (!hasBinding) return;
     let active = true;
     preferredApp().then((n) => active && setAppName(n));
     return () => {
       active = false;
     };
-  }, []);
+  }, [hasBinding]);
 
   async function open() {
     if (!enabled || busy) return;

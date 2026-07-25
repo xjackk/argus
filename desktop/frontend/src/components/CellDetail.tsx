@@ -5,12 +5,14 @@ import { qualify, canonRef, splitRef } from "../data/refs";
 import { isAuthored, classDot } from "../data/classify";
 import { dependencyChain } from "../data/graph";
 import { ValueDelta } from "./ValueDelta";
+import { OpenInExcel } from "./OpenInExcel";
 
 interface Props {
   change: CellChange;
   sheet: string;
   cascadeByOrigin: Map<string, Cascade>;
   changeByRef: Map<string, CellChange>;
+  toPath: string; // DiffResult.to.path — the workbook version to open in Excel
   onNavigate: (ref: string) => void;
   isNavigable: (ref: string) => boolean;
   onClose: () => void;
@@ -24,6 +26,7 @@ export function CellDetail({
   sheet,
   cascadeByOrigin,
   changeByRef,
+  toPath,
   onNavigate,
   isNavigable,
   onClose,
@@ -84,6 +87,16 @@ export function CellDetail({
           {formatDelta(change.oldValue, change.newValue, change.displayFormat)}
         </div>
       </div>
+
+      {/* Full circle: jump back to this cell's workbook in the real spreadsheet
+          app. Opens a read-only copy of this version at the cell's sheet
+          (disabled in browser dev — only the desktop build can launch Excel). */}
+      <OpenInExcel
+        path={toPath}
+        sheet={sheet}
+        label={qualified}
+        className="detail-openx"
+      />
 
       <div className="dr">
         <span className="k">Type</span>

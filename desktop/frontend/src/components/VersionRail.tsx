@@ -2,14 +2,16 @@ import { useMemo, useState } from "react";
 import type { CommitRow } from "../data/history";
 import type { CellChange, DiffResult } from "../data/types";
 import { qualify } from "../data/refs";
-import { classDot } from "../data/classify";
+import { classDot, isAuthored } from "../data/classify";
 import { ValueDelta } from "./ValueDelta";
+import type { ViewMode } from "./VirtualGrid";
 
 interface Props {
   commits: CommitRow[];
   selectedId: string;
   onSelect: (id: string) => void;
   diff: DiffResult | null;
+  mode: ViewMode; // mirrors the grid toggle: "authored" narrows the list to edits
   onSelectCell: (change: CellChange, sheet: string) => void;
 }
 
@@ -18,6 +20,7 @@ export function VersionRail({
   selectedId,
   onSelect,
   diff,
+  mode,
   onSelectCell,
 }: Props) {
   const [tab, setTab] = useState<"changes" | "history">("history");
@@ -43,13 +46,18 @@ export function VersionRail({
   );
 
   // Flatten the current diff into a per-cell changed list for the Changes tab.
+  // Mirrors the grid's toggle: in "authored" mode, show only the cells a human
+  // typed (the one edit), not the whole cascade — so the list, the grid, and the
+  // count all move together.
   const changed = useMemo(() => {
     const out: { sheet: string; change: CellChange }[] = [];
     if (diff)
       for (const s of diff.sheets)
-        for (const ch of s.changes) out.push({ sheet: s.name, change: ch });
+        for (const ch of s.changes)
+          if (mode === "cascade" || isAuthored(ch))
+            out.push({ sheet: s.name, change: ch });
     return out;
-  }, [diff]);
+  }, [diff, mode]);
 
   return (
     <div className="rail">

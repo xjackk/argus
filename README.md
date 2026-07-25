@@ -1,3 +1,5 @@
+<img src="docs/assets/argus-panoptes.jpg" alt="Argus Panoptes, the hundred-eyed watchman of Greek myth" width="100%">
+
 # Argus
 
 Argus is a GitHub-Desktop-style diff tool for Excel workbooks. It opens two

@@ -5,3 +5,11 @@
 export function Diff(arg1, arg2) {
   return window['go']['main']['App']['Diff'](arg1, arg2);
 }
+
+export function OpenInSpreadsheet(arg1, arg2, arg3) {
+  return window['go']['main']['App']['OpenInSpreadsheet'](arg1, arg2, arg3);
+}
+
+export function SpreadsheetApps() {
+  return window['go']['main']['App']['SpreadsheetApps']();
+}

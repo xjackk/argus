@@ -3,3 +3,7 @@
 import {engine} from '../models';
 
 export function Diff(arg1:string,arg2:string):Promise<engine.DiffResult>;
+
+export function OpenInSpreadsheet(arg1:string,arg2:string,arg3:string):Promise<string>;
+
+export function SpreadsheetApps():Promise<Array<string>>;

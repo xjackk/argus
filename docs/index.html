@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>document.documentElement.className+=' js';</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Argus — Every spreadsheet change, explained.</title>
+<meta name="description" content="Argus diffs two Excel workbooks and separates the handful of inputs a human typed from the hundreds of cells that moved as a consequence. Deterministic. Open source.">
+
+<meta property="og:title" content="Argus — Every spreadsheet change, explained.">
+<meta property="og:description" content="Diff two Excel workbooks. See which cells a human typed, and exactly what those edits cascaded into.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xjackk.github.io/argus/">
+<!-- PLACEHOLDER: drop a 1200x630 og-image.png in docs/ and this starts working -->
+<meta property="og:image" content="https://xjackk.github.io/argus/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   ARGUS — design tokens
+   Monochrome by intent: ink on bone. The only color on this page
+   should come from the product screenshots themselves.
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --bone:      #F1F0E8;
+  --bone-2:    #EAE9DF;
+  --bone-3:    #E3E2D7;
+  --ink:       #111210;
+  --ink-2:     #2A2B27;
+  --muted:     #6B6C64;
+  --faint:     #8A8B82;
+  --rule:      #DEDDD3;
+  --rule-2:    #D2D1C5;
+  --white:     #FFFFFF;
+
+  --sans: "Manrope", -apple-system, system-ui, "Segoe UI", sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+  --mono: "IBM Plex Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  --gutter: 40px;
+  --maxw: 1360px;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+body{
+  margin:0;
+  background:var(--bone);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+}
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto; }
+  *,*::before,*::after{ animation-duration:.001ms!important; animation-iteration-count:1!important; transition-duration:.001ms!important; }
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; text-decoration:none; }
+h1,h2,h3,h4,p{ margin:0; }
+
+/* ── shared primitives ─────────────────────────────────────── */
+.wrap{ max-width:var(--maxw); margin:0 auto; padding:0 var(--gutter); }
+.rule{ height:1px; background:var(--rule); border:0; margin:0; }
+
+.eyebrow{
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.serif-i{ font-family:var(--serif); font-style:italic; font-weight:400; letter-spacing:-.01em; }
+
+.display{
+  font-weight:600;
+  letter-spacing:-.045em;
+  line-height:.94;
+  text-wrap:balance;
+}
+.h-xl{ font-size:clamp(48px,8.4vw,126px); letter-spacing:-.055em; line-height:.9; }
+.h-lg{ font-size:clamp(34px,5vw,68px); }
+.h-md{ font-size:clamp(24px,2.6vw,36px); letter-spacing:-.035em; }
+
+.lede{ font-size:clamp(16px,1.35vw,19px); line-height:1.55; color:var(--muted); max-width:52ch; }
+
+/* corner tick marks — the "instrument" tell */
+.ticked{ position:relative; }
+.ticked::before,.ticked::after{
+  content:""; position:absolute; width:9px; height:9px; pointer-events:none;
+}
+.ticked::before{ top:-1px; left:-1px; border-top:1px solid var(--ink); border-left:1px solid var(--ink); }
+.ticked::after{ bottom:-1px; right:-1px; border-bottom:1px solid var(--ink); border-right:1px solid var(--ink); }
+.tick-tr,.tick-bl{ position:absolute; width:9px; height:9px; pointer-events:none; }
+.tick-tr{ top:-1px; right:-1px; border-top:1px solid var(--ink); border-right:1px solid var(--ink); }
+.tick-bl{ bottom:-1px; left:-1px; border-bottom:1px solid var(--ink); border-left:1px solid var(--ink); }
+
+/* buttons */
+.btn{
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--mono); font-size:12.5px; font-weight:500;
+  letter-spacing:.05em; text-transform:uppercase;
+  padding:15px 24px; border:1px solid var(--ink); background:transparent; color:var(--ink);
+  cursor:pointer; position:relative; white-space:nowrap;
+  transition:background .18s ease, color .18s ease, transform .18s ease;
+}
+.btn:hover{ background:var(--ink); color:var(--bone); }
+.btn-solid{ background:var(--ink); color:var(--bone); }
+.btn-solid:hover{ background:var(--ink-2); color:var(--white); }
+.btn .arw{ transition:transform .18s ease; }
+.btn:hover .arw{ transform:translate(2px,-2px); }
+
+/* ── ticker ────────────────────────────────────────────────── */
+.ticker{
+  background:var(--ink); color:var(--bone);
+  font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  padding:9px 0; overflow:hidden; white-space:nowrap;
+}
+.ticker-track{ display:inline-block; animation:slide 44s linear infinite; }
+.ticker-track span{ padding:0 26px; opacity:.92; }
+.ticker-track i{ font-style:normal; opacity:.4; }
+@keyframes slide{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* ── nav ───────────────────────────────────────────────────── */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:rgba(241,240,232,.86);
+  backdrop-filter:saturate(150%) blur(12px);
+  -webkit-backdrop-filter:saturate(150%) blur(12px);
+  border-bottom:1px solid var(--rule);
+}
+.nav-in{ display:flex; align-items:center; justify-content:space-between; height:64px; }
+.brand{ display:flex; align-items:center; gap:11px; font-weight:700; font-size:19px; letter-spacing:-.03em; }
+.brand-mark{
+  width:23px; height:23px; border:1.5px solid var(--ink); border-radius:50%;
+  display:grid; place-items:center; flex:none;
+}
+.brand-mark i{ width:7px; height:7px; background:var(--ink); border-radius:50%; display:block; }
+.nav-links{ display:flex; gap:30px; }
+.nav-links a{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); transition:color .15s ease;
+}
+.nav-links a:hover{ color:var(--ink); }
+.nav-cta{ display:flex; align-items:center; gap:12px; }
+.nav-cta .btn{ padding:10px 16px; font-size:11px; }
+.ghost-star{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.06em;
+  padding:10px 14px; border:1px solid var(--rule-2); color:var(--muted);
+  transition:border-color .15s ease,color .15s ease;
+}
+.ghost-star:hover{ border-color:var(--ink); color:var(--ink); }
+@media (max-width:980px){ .nav-links{ display:none; } }
+@media (max-width:600px){ .ghost-star{ display:none; } }
+
+/* ── hero ──────────────────────────────────────────────────── */
+.hero{ position:relative; padding:clamp(70px,10vw,132px) 0 clamp(48px,6vw,76px); overflow:hidden; }
+.hero::before{ /* dot grid */
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:radial-gradient(var(--rule-2) 1px, transparent 1px);
+  background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(ellipse 78% 62% at 50% 34%, #000 12%, transparent 78%);
+          mask-image:radial-gradient(ellipse 78% 62% at 50% 34%, #000 12%, transparent 78%);
+  opacity:.85;
+}
+.hero-in{ position:relative; z-index:1; }
+.hero .eyebrow{ display:block; margin-bottom:26px; }
+.hero h1{ margin-bottom:28px; max-width:15ch; }
+.hero .lede{ margin-bottom:40px; }
+.hero-cta{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:26px; }
+.hero-meta{
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--faint); display:flex; gap:22px; flex-wrap:wrap;
+}
+.hero-meta i{ font-style:normal; opacity:.5; }
+
+/* side rail — rotated mono label, Nativ-style */
+.rail{
+  position:absolute; left:14px; top:46%; z-index:2;
+  font-family:var(--mono); font-size:10px; letter-spacing:.34em; text-transform:uppercase;
+  color:var(--faint); writing-mode:vertical-rl; transform:rotate(180deg);
+}
+@media (max-width:1180px){ .rail{ display:none; } }
+
+/* ── placeholder frames ────────────────────────────────────── */
+/* Swap these out by replacing the .ph body with <img src="..."> or <video>. */
+.shot{ position:relative; border:1px solid var(--ink); background:var(--white); }
+.shot-bar{
+  display:flex; align-items:center; gap:14px;
+  border-bottom:1px solid var(--rule); padding:11px 14px; background:var(--bone-2);
+}
+.shot-dots{ display:flex; gap:6px; }
+.shot-dots i{ width:9px; height:9px; border:1px solid var(--rule-2); border-radius:50%; display:block; }
+.shot-title{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--muted); }
+.shot-tabs{ margin-left:auto; display:flex; gap:4px; }
+.shot-tabs b{
+  font-family:var(--mono); font-size:10px; font-weight:500; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--faint); padding:5px 11px; border:1px solid transparent;
+}
+.shot-tabs b.on{ color:var(--ink); border-color:var(--rule-2); background:var(--white); }
+@media (max-width:700px){ .shot-tabs{ display:none; } }
+
+.ph{
+  position:relative;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  padding:40px 20px; text-align:center;
+  background:
+    repeating-linear-gradient(-45deg, transparent 0 13px, var(--bone-2) 13px 14px),
+    var(--bone);
+}
+.ph-16x9{ aspect-ratio:16/9; }
+.ph-16x10{ aspect-ratio:16/10; }
+.ph-4x3{ aspect-ratio:4/3; }
+.ph-label{
+  font-family:var(--mono); font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink); background:var(--bone); border:1px solid var(--ink); padding:9px 16px;
+}
+.ph-sub{ font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; color:var(--faint); max-width:44ch; line-height:1.7; }
+.ph-play{
+  width:62px; height:62px; border:1px solid var(--ink); border-radius:50%;
+  display:grid; place-items:center; background:var(--bone); margin-bottom:2px;
+}
+.ph-play::after{
+  content:""; width:0; height:0; margin-left:4px;
+  border-left:14px solid var(--ink); border-top:9px solid transparent; border-bottom:9px solid transparent;
+}
+
+/* ── generic section ───────────────────────────────────────── */
+.sec{ padding:clamp(72px,9vw,124px) 0; position:relative; }
+.sec-alt{ background:var(--bone-2); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+.sec-head{ margin-bottom:clamp(40px,5vw,64px); }
+.sec-head .eyebrow{ display:block; margin-bottom:20px; }
+.sec-head p.lede{ margin-top:20px; }
+
+/* ── the stakes / stat row ─────────────────────────────────── */
+.stakes{ display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--ink); }
+.stakes div{ padding:34px 28px 30px; border-right:1px solid var(--rule); }
+.stakes div:last-child{ border-right:0; }
+.stakes .n{ font-size:clamp(38px,4.6vw,62px); font-weight:600; letter-spacing:-.05em; line-height:1; margin-bottom:14px; }
+.stakes .n small{ font-size:.42em; font-weight:500; letter-spacing:-.01em; color:var(--faint); margin-left:6px; }
+.stakes .t{ font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); line-height:1.7; }
+@media (max-width:820px){
+  .stakes{ grid-template-columns:1fr; }
+  .stakes div{ border-right:0; border-bottom:1px solid var(--rule); }
+  .stakes div:last-child{ border-bottom:0; }
+}
+
+/* ── steps ─────────────────────────────────────────────────── */
+.steps{ display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--ink); }
+.step{ padding:30px 26px 40px; border-right:1px solid var(--rule); position:relative; }
+.step:last-child{ border-right:0; }
+.step .num{ font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:var(--faint); display:block; margin-bottom:44px; }
+.step h3{ font-size:20px; font-weight:600; letter-spacing:-.028em; line-height:1.2; margin-bottom:12px; }
+.step p{ font-size:14.5px; line-height:1.6; color:var(--muted); }
+@media (max-width:940px){
+  .steps{ grid-template-columns:repeat(2,1fr); }
+  .step:nth-child(2){ border-right:0; }
+  .step:nth-child(-n+2){ border-bottom:1px solid var(--rule); }
+  .step .num{ margin-bottom:28px; }
+}
+@media (max-width:560px){
+  .steps{ grid-template-columns:1fr; }
+  .step{ border-right:0; border-bottom:1px solid var(--rule); }
+  .step:last-child{ border-bottom:0; }
+}
+
+/* ── cell detail card (real, CSS-rendered — not a placeholder) ── */
+.split{ display:grid; grid-template-columns:1fr 1fr; gap:clamp(32px,5vw,72px); align-items:center; }
+@media (max-width:900px){ .split{ grid-template-columns:1fr; } }
+
+.card{ border:1px solid var(--ink); background:var(--white); position:relative; }
+.card-h{
+  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  padding:16px 20px; border-bottom:1px solid var(--rule);
+}
+.card-h .ref{ font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.02em; }
+.card-h .lbl{ font-size:14px; color:var(--muted); }
+.card-h .tag{
+  margin-left:auto; font-family:var(--mono); font-size:9.5px; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase;
+  background:var(--ink); color:var(--bone); padding:5px 10px;
+}
+.card-h .tag-o{ background:transparent; color:var(--faint); border:1px solid var(--rule-2); }
+.card-b{ padding:24px 20px; }
+.delta{ display:flex; align-items:center; gap:16px; margin-bottom:8px; flex-wrap:wrap; }
+.delta .v{ font-family:var(--mono); font-size:clamp(24px,3vw,34px); font-weight:500; letter-spacing:-.03em; }
+.delta .v.old{ color:var(--faint); text-decoration:line-through; text-decoration-thickness:1px; }
+.delta .ar{ color:var(--faint); font-size:20px; }
+.formula{
+  font-family:var(--mono); font-size:12px; color:var(--muted);
+  background:var(--bone); border:1px solid var(--rule); padding:11px 13px; margin-top:18px;
+  overflow-x:auto; white-space:nowrap;
+}
+.card-f{ border-top:1px solid var(--rule); padding:14px 20px; display:flex; align-items:center; gap:10px; }
+.card-f .k{ font-family:var(--mono); font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); }
+.cascade-list{ border-top:1px solid var(--rule); }
+.cascade-list div{
+  display:flex; align-items:center; gap:14px; padding:11px 20px;
+  border-bottom:1px solid var(--rule); font-family:var(--mono); font-size:12px;
+}
+.cascade-list div:last-child{ border-bottom:0; }
+.cascade-list .r{ width:92px; flex:none; color:var(--ink); font-weight:500; }
+.cascade-list .d{ margin-left:auto; color:var(--faint); }
+.cascade-list .bar{ height:3px; background:var(--ink); opacity:.16; flex:1; max-width:120px; }
+
+/* ── feature grid ──────────────────────────────────────────── */
+.grid6{ display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--ink); border-left:1px solid var(--rule); }
+.cell{ padding:30px 26px 38px; border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+.cell .num{ font-family:var(--mono); font-size:10.5px; letter-spacing:.15em; color:var(--faint); text-transform:uppercase; display:block; margin-bottom:36px; }
+.cell h3{ font-size:19px; font-weight:600; letter-spacing:-.028em; line-height:1.25; margin-bottom:11px; }
+.cell p{ font-size:14.5px; line-height:1.6; color:var(--muted); }
+@media (max-width:940px){ .grid6{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:600px){ .grid6{ grid-template-columns:1fr; } }
+
+/* ── inverted manifesto block ──────────────────────────────── */
+.dark{ background:var(--ink); color:var(--bone); padding:clamp(72px,9vw,124px) 0; }
+.dark .eyebrow{ color:rgba(241,240,232,.5); }
+.dark .lede{ color:rgba(241,240,232,.66); }
+.dark .rule{ background:rgba(241,240,232,.16); }
+.termbox{ border:1px solid rgba(241,240,232,.22); background:rgba(241,240,232,.03); }
+.term-h{
+  display:flex; align-items:center; gap:12px; padding:11px 16px;
+  border-bottom:1px solid rgba(241,240,232,.16);
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:rgba(241,240,232,.55);
+}
+.term-h .rt{ margin-left:auto; }
+.term-b{ padding:24px 20px; font-family:var(--mono); font-size:13px; line-height:1.85; }
+.term-b > *{ max-width:88ch; } /* keep mono line length readable on wide screens */
+.term-b .cmt{ color:rgba(241,240,232,.42); }
+.term-b .pr{ color:rgba(241,240,232,.42); }
+.term-b p{ margin-bottom:16px; color:rgba(241,240,232,.82); }
+.term-b p:last-child{ margin-bottom:0; }
+
+/* ── CLI ───────────────────────────────────────────────────── */
+.cli{ border:1px solid var(--ink); background:var(--ink); color:var(--bone); }
+.cli-b{ padding:22px 20px; font-family:var(--mono); font-size:13px; line-height:2; overflow-x:auto; }
+.cli-b .pr{ color:rgba(241,240,232,.4); user-select:none; }
+.cli-b .fl{ color:rgba(241,240,232,.6); }
+.cli-b .out{ color:rgba(241,240,232,.5); }
+
+/* ── footer ────────────────────────────────────────────────── */
+.foot{ border-top:1px solid var(--ink); padding:clamp(48px,6vw,76px) 0 34px; }
+.foot-top{ display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:32px; margin-bottom:56px; }
+@media (max-width:820px){ .foot-top{ grid-template-columns:1fr 1fr; } }
+@media (max-width:520px){ .foot-top{ grid-template-columns:1fr; } }
+.foot-brand .display{ font-size:clamp(44px,7vw,86px); letter-spacing:-.055em; line-height:.9; margin-bottom:18px; }
+.foot-brand p{ font-size:14px; color:var(--muted); max-width:34ch; line-height:1.6; }
+.foot-col h4{
+  font-family:var(--mono); font-size:10.5px; font-weight:500; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--faint); margin-bottom:16px;
+}
+.foot-col a{ display:block; font-size:14px; color:var(--muted); padding:5px 0; transition:color .15s ease; }
+.foot-col a:hover{ color:var(--ink); }
+.foot-bot{
+  border-top:1px solid var(--rule); padding-top:22px;
+  display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--faint);
+}
+
+/* ── scroll reveal ─────────────────────────────────────────── */
+/* Scoped to .js so a no-JS visitor never gets a blank page. */
+.js .rv{ opacity:0; transform:translateY(16px); transition:opacity .62s cubic-bezier(.2,.7,.3,1), transform .62s cubic-bezier(.2,.7,.3,1); }
+.js .rv.in{ opacity:1; transform:none; }
+@media (prefers-reduced-motion:reduce){ .js .rv{ opacity:1; transform:none; } }
+
+@media (max-width:640px){ :root{ --gutter:22px; } }
+</style>
+</head>
+<body>
+
+<!-- ── ticker ─────────────────────────────────────────────── -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span>Deterministic diff engine</span><i>◆</i>
+    <span>Never recomputes your numbers</span><i>◆</i>
+    <span>Authored vs computed</span><i>◆</i>
+    <span>Full cascade tracing</span><i>◆</i>
+    <span>Open source</span><i>◆</i>
+    <span>Runs locally</span><i>◆</i>
+    <span>Deterministic diff engine</span><i>◆</i>
+    <span>Never recomputes your numbers</span><i>◆</i>
+    <span>Authored vs computed</span><i>◆</i>
+    <span>Full cascade tracing</span><i>◆</i>
+    <span>Open source</span><i>◆</i>
+    <span>Runs locally</span><i>◆</i>
+  </div>
+</div>
+
+<!-- ── nav ────────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top"><span class="brand-mark"><i></i></span>Argus</a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#engine">Engine</a>
+      <a href="#ai">Determinism</a>
+      <a href="#cli">CLI</a>
+    </div>
+    <div class="nav-cta">
+      <a class="ghost-star" href="https://github.com/xjackk/argus" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="btn btn-solid" href="https://github.com/xjackk/argus" target="_blank" rel="noopener">Download</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── hero ───────────────────────────────────────────────── -->
+<header class="hero" id="top">
+  <span class="rail">Argus · Excel diff engine · v0.1</span>
+  <div class="wrap hero-in">
+    <span class="eyebrow rv">v0.1 · Open source · Runs entirely on your machine</span>
+    <h1 class="display h-xl rv">Every spreadsheet change, <span class="serif-i">explained.</span></h1>
+    <p class="lede rv">Argus diffs two Excel workbooks and separates the handful of inputs a human actually typed from the hundreds of cells that moved as a consequence. No more scrolling four thousand highlighted rows looking for the one that mattered.</p>
+    <div class="hero-cta rv">
+      <a class="btn btn-solid" href="https://github.com/xjackk/argus" target="_blank" rel="noopener">Download for macOS <span class="arw">↘</span></a>
+      <a class="btn" href="#how">See how it works</a>
+    </div>
+    <div class="hero-meta rv">
+      <span>Excel .xlsx</span><i>/</i>
+      <span>No cloud</span><i>/</i>
+      <span>No recomputation</span><i>/</i>
+      <span>MIT licensed</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── hero screenshot placeholder ────────────────────────── -->
+<section class="wrap" style="padding-bottom:clamp(64px,8vw,110px)">
+  <!-- PLACEHOLDER → replace the .ph block with: <img src="screenshot-diff.png" alt="Argus diff view"> -->
+  <div class="shot ticked rv">
+    <span class="tick-tr"></span><span class="tick-bl"></span>
+    <div class="shot-bar">
+      <div class="shot-dots"><i></i><i></i><i></i></div>
+      <span class="shot-title">Argus — Q3_Model_v4.xlsx → Q3_Model_v5.xlsx</span>
+      <div class="shot-tabs"><b class="on">Diff</b><b>Cascade</b><b>Anomalies</b></div>
+    </div>
+    <div class="ph ph-16x10">
+      <span class="ph-label">App screenshot</span>
+      <span class="ph-sub">Drop the main diff view here — 1600 × 1000 or larger.<br>Replace this block with an &lt;img&gt; tag.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── the stakes ─────────────────────────────────────────── -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">/ The problem</span>
+      <h2 class="display h-lg rv" style="max-width:20ch">Two workbooks. Four thousand changed cells. <span class="serif-i">One</span> of them mattered.</h2>
+      <p class="lede rv">Change a single discount rate and Excel quietly repaints half the model. Every existing diff tool shows you all of it, flat, with no way to tell a decision apart from its consequences.</p>
+    </div>
+    <div class="stakes rv">
+      <div>
+        <div class="n">3<small>cells</small></div>
+        <div class="t">Authored — a human<br>typed these</div>
+      </div>
+      <div>
+        <div class="n">4,118<small>cells</small></div>
+        <div class="t">Computed — Excel<br>recalculated these</div>
+      </div>
+      <div>
+        <div class="n">100<small>%</small></div>
+        <div class="t">Of the reasoning lives<br>in the first column</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── how it works ───────────────────────────────────────── -->
+<section class="sec" id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">/ How it works</span>
+      <h2 class="display h-lg rv" style="max-width:16ch">Four passes, <span class="serif-i">zero</span> guesswork.</h2>
+    </div>
+    <div class="steps rv">
+      <div class="step">
+        <span class="num">01 / READ</span>
+        <h3>Read the cached values</h3>
+        <p>Argus never recomputes a formula. It reads the values Excel already stored, so what you see is exactly what the workbook said — not our interpretation of it.</p>
+      </div>
+      <div class="step">
+        <span class="num">02 / GRAPH</span>
+        <h3>Build the dependency graph</h3>
+        <p>Every formula is parsed into a cross-sheet graph of what depends on what, including references that hop between tabs.</p>
+      </div>
+      <div class="step">
+        <span class="num">03 / CLASSIFY</span>
+        <h3>Split authored from computed</h3>
+        <p>A cell whose value moved but whose formula didn't was recalculated. A cell a human retyped was authored. That single distinction is the whole product.</p>
+      </div>
+      <div class="step">
+        <span class="num">04 / TRACE</span>
+        <h3>Trace the blast radius</h3>
+        <p>From each authored edit, Argus walks the graph forward and reports exactly which cells moved because of it — and which moved the most.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── cell detail (real CSS render) ──────────────────────── -->
+<section class="sec sec-alt" id="engine">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow rv" style="display:block;margin-bottom:20px">/ Cell detail</span>
+      <h2 class="display h-md rv" style="margin-bottom:20px;max-width:18ch">Every number carries its <span class="serif-i">receipt.</span></h2>
+      <p class="lede rv" style="margin-bottom:26px">Click any changed cell and Argus shows the old and new value in the workbook's own number format, the formula on both sides, what it depends on, and the authored edit upstream that caused it to move.</p>
+      <p class="lede rv">Nothing is inferred. Every relationship on screen came out of the formula graph.</p>
+    </div>
+    <div class="rv">
+      <div class="card ticked">
+        <span class="tick-tr"></span><span class="tick-bl"></span>
+        <div class="card-h">
+          <span class="ref">Assumptions!B12</span>
+          <span class="lbl">Discount rate</span>
+          <span class="tag">Authored</span>
+        </div>
+        <div class="card-b">
+          <div class="delta">
+            <span class="v old">27.5%</span>
+            <span class="ar">→</span>
+            <span class="v">24.5%</span>
+          </div>
+          <div class="formula">= 0.245        <span style="color:var(--faint)">// constant, retyped by author</span></div>
+        </div>
+        <div class="card-f"><span class="k">Cascade</span><span class="k" style="margin-left:auto;color:var(--ink)">148 cells · 6 sheets</span></div>
+        <div class="cascade-list">
+          <div><span class="r">DCF!F31</span><span class="bar"></span><span class="d">+18.4%</span></div>
+          <div><span class="r">DCF!F44</span><span class="bar" style="max-width:96px"></span><span class="d">+14.1%</span></div>
+          <div><span class="r">Summary!C7</span><span class="bar" style="max-width:71px"></span><span class="d">+9.8%</span></div>
+          <div><span class="r">Summary!C9</span><span class="bar" style="max-width:38px"></span><span class="d">+4.2%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── demo placeholder ───────────────────────────────────── -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head" style="margin-bottom:36px">
+      <span class="eyebrow rv">/ Demo</span>
+      <h2 class="display h-lg rv" style="max-width:17ch">Watch it find the <span class="serif-i">one</span> cell.</h2>
+    </div>
+    <!-- PLACEHOLDER → replace the .ph block with:
+         <video src="demo.mp4" poster="demo-poster.png" controls muted loop playsinline></video> -->
+    <div class="shot ticked rv">
+      <span class="tick-tr"></span><span class="tick-bl"></span>
+      <div class="shot-bar">
+        <div class="shot-dots"><i></i><i></i><i></i></div>
+        <span class="shot-title">screen-demo.mp4 — 00:00 / 00:42</span>
+      </div>
+      <div class="ph ph-16x9">
+        <span class="ph-play"></span>
+        <span class="ph-label">Screen recording</span>
+        <span class="ph-sub">Drop a 16:9 capture here — MP4 or WebM.<br>Replace this block with a &lt;video&gt; tag.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── feature grid ───────────────────────────────────────── -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">/ Six things it does</span>
+      <h2 class="display h-lg rv" style="max-width:15ch">Built for the person who has to <span class="serif-i">explain</span> the model.</h2>
+    </div>
+    <div class="grid6 rv">
+      <div class="cell">
+        <span class="num">01 — Classification</span>
+        <h3>Authored vs computed</h3>
+        <p>The core split. Three real edits surfaced above four thousand recalculations, every time.</p>
+      </div>
+      <div class="cell">
+        <span class="num">02 — Cascade</span>
+        <h3>Blast radius per edit</h3>
+        <p>For each authored change: how many cells moved, on which sheets, and the largest movers ranked by magnitude.</p>
+      </div>
+      <div class="cell">
+        <span class="num">03 — Structure</span>
+        <h3>Inserted and deleted rows</h3>
+        <p>Row shifts are detected as structure, not as thousands of phantom cell changes offset by one.</p>
+      </div>
+      <div class="cell">
+        <span class="num">04 — Anomalies</span>
+        <h3>Formulas turned into constants</h3>
+        <p>The classic model-breaking edit: someone pastes a value over a formula. Argus flags it by severity.</p>
+      </div>
+      <div class="cell">
+        <span class="num">05 — Formatting</span>
+        <h3>Values in their own format</h3>
+        <p>Percentages read as percentages and currency as currency, using the workbook's number formats — never raw floats.</p>
+      </div>
+      <div class="cell">
+        <span class="num">06 — Local</span>
+        <h3>Your files never leave</h3>
+        <p>The engine is a local binary. No upload, no account, no telemetry on your financial models.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── determinism / AI boundary ──────────────────────────── -->
+<section class="dark" id="ai">
+  <div class="wrap">
+    <div style="margin-bottom:44px">
+      <span class="eyebrow rv" style="display:block;margin-bottom:20px">/ On the AI boundary · rev 1.0</span>
+      <h2 class="display h-lg rv" style="max-width:18ch">The engine is deterministic. The AI only ever <span class="serif-i">narrates.</span></h2>
+    </div>
+    <div class="termbox rv">
+      <div class="term-h">
+        <span>determinism.txt</span>
+        <span class="rt">UTF-8</span>
+      </div>
+      <div class="term-b">
+        <p class="cmt">$ cat determinism.txt</p>
+        <p>Argus computes the entire diff without a model in the loop. Parsing, the dependency graph, classification, cascade tracing — all of it is ordinary code, and it returns the same answer every time you run it.</p>
+        <p>The optional narrator is a separate step that runs after. It receives facts the engine already computed, with every number pre-rendered in its display format, and turns them into two or three sentences of English.</p>
+        <p>It never does arithmetic. It never decides whether a value is correct, wise, or reasonable. If it fails, the narrative is simply empty and the diff is unchanged.</p>
+        <p class="cmt">// You can turn it off entirely. The product still works.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CLI ────────────────────────────────────────────────── -->
+<section class="sec" id="cli">
+  <div class="wrap split" style="align-items:start">
+    <div>
+      <span class="eyebrow rv" style="display:block;margin-bottom:20px">/ Command line</span>
+      <h2 class="display h-md rv" style="margin-bottom:20px;max-width:16ch">There's a CLI, and it prints <span class="serif-i">JSON.</span></h2>
+      <p class="lede rv" style="margin-bottom:26px">The same engine that powers the desktop app ships as a single binary. Pipe the output into a review script, a CI check, or your own tooling.</p>
+      <a class="btn rv" href="https://github.com/xjackk/argus" target="_blank" rel="noopener">Read the docs <span class="arw">↗</span></a>
+    </div>
+    <div class="rv">
+      <div class="cli ticked">
+        <span class="tick-tr"></span><span class="tick-bl"></span>
+        <div class="cli-b"><span class="pr">$ </span>argus-diff old.xlsx new.xlsx<br>
+<span class="out">{</span><br>
+<span class="out">&nbsp;&nbsp;"schemaVersion": 1,</span><br>
+<span class="out">&nbsp;&nbsp;"summary": {</span><br>
+<span class="out">&nbsp;&nbsp;&nbsp;&nbsp;"authoredCount": 3,</span><br>
+<span class="out">&nbsp;&nbsp;&nbsp;&nbsp;"computedCount": 4118,</span><br>
+<span class="out">&nbsp;&nbsp;&nbsp;&nbsp;"sheetsAffected": ["Assumptions", "DCF", ...]</span><br>
+<span class="out">&nbsp;&nbsp;}, ...</span><br>
+<span class="out">}</span><br><br>
+<span class="pr">$ </span>argus-diff <span class="fl">--narrate</span> old.xlsx new.xlsx<br>
+<span class="out">→ fills summary.narrative with plain English</span><br><br>
+<span class="pr">$ </span>argus-diff <span class="fl">--prompt-only</span> old.xlsx new.xlsx<br>
+<span class="out">→ prints the grounded prompt, no model call</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── closing CTA ────────────────────────────────────────── -->
+<section class="dark" style="text-align:center">
+  <div class="wrap">
+    <span class="eyebrow rv" style="display:block;margin-bottom:24px">/ Get it</span>
+    <h2 class="display h-lg rv" style="max-width:16ch;margin:0 auto 34px">Stop reading diffs. Start reading <span class="serif-i">decisions.</span></h2>
+    <div class="rv" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a class="btn" style="border-color:var(--bone);color:var(--bone)" href="https://github.com/xjackk/argus" target="_blank" rel="noopener">Download for macOS <span class="arw">↘</span></a>
+      <a class="btn" style="border-color:rgba(241,240,232,.3);color:rgba(241,240,232,.7)" href="https://github.com/xjackk/argus" target="_blank" rel="noopener">Star on GitHub ↗</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── footer ─────────────────────────────────────────────── -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="display">Argus</div>
+        <p>A deterministic diff engine for Excel workbooks. Open source, MIT licensed, built for people who have to defend a number.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Product</h4>
+        <a href="#how">How it works</a>
+        <a href="#engine">Engine</a>
+        <a href="#cli">CLI</a>
+      </div>
+      <div class="foot-col">
+        <h4>Project</h4>
+        <a href="https://github.com/xjackk/argus" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/xjackk/argus/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/xjackk/argus/blob/main/README.md" target="_blank" rel="noopener">README</a>
+      </div>
+      <div class="foot-col">
+        <h4>Principles</h4>
+        <a href="#ai">Determinism</a>
+        <a href="#ai">AI boundary</a>
+        <a href="https://github.com/xjackk/argus" target="_blank" rel="noopener">License</a>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 Argus · MIT</span>
+      <span>Never recomputes your numbers</span>
+      <span>Built with Go + Wails</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal. The .rv hidden state is gated on the `js` class set in <head>,
+// so a no-JS visitor still sees the full page.
+(function(){
+  var els = document.querySelectorAll('.rv');
+  if(!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    els.forEach(function(el){ el.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { rootMargin:'0px 0px -8% 0px', threshold:0.06 });
+  els.forEach(function(el, i){
+    el.style.transitionDelay = Math.min(i % 5, 4) * 55 + 'ms';
+    io.observe(el);
+  });
+})();
+</script>
+</body>
+</html>

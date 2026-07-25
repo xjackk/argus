@@ -10,6 +10,8 @@ interface Props {
   sheet: string;
   cascadeByOrigin: Map<string, Cascade>;
   changeByRef: Map<string, CellChange>;
+  onNavigate: (ref: string) => void;
+  isNavigable: (ref: string) => boolean;
   onClose: () => void;
 }
 
@@ -21,6 +23,8 @@ export function CellDetail({
   sheet,
   cascadeByOrigin,
   changeByRef,
+  onNavigate,
+  isNavigable,
   onClose,
 }: Props) {
   const qualified = qualify(sheet, change.coord);
@@ -80,10 +84,19 @@ export function CellDetail({
           {chainRefs.map((ref, i) => {
             const node = ref === qualified ? change : changeByRef.get(canonRef(ref));
             const isHere = ref === qualified;
+            const clickable = !isHere && isNavigable(ref);
             return (
               <div key={ref}>
                 {i > 0 && <div className="chain-arrow">↓</div>}
-                <div className={"chain-node" + (isHere ? " here" : "")}>
+                <div
+                  className={
+                    "chain-node" +
+                    (isHere ? " here" : "") +
+                    (clickable ? " nav" : "")
+                  }
+                  onClick={clickable ? () => onNavigate(ref) : undefined}
+                  title={clickable ? "Jump to this cell" : undefined}
+                >
                   <div className="cn-head">
                     <span className="sha">{canonRef(ref)}</span>
                     {node?.label && <span className="cn-label">{node.label}</span>}

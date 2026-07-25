@@ -798,6 +798,17 @@ body {
 .chain-node.here {
   border-color: var(--amber);
 }
+.chain-node.nav {
+  cursor: pointer;
+}
+.chain-node.nav:hover {
+  border-color: var(--blue);
+  background: var(--bg3);
+}
+.chain-node.nav .cn-head .sha::after {
+  content: " ↗";
+  color: var(--blue);
+}
 .cn-head {
   display: flex;
   align-items: center;

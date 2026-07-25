@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { diffForCommit } from "./data/diffs";
 import { COMMIT_HISTORY } from "./data/history";
-import { qualify, canonRef } from "./data/refs";
+import { qualify, canonRef, splitRef } from "./data/refs";
 import { isAuthored } from "./data/classify";
 import type { DiffResult, CellChange, Cascade, Anomaly } from "./data/types";
 
@@ -81,6 +81,19 @@ export default function App() {
     );
   }
 
+  // Jump to a cell by its (possibly cross-sheet) ref — used to click through the
+  // dependency chain. No-op if the ref isn't a changed cell in this diff.
+  function handleNavigateToRef(ref: string) {
+    const change = changeByRef.get(canonRef(ref));
+    if (!change) return;
+    const { sheet } = splitRef(ref);
+    setSelectedSheet(sheet);
+    setSelectedCell({ change, sheet });
+  }
+
+  // A ref is navigable only if it's a changed cell we can open.
+  const isNavigable = (ref: string) => changeByRef.has(canonRef(ref));
+
   return (
     <div className="app">
       <TopBar />
@@ -105,6 +118,8 @@ export default function App() {
             anomaliesByRef={anomaliesByRef}
             selectedCell={selectedCell}
             onSelectCell={handleSelectCell}
+            onNavigate={handleNavigateToRef}
+            isNavigable={isNavigable}
             rippled={rippled}
             onHover={setHover}
           />

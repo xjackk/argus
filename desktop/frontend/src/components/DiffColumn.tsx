@@ -23,6 +23,8 @@ interface Props {
   anomaliesByRef: Map<string, Anomaly>;
   selectedCell: { change: CellChange; sheet: string } | null;
   onSelectCell: (change: CellChange, sheet: string) => void;
+  onNavigate: (ref: string) => void;
+  isNavigable: (ref: string) => boolean;
   rippled: Set<string>;
   onHover: (h: HoverState | null) => void;
 }
@@ -44,6 +46,8 @@ export function DiffColumn(props: Props) {
     anomaliesByRef,
     selectedCell,
     onSelectCell,
+    onNavigate,
+    isNavigable,
     rippled,
     onHover,
   } = props;
@@ -243,6 +247,8 @@ export function DiffColumn(props: Props) {
               sheet={selectedCell.sheet}
               cascadeByOrigin={cascadeByOrigin}
               changeByRef={changeByRef}
+              onNavigate={onNavigate}
+              isNavigable={isNavigable}
               onClose={() => onSelectCell(selectedCell.change, selectedCell.sheet)}
             />
           </div>

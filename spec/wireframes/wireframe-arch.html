@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe — Topology</title>
+<style>
+  :root{
+    --ink:#1c2430;--muted:#6b7684;--line:#c9d1da;--soft:#e4e9ef;--bg:#eef1f5;--panel:#fff;
+    --accent:#2f6f8f;--annot:#b1470f;--green:#4a9a63;--purple:#6a74c4;--chip:#eaeef2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:13px;padding:26px}
+  .frame{max-width:1180px;margin:0 auto}
+  .caption{font-size:12px;color:var(--muted);margin:0 4px 16px}
+  h2{font-size:14px;margin:26px 4px 12px;color:var(--ink)}
+  .annot{color:var(--annot);font-weight:600}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:18px;box-shadow:0 6px 22px rgba(30,45,70,.07)}
+
+  /* topology */
+  .topo{display:grid;grid-template-columns:1fr;gap:0}
+  .tier{display:flex;align-items:center;gap:14px;padding:10px 0}
+  .tierlbl{flex:0 0 120px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+  .node{border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:#f7f9fb;font-weight:600;text-align:center}
+  .node.org{background:#eaf0f4;border-color:var(--accent);color:var(--accent);min-width:280px}
+  .node.team{background:#fff;min-width:150px}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .connector{height:16px;border-left:2px solid var(--line);margin-left:60px}
+  .wb{display:inline-block;background:#fff;border:1px solid var(--soft);border-radius:6px;padding:5px 9px;font-size:11px;font-weight:500;margin:3px}
+  .shared{border-color:var(--purple);color:var(--purple);background:#eef1fb}
+
+  /* source of truth panel */
+  .split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:6px}
+  .opt{border:1px solid var(--line);border-radius:9px;padding:15px;background:#fff}
+  .opt h3{margin:0 0 4px;font-size:13px}
+  .opt .tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:9px}
+  .tag.a{background:#e7f4ea;color:var(--green)}
+  .tag.b{background:#eef1fb;color:var(--purple)}
+  .tag.c{background:#fdeee3;color:var(--annot)}
+  .opt ul{margin:8px 0 0;padding-left:16px;color:var(--muted);font-size:12px;line-height:1.55}
+  .opt .rec{margin-top:10px;font-size:11px;font-weight:700}
+  .rec.yes{color:var(--green)} .rec.later{color:var(--annot)} .rec.opt2{color:var(--purple)}
+
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .fb{flex:1;min-width:150px;border:1px solid var(--line);border-radius:8px;padding:12px;background:#f7f9fb;text-align:center;font-size:12px}
+  .fb b{display:block;margin-bottom:4px;font-size:12.5px}
+  .arrow{display:flex;align-items:center;color:var(--muted);font-size:20px;padding:0 8px}
+  .daemon{background:#eef1fb;border-color:var(--purple)}
+  .cloud{background:#eaf0f4;border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <p class="caption"><strong>Wireframe 2 — Topology & source of truth.</strong> How an org, its sub-teams, and their workbooks connect, and where the canonical history lives.</p>
+
+  <!-- HIERARCHY -->
+  <h2>A. Org → Team → Workbook hierarchy</h2>
+  <div class="card">
+    <div class="topo">
+      <div class="tier">
+        <div class="tierlbl">Organization</div>
+        <div class="node org">Blackstone-style PE Firm &nbsp;·&nbsp; one tenant, one identity provider (SSO)</div>
+      </div>
+      <div class="connector"></div>
+      <div class="tier">
+        <div class="tierlbl">Sub-teams</div>
+        <div class="row">
+          <div class="node team">Deal Team A</div>
+          <div class="node team">Modeling / Analytics</div>
+          <div class="node team">Coverage / Sector</div>
+          <div class="node team">IC / Partners</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="tier">
+        <div class="tierlbl">Workbooks</div>
+        <div class="row" style="flex-direction:column;gap:4px">
+          <div>
+            <span class="wb">Atlas LBO</span><span class="wb">Atlas Ops model</span>
+            <span class="wb shared">↔ Atlas LBO (read-only to Modeling)</span>
+          </div>
+          <div class="annot" style="font-size:11.5px;margin-top:6px">
+            Cross-team visibility = a <b>share/permission</b> on a workbook, not a copy.
+            Deal Team owns Atlas LBO; Modeling gets read + comment; IC gets read at sign-off checkpoints.
+            One workbook, many viewers — that's what makes "everyone sees the same history" true.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOURCE OF TRUTH -->
+  <h2>B. Where does the canonical history live? (the real product question)</h2>
+  <div class="card">
+    <p style="margin:0 0 12px;color:var(--muted)">Everyone can only "see each other's sheets and full history" if there's <b>one place</b> that holds the commits. Three ways to provide that place:</p>
+    <div class="split">
+      <div class="opt">
+        <span class="tag a">Ship first</span>
+        <h3>SaaS cloud tenant</h3>
+        <p style="color:var(--muted);font-size:12px;margin:0">Your server is the source of truth. Teams commit into it; it holds every version, diff, author, sign-off.</p>
+        <ul>
+          <li>Simplest to build & reason about</li>
+          <li>Cross-team history "just works" — one DB</li>
+          <li>SSO/SAML for org sign-on</li>
+          <li>Objection: "our models can't leave our walls"</li>
+        </ul>
+        <div class="rec yes">→ Build this as the core</div>
+      </div>
+      <div class="opt">
+        <span class="tag b">Adapter, not rival</span>
+        <h3>SharePoint sync</h3>
+        <p style="color:var(--muted);font-size:12px;margin:0">Daemon watches the team's existing SharePoint/OneDrive synced folder; auto-ingests each saved version as a commit.</p>
+        <ul>
+          <li>Meets teams where files already are</li>
+          <li>No behavior change → easiest adoption</li>
+          <li>You <b>sit on top of</b> SharePoint, don't replace it</li>
+          <li>SharePoint stays file store; <b>you</b> own the history/diff layer</li>
+        </ul>
+        <div class="rec opt2">→ Build second, as ingestion source</div>
+      </div>
+      <div class="opt">
+        <span class="tag c">Enterprise ask</span>
+        <h3>Self-hosted / hybrid</h3>
+        <p style="color:var(--muted);font-size:12px;margin:0">Same server, deployed inside their VPC. Files never leave. SharePoint as backing store, your engine on their box.</p>
+        <ul>
+          <li>Answers the compliance objection</li>
+          <li>Kamal + their infra — your comfort zone</li>
+          <li>Heavier sales & support</li>
+          <li>Only when a real customer demands it</li>
+        </ul>
+        <div class="rec later">→ Defer until a deal requires it</div>
+      </div>
+    </div>
+    <p class="annot" style="margin:14px 4px 0;font-size:12px">
+      Key mental model: <b>SharePoint is a filing cabinet; you are the version-control brain.</b> "Merging SaaS with a company's SharePoint" =
+      the daemon treats their SharePoint folder as one <b>ingestion source</b> feeding your canonical history — not two systems fighting to own the file.
+    </p>
+  </div>
+
+  <!-- FLOW -->
+  <h2>C. How a version actually flows in</h2>
+  <div class="card">
+    <div class="flow">
+      <div class="fb"><b>1 · Edit</b>Analyst edits model in Excel, saves normally</div>
+      <div class="arrow">→</div>
+      <div class="fb daemon"><b>2 · Capture</b>Desktop daemon sees the save (watched folder) <span class="annot">or</span> user hits "Commit version"</div>
+      <div class="arrow">→</div>
+      <div class="fb"><b>3 · Parse & diff</b>Engine aligns rows, classifies authored vs. computed, builds cascade</div>
+      <div class="arrow">→</div>
+      <div class="fb cloud"><b>4 · Store</b>Commit + blobs + diff land in canonical history (cloud or self-host)</div>
+      <div class="arrow">→</div>
+      <div class="fb"><b>5 · Review</b>Any permitted team opens desktop app, sees diff, comments, signs off</div>
+    </div>
+    <p style="margin:14px 4px 0;color:var(--muted);font-size:12px">
+      Steps 2 & 5 are the desktop app + daemon. Steps 3 & 4 are the engine + server. <b>None of this requires hooking into Excel's UI</b> —
+      the watched-folder save is the integration point. The in-Excel colored overlay is a later, optional layer on top of this same pipeline.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

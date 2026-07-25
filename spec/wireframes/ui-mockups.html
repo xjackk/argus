@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Excel VCS — UI mockups (dark)</title>
+<style>
+:root{
+  --bg:#1c2128; --bg2:#22272e; --bg3:#2d333b; --line:#373e47; --line2:#2d333b;
+  --tx:#adbac7; --tx2:#768390; --tx3:#545d68;
+  --blue:#316dca; --green:#57ab5a; --greenbg:#1b4721;
+  --purple:#986ee2; --purplebg:#2f2b52; --red:#e5534b;
+  --amber:#e5a83b; --amberbg:#3d2113;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#14181d;color:var(--tx);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:12px;padding:24px}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:15px;font-weight:500;color:var(--tx);margin:0 0 4px}
+.sub{color:var(--tx2);font-size:12px;margin:0 0 22px}
+.state{background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:22px}
+.slabel{padding:7px 13px;background:var(--bg2);border-bottom:1px solid var(--line);font-size:11px;color:var(--tx2)}
+.note{margin:-14px 2px 22px;font-size:11px;color:var(--tx2);line-height:1.6}
+.note b{color:var(--tx);font-weight:500}
+
+/* top bar */
+.topbar{display:flex;background:var(--bg2);border-bottom:1px solid var(--line)}
+.tb{padding:8px 12px;border-right:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.tb .l{font-size:10px;color:var(--tx2)}
+.tb .v{font-weight:500;color:var(--tx)}
+.ico{font-size:14px;color:var(--tx2);font-style:normal}
+
+/* panes */
+.body3{display:flex;min-height:430px}
+.rail{flex:0 0 210px;border-right:1px solid var(--line);background:var(--bg2)}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;text-align:center;padding:8px 0;color:var(--tx2)}
+.tab.on{color:var(--tx);font-weight:500;box-shadow:inset 0 -2px 0 var(--blue)}
+.crow{padding:8px 10px;border-top:1px solid var(--line2)}
+.crow.sel{background:var(--bg3);box-shadow:inset 3px 0 0 var(--blue);border-top:none}
+.csum{color:var(--tx);line-height:1.35}
+.cmeta{display:flex;align-items:center;gap:5px;margin-top:5px}
+.av{width:14px;height:14px;border-radius:50%;background:#444c56;flex:none}
+.cby{font-size:11px;color:var(--tx2)}
+.cnt{margin-top:5px;font-size:10px}
+.a{color:var(--green)} .c{color:var(--purple)} .m{color:var(--tx2)}
+
+.mid{flex:1;display:flex;flex-direction:column;min-width:0}
+.chead{padding:9px 14px;border-bottom:1px solid var(--line)}
+.ctitle{color:var(--tx);font-weight:500;font-size:13px}
+.cdesc{margin-top:6px;padding:7px 9px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:4px;font-size:11px;color:var(--tx2);line-height:1.5}
+.cauth{display:flex;align-items:center;gap:7px;margin-top:7px}
+.sha{color:var(--tx2);font-family:var(--mono);font-size:11px}
+
+.split{display:flex;flex:1;min-height:0}
+.files{flex:0 0 170px;border-right:1px solid var(--line);background:var(--bg2)}
+.fhead{padding:7px 12px;border-bottom:1px solid var(--line);text-align:center;color:var(--tx)}
+.frow{padding:7px 12px;display:flex;justify-content:space-between;align-items:center;color:var(--tx)}
+.frow.on{background:var(--blue);color:#fff}
+.frow.off{color:var(--tx3)}
+.aibox{margin:10px 12px;padding:8px;background:var(--bg2);border:1px solid var(--line);border-radius:4px}
+.aibox .h{font-size:10px;color:var(--tx2);margin-bottom:5px}
+.aibox .t{font-size:11px;color:var(--tx);line-height:1.5}
+
+.grid{flex:1;min-width:0;display:flex;flex-direction:column}
+.ghead{padding:6px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.toggle{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.toggle span{padding:3px 9px;font-size:11px;color:var(--tx2)}
+.toggle span.on{background:var(--blue);color:#fff;font-weight:500}
+.legend{padding:5px 12px;border-bottom:1px solid var(--line);display:flex;gap:14px;font-size:10px;color:var(--tx2)}
+.sw{display:inline-block;width:8px;height:8px;border-radius:2px;vertical-align:middle}
+table.g{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono)}
+.g td{padding:4px 6px;border:1px solid var(--line2)}
+.g .hd{background:var(--bg2);color:var(--tx2)}
+.g .rn{color:var(--tx2);text-align:center;border:none}
+.cell-a{background:var(--greenbg);box-shadow:inset 2px 0 0 var(--green);text-align:right}
+.cell-c{background:var(--purplebg);box-shadow:inset 2px 0 0 var(--purple);text-align:right}
+.old{color:var(--red);text-decoration:line-through;font-size:10px}
+.oldm{color:var(--tx2);text-decoration:line-through;font-size:10px}
+.new-a{color:var(--green);font-weight:500}
+.new-c{color:var(--purple)}
+.dash{color:var(--tx3);text-align:right}
+.detail{margin-top:12px;padding:9px 11px;background:var(--bg2);border:1px solid #444c56;
+  border-radius:4px;max-width:290px}
+.detail .h{font-size:10px;color:var(--tx2);margin-bottom:6px}
+.dr{display:flex;justify-content:space-between;padding:2px 0}
+
+/* misc */
+.btn{padding:8px 15px;background:var(--blue);border-radius:6px;color:#fff;font-weight:500;display:inline-block}
+.btn2{padding:7px 14px;background:var(--bg2);border:1px solid #444c56;border-radius:6px;color:var(--tx);display:inline-block}
+.pill{font-size:10px;padding:2px 7px;border-radius:9px}
+.pill.ok{color:var(--green);background:var(--greenbg)}
+.pill.no{color:var(--tx2);background:var(--bg3)}
+.metric{flex:1;padding:11px 13px;background:var(--bg2);border-radius:6px}
+.metric .l{font-size:10px;color:var(--tx2)}
+.metric .v{font-size:19px;color:var(--tx);margin-top:3px}
+.dn{font-size:12px;color:var(--red)}
+.opt{padding:13px 15px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;
+  display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.opt.pri{background:var(--blue);border-color:var(--blue)}
+.opt .t{color:var(--tx);font-weight:500}
+.opt.pri .t{color:#fff}
+.opt .s{font-size:10px;color:var(--tx2)}
+.opt.pri .s{color:#c6dcf7}
+.chk{width:15px;height:15px;border-radius:3px;background:var(--blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:10px;flex:none}
+.chk.off{background:none;border:1px solid #444c56}
+.tl{display:flex;gap:9px}
+.tldot{flex:0 0 12px;padding-top:3px}
+.tldot i{display:block;width:8px;height:8px;border-radius:50%;background:var(--purple)}
+.tldot .ln{width:1px;height:30px;background:var(--line);margin-left:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Excel VCS — UI mockups</h1>
+<p class="sub">Dark theme, modeled on GitHub Desktop's three-pane layout. Five states. Use CSS variables (top of this file) so a light theme is a variable swap, not a rewrite.</p>
+
+<!-- ============ STATE 1: MAIN ============ -->
+<div class="state">
+<div class="slabel">STATE 1 — Main window · three-pane, cascade view active</div>
+<div class="topbar">
+  <div class="tb" style="flex:0 0 240px"><i class="ico">▤</i>
+    <div style="flex:1"><div class="l">Current workbook</div><div class="v">Project Atlas — LBO</div></div><i class="ico">▾</i></div>
+  <div class="tb" style="flex:0 0 220px"><i class="ico">⑂</i>
+    <div style="flex:1"><div class="l">Current scenario</div><div class="v">deal-team/base</div></div><i class="ico">▾</i></div>
+  <div class="tb" style="flex:0 0 200px;border:none"><i class="ico">⟳</i>
+    <div><div class="v">Sync SharePoint</div><div class="l">Last synced 2 minutes ago</div></div></div>
+</div>
+<div class="body3">
+  <div class="rail">
+    <div class="tabs"><div class="tab">Changes</div><div class="tab on">History</div></div>
+    <div class="crow sel">
+      <div class="csum">Marked exit multiple down to 9.5x</div>
+      <div class="cmeta"><div class="av"></div><span class="cby">S. Patel (VP) · 2h ago</span></div>
+      <div class="cnt"><span class="a">1 authored</span> <span class="m">·</span> <span class="c">4 computed</span>
+        <span class="a" style="margin-left:4px">✓ signed</span></div>
+    </div>
+    <div class="crow">
+      <div class="csum">Added stock-based comp line to P&amp;L</div>
+      <div class="cmeta"><div class="av"></div><span class="cby">M. Rivera · 1d ago</span></div>
+      <div class="cnt m">structural — row inserted</div>
+    </div>
+    <div class="crow">
+      <div class="csum">Debt repricing: interest 8.25%</div>
+      <div class="cmeta"><div class="av"></div><span class="cby">A. Chen (Modeling) · 2d ago</span></div>
+      <div class="cnt"><span class="a">2 authored</span> <span class="m">·</span> <span class="c">35 computed</span></div>
+    </div>
+    <div class="crow">
+      <div class="csum">Tightened exit EBITDA margin</div>
+      <div class="cmeta"><div class="av"></div><span class="cby">A. Chen (Modeling) · 3d ago</span></div>
+    </div>
+    <div class="crow">
+      <div class="csum">Revenue growth to 9.5%</div>
+      <div class="cmeta"><div class="av"></div><span class="cby">M. Rivera · 4d ago</span></div>
+    </div>
+  </div>
+  <div class="mid">
+    <div class="chead">
+      <div class="ctitle">Marked exit multiple down to 9.5x per comp set</div>
+      <div class="cdesc">Comp set refresh puts peers at 9.2–9.8x. Marking to 9.5x ahead of IC. Flagging that this moves IRR below our 25% threshold.</div>
+      <div class="cauth"><div class="av" style="width:16px;height:16px"></div>
+        <span style="color:var(--tx)">S. Patel (VP)</span><span class="sha">c06</span>
+        <span style="margin-left:auto" class="a">1 authored</span><span class="c">4 computed</span></div>
+    </div>
+    <div class="split">
+      <div class="files">
+        <div class="fhead">2 changed sheets</div>
+        <div class="frow on"><span>Assumptions</span><span style="font-size:10px">1</span></div>
+        <div class="frow"><span>Returns</span><span class="c" style="font-size:10px">4</span></div>
+        <div class="frow off">P&amp;L</div>
+        <div class="frow off">Debt</div>
+        <div class="aibox"><div class="h">AI summary</div>
+          <div class="t">Exit multiple lowered 10.5x → 9.5x, dropping IRR from 27.5% to 25.4% and MOIC to 2.99x.</div></div>
+      </div>
+      <div class="grid">
+        <div class="ghead"><span class="sha">Returns</span>
+          <div class="toggle"><span>Authored</span><span class="on">Cascade</span></div></div>
+        <div class="legend">
+          <span><span class="sw" style="background:#347d39"></span> authored</span>
+          <span><span class="sw" style="background:#6b47b8"></span> computed</span>
+          <span style="font-family:var(--mono)">ƒ formula</span>
+        </div>
+        <div style="padding:10px 12px;overflow:auto">
+          <table class="g">
+            <tr><td class="rn" style="width:26px"></td><td class="hd">A</td><td class="hd" style="text-align:right">B</td><td class="hd" style="text-align:right">C</td></tr>
+            <tr><td class="rn">5</td><td style="color:var(--tx)">Exit multiple</td>
+              <td class="cell-a"><span class="old">10.5x</span><br><span class="new-a">9.5x</span></td><td class="dash">—</td></tr>
+            <tr><td class="rn">9</td><td style="color:var(--tx)">Exit EV <span class="m">ƒ</span></td>
+              <td class="cell-c"><span class="oldm">1,928</span><br><span class="new-c">1,745</span></td><td class="dash">—</td></tr>
+            <tr><td class="rn">11</td><td style="color:var(--tx)">Exit equity <span class="m">ƒ</span></td>
+              <td class="cell-c"><span class="oldm">1,665</span><br><span class="new-c">1,482</span></td><td class="dash">—</td></tr>
+            <tr><td class="rn">13</td><td style="color:var(--tx)">MOIC <span class="m">ƒ</span></td>
+              <td class="cell-c"><span class="oldm">3.36x</span><br><span class="new-c">2.99x</span></td><td class="dash">—</td></tr>
+            <tr><td class="rn">14</td><td style="color:var(--tx)">IRR <span class="m">ƒ</span></td>
+              <td class="cell-c"><span class="oldm">27.5%</span><br><span class="new-c">25.4%</span></td><td class="dash">—</td></tr>
+          </table>
+          <div class="detail">
+            <div class="h">CELL DETAIL — Returns!B14</div>
+            <div class="dr"><span class="m">Change</span><span style="color:var(--tx)">27.5% → 25.4%</span></div>
+            <div class="dr"><span class="m">Type</span><span class="c">computed</span></div>
+            <div class="dr"><span class="m">Caused by</span><span class="a">Assumptions!B5</span></div>
+            <div class="dr"><span class="m">History</span><span style="color:var(--tx)">5 revisions ⟲</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<p class="note"><b>Key mapping from GitHub Desktop:</b> repo→workbook, branch→scenario, commit list→version history,
+"10 changed files"→"2 changed sheets", diff pane→spreadsheet grid, <code>+127 −0</code>→<code>1 authored · 4 computed</code>.
+The <b>Authored ↔ Cascade toggle</b> is the single most important control — it's the demo moment.</p>
+
+<!-- ============ STATE 2: CELL DETAIL ============ -->
+<div class="state">
+<div class="slabel">STATE 2 — Cell clicked · dependency chain + revision history</div>
+<div style="padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
+  <span class="m">Returns</span><span style="color:var(--tx3)">›</span><span class="sha" style="color:var(--tx)">B14</span>
+  <span style="margin-left:auto;font-size:11px" class="m">click any cell to inspect</span>
+</div>
+<div style="display:flex;min-height:400px">
+  <div style="flex:1;padding:12px;border-right:1px solid var(--line);min-width:0">
+    <table class="g">
+      <tr><td class="rn" style="width:26px"></td><td class="hd">A</td><td class="hd" style="text-align:right">B</td></tr>
+      <tr><td class="rn">9</td><td style="color:var(--tx)">Exit EV ƒ</td><td class="cell-c"><span class="new-c">1,745</span></td></tr>
+      <tr><td class="rn">13</td><td style="color:var(--tx)">MOIC ƒ</td><td class="cell-c"><span class="new-c">2.99x</span></td></tr>
+      <tr><td class="rn" style="color:var(--amber)">14</td><td style="color:var(--tx)">IRR ƒ</td>
+        <td class="cell-c" style="border:2px solid var(--amber)"><span class="new-c" style="font-weight:500">25.4%</span></td></tr>
+    </table>
+    <div style="margin-top:14px;padding:9px 11px;background:var(--bg2);border:1px solid var(--line);border-radius:4px">
+      <div class="h" style="font-size:10px;color:var(--tx2);margin-bottom:6px">DEPENDENCY CHAIN</div>
+      <div style="font-family:var(--mono);font-size:11px;line-height:1.9">
+        <div><span class="a">Assumptions!B5</span> <span class="m">exit multiple</span></div>
+        <div style="color:var(--tx3);padding-left:6px">↓</div>
+        <div><span class="c">Returns!B9</span> <span class="m">exit EV</span></div>
+        <div style="color:var(--tx3);padding-left:6px">↓</div>
+        <div><span class="c">Returns!B11</span> <span class="m">exit equity</span></div>
+        <div style="color:var(--tx3);padding-left:6px">↓</div>
+        <div><span style="color:var(--amber)">Returns!B14</span> <span class="m">IRR ← you are here</span></div>
+      </div>
+    </div>
+  </div>
+  <div style="flex:0 0 300px;padding:12px;background:var(--bg2)">
+    <div style="font-size:13px;color:var(--tx);font-weight:500">IRR</div>
+    <div class="sha" style="margin-top:2px">Returns!B14</div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:11px;color:var(--tx2)">=(B11/B6)^(1/Assumptions!B7)-1</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <div style="flex:1;padding:8px;background:var(--bg);border-radius:4px">
+        <div style="font-size:10px" class="m">this version</div><div style="font-size:16px;margin-top:2px" class="c">25.4%</div></div>
+      <div style="flex:1;padding:8px;background:var(--bg);border-radius:4px">
+        <div style="font-size:10px" class="m">change</div><div style="font-size:16px;margin-top:2px;color:var(--red)">−2.1pts</div></div>
+    </div>
+    <div style="margin-top:14px;font-size:10px;color:var(--tx2);letter-spacing:.04em">HISTORY — 5 REVISIONS</div>
+    <div style="margin-top:8px" class="tl"><div class="tldot"><i></i><div class="ln"></div></div>
+      <div style="flex:1"><div style="color:var(--tx)">27.5% → <span class="c">25.4%</span></div>
+        <div style="font-size:10px;margin-top:1px" class="m">S. Patel · 2h ago · <span class="c">computed</span></div>
+        <div style="font-size:10px;color:var(--tx3)">caused by exit multiple</div></div></div>
+    <div class="tl"><div class="tldot"><i></i><div class="ln"></div></div>
+      <div style="flex:1"><div style="color:var(--tx)">27.7% → <span class="c">28.3%</span></div>
+        <div style="font-size:10px;margin-top:1px" class="m">A. Chen · 2d ago · <span class="c">computed</span></div>
+        <div style="font-size:10px;color:var(--tx3)">caused by debt repricing</div></div></div>
+    <div class="tl"><div class="tldot"><i></i><div class="ln"></div></div>
+      <div style="flex:1"><div style="color:var(--tx)">29.5% → <span class="c">27.7%</span></div>
+        <div style="font-size:10px;margin-top:1px" class="m">A. Chen · 3d ago · <span class="c">computed</span></div>
+        <div style="font-size:10px;color:var(--tx3)">caused by margin tightening</div></div></div>
+    <div class="tl"><div class="tldot"><i></i><div class="ln"></div></div>
+      <div style="flex:1"><div style="color:var(--tx)">27.5% → <span class="c">29.5%</span></div>
+        <div style="font-size:10px;margin-top:1px" class="m">M. Rivera · 4d ago · <span class="c">computed</span></div>
+        <div style="font-size:10px;color:var(--tx3)">caused by growth case</div></div></div>
+    <div class="tl"><div class="tldot"><i style="background:#444c56"></i></div>
+      <div style="flex:1"><div class="m">27.5% <span style="font-size:10px">initial</span></div>
+        <div style="font-size:10px;margin-top:1px" class="m">J. Killilea · 6d ago</div></div></div>
+    <div style="margin-top:12px;padding:8px 10px;background:var(--bg);border-left:2px solid var(--purple);font-size:11px;color:var(--tx);line-height:1.5">
+      IRR has never been directly edited — every change came from upstream assumptions.</div>
+  </div>
+</div>
+</div>
+<p class="note"><b>This is the "git log for a cell" view.</b> The dependency chain shows <i>how</i> a change reached this cell;
+the timeline shows every time it moved and who caused it. The closing line ("never directly edited") is trivial to compute
+from the classification field and is exactly the reassurance a reviewer wants.</p>
+
+<!-- ============ STATE 3: FIRST RUN ============ -->
+<div class="state">
+<div class="slabel">STATE 3 — First run · no workbooks yet</div>
+<div style="display:flex;padding:26px 24px;gap:26px">
+  <div style="flex:1">
+    <div style="font-size:22px;color:var(--tx);font-weight:500">Let's get started</div>
+    <div class="m" style="margin-top:5px;line-height:1.5">Track changes to your Excel models and see exactly what moved.</div>
+    <div style="margin-top:18px;padding:11px 13px;background:var(--bg2);border:1px solid var(--line);border-radius:6px">
+      <div style="font-size:10px;color:var(--tx2);margin-bottom:7px">DETECTED ON THIS MACHINE</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 0"><i class="ico">☁</i>
+        <div style="flex:1"><div style="color:var(--tx)">OneDrive — Atlas Partners</div>
+          <div style="font-size:10px" class="m">14 workbooks found</div></div></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-top:1px solid var(--line2)"><i class="ico">▣</i>
+        <div style="flex:1"><div style="color:var(--tx)">SharePoint — Deal Team A</div>
+          <div style="font-size:10px" class="m">31 workbooks found</div></div></div>
+    </div>
+  </div>
+  <div style="flex:0 0 300px;display:flex;flex-direction:column;justify-content:center">
+    <div class="opt pri"><i class="ico" style="color:#fff;font-size:18px">◉</i>
+      <div><div class="t">Watch a folder</div><div class="s">Auto-track every save — recommended</div></div></div>
+    <div class="opt"><i class="ico" style="font-size:18px">▤</i>
+      <div><div class="t">Add a workbook</div><div class="s">Track a single file</div></div></div>
+    <div class="opt"><i class="ico" style="font-size:18px">◫</i>
+      <div><div class="t">Join your team</div><div class="s">Sign in with company SSO</div></div></div>
+    <div style="padding:9px 12px;border:1px dashed #444c56;border-radius:6px;font-size:11px;text-align:center" class="m">
+      Or drag an .xlsx file here</div>
+  </div>
+</div>
+</div>
+<p class="note"><b>"Watch a folder" is the primary action</b> and the folder is pre-detected — lowest possible friction.
+No upload ritual, no behavior change. <b>"No account needed"</b> supports bottom-up adoption: one person gets value alone before any admin is involved.</p>
+
+<!-- ============ STATE 4: FOLDER SETUP ============ -->
+<div class="state">
+<div class="slabel">STATE 4 — Folder watch setup · pick what to track</div>
+<div style="padding:20px 24px">
+  <div style="font-size:16px;color:var(--tx);font-weight:500">Which workbooks should we track?</div>
+  <div class="m" style="margin-top:4px;line-height:1.5">We'll create a version every time one of these is saved. You can turn any of them off later.</div>
+  <div style="margin-top:14px;padding:8px 11px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;gap:9px">
+    <i class="ico">▣</i><span class="sha" style="color:var(--tx)">~/OneDrive/Atlas Partners/Models</span>
+    <span style="margin-left:auto;color:var(--blue);font-size:11px">Change</span></div>
+  <div style="margin-top:12px;border:1px solid var(--line);border-radius:6px;overflow:hidden">
+    <div style="padding:9px 12px;display:flex;align-items:center;gap:10px;background:var(--bg2);border-bottom:1px solid var(--line)">
+      <div class="chk">✓</div>
+      <div style="flex:1"><div style="color:var(--tx)">Project Atlas — LBO Model.xlsx</div>
+        <div style="font-size:10px" class="m">4 sheets · 312 formulas · modified 2h ago</div></div>
+      <span class="pill ok">good fit</span></div>
+    <div style="padding:9px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line2)">
+      <div class="chk">✓</div>
+      <div style="flex:1"><div style="color:var(--tx)">Atlas — Ops Model.xlsx</div>
+        <div style="font-size:10px" class="m">7 sheets · 890 formulas · modified 1d ago</div></div>
+      <span class="pill ok">good fit</span></div>
+    <div style="padding:9px 12px;display:flex;align-items:center;gap:10px">
+      <div class="chk off"></div>
+      <div style="flex:1"><div class="m">Team contact list.xlsx</div>
+        <div style="font-size:10px;color:var(--tx3)">1 sheet · 0 formulas</div></div>
+      <span class="pill no">no formulas</span></div>
+  </div>
+  <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+    <div class="btn">Start tracking 2 workbooks</div>
+    <span style="font-size:11px" class="m">No account needed — everything stays on this machine until you join a team.</span></div>
+</div>
+</div>
+<p class="note"><b>The "no formulas" badge does real work</b> — it filters out contact lists and trackers where the cascade
+feature does nothing, so users only track workbooks the product is good at. It teaches what the tool is <i>for</i> without a tutorial.</p>
+
+<!-- ============ STATE 5: SUMMARY-FIRST + ANOMALY ============ -->
+<div class="state">
+<div class="slabel">STATE 5a — Summary-first · what a non-technical reviewer sees on open</div>
+<div style="padding:18px 20px">
+  <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px">
+    <div class="av" style="width:22px;height:22px"></div>
+    <span style="color:var(--tx);font-weight:500">S. Patel (VP)</span><span class="m">changed this model 2 hours ago</span>
+    <span class="pill ok" style="margin-left:auto;padding:3px 9px">✓ signed off</span></div>
+  <div style="padding:15px 17px;background:var(--bg2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0">
+    <div style="font-size:15px;color:var(--tx);line-height:1.65">The <span class="a">exit multiple was lowered from 10.5x to 9.5x</span>
+      to reflect the refreshed comp set. This reduced Exit EV by $183mm and dropped projected
+      <span class="c">IRR from 27.5% to 25.4%</span>, with MOIC falling from 3.36x to 2.99x.</div>
+    <div style="margin-top:9px;font-size:11px" class="m">One person changed one input. Four numbers moved as a result.</div></div>
+  <div style="display:flex;gap:10px;margin-top:14px">
+    <div class="metric"><div class="l">IRR</div><div class="v">25.4% <span class="dn">−2.1pts</span></div></div>
+    <div class="metric"><div class="l">MOIC</div><div class="v">2.99x <span class="dn">−0.37x</span></div></div>
+    <div class="metric"><div class="l">Exit EV</div><div class="v">1,745 <span class="dn">−183</span></div></div>
+  </div>
+  <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
+    <div class="btn">See what changed</div><span style="font-size:11px" class="m">Opens the cell-by-cell view</span></div>
+</div>
+</div>
+
+<div class="state">
+<div class="slabel">STATE 5b — Anomaly detected · the silent-error catch</div>
+<div style="padding:16px 20px">
+  <div style="padding:13px 15px;background:var(--amberbg);border-left:3px solid var(--amber);border-radius:0 6px 6px 0">
+    <div style="display:flex;align-items:center;gap:8px">
+      <i class="ico" style="color:var(--amber);font-size:16px">⚠</i>
+      <span style="color:var(--amber);font-weight:500">A formula was replaced with a typed number</span></div>
+    <div style="margin-top:8px;color:var(--tx);line-height:1.6;font-size:13px">
+      <span class="sha">Returns!B9</span> (Exit EV) previously calculated from the exit multiple.
+      It now contains a hardcoded <span style="color:var(--amber)">2,100</span>.</div>
+    <div style="margin-top:8px;padding:9px 11px;background:var(--bg);border-radius:4px;font-family:var(--mono);font-size:11px">
+      <div><span style="color:var(--red)">−</span> <span class="m">=Assumptions!B5*B8</span></div>
+      <div><span class="a">+</span> <span style="color:var(--amber)">2100</span></div></div>
+    <div style="margin-top:9px;font-size:11px;line-height:1.5" class="m">
+      IRR rose 5.2 points, but no input assumption changed to justify it. The model no longer recalculates when the exit multiple moves.</div>
+  </div>
+  <div style="margin-top:12px;display:flex;align-items:center;gap:9px;font-size:11px" class="m">
+    <div class="av" style="width:20px;height:20px"></div>
+    M. Rivera · "Manual Exit EV override pending diligence" · 20 min ago</div>
+  <div style="margin-top:12px;display:flex;gap:9px">
+    <div class="btn2">Ask M. Rivera</div><div class="btn2">Mark as reviewed</div><div class="btn2">Compare to previous</div></div>
+</div>
+</div>
+<p class="note"><b>5a is the recommended default for non-technical users:</b> lead with the sentence, back it with three metric
+cards, make the grid a deliberate click-through. A reviewer with 90 seconds gets everything without touching a cell; the power
+user clicks in. <b>5b uses the real c06→c07 test data</b> and is the strongest demo moment after the cascade toggle.</p>
+
+</div>
+</body>
+</html>

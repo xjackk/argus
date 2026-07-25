@@ -1,4 +1,5 @@
 import history from "./commit-history.json";
+import { canonRef } from "./refs";
 import type { CellValue, Classification } from "./types";
 
 // Per-cell revision timeline — powers State 2's "git log for a cell". Sourced
@@ -21,7 +22,7 @@ interface CellHistoryEntry {
 
 const byRef = new Map<string, Revision[]>();
 for (const e of (history as { cellHistory?: CellHistoryEntry[] }).cellHistory ?? []) {
-  byRef.set(e.ref, e.revisions ?? []);
+  byRef.set(canonRef(e.ref), e.revisions ?? []);
 }
 
 /** Revisions for a fully-qualified ref (e.g. "Returns!B14"), oldest→newest. */

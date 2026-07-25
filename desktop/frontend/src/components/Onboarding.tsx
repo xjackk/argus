@@ -23,11 +23,10 @@ const DETECTED: TrackFile[] = [
 
 export function Onboarding({ onClose, onDone }: Props) {
   const [step, setStep] = useState<"welcome" | "setup" | "sso">("welcome");
-  const [checked, setChecked] = useState<Record<string, boolean>>({
-    "Project Atlas — LBO Model.xlsx": true,
-    "Atlas — Ops Model.xlsx": true,
-    "Team contact list.xlsx": false,
-  });
+  // Default-check the good-fit workbooks, derived from DETECTED so the two can't drift.
+  const [checked, setChecked] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(DETECTED.map((f) => [f.name, f.fit === "good"]))
+  );
   const trackCount = Object.values(checked).filter(Boolean).length;
 
   return (

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type { DiffResult, CellChange, Cascade, Anomaly } from "../data/types";
 import type { CommitRow } from "../data/history";
 import { formatValue, formatDelta } from "../data/format";
-import { qualify } from "../data/refs";
+import { qualify, canonRef } from "../data/refs";
 import { isAuthored } from "../data/classify";
 import { VirtualGrid, ViewMode } from "./VirtualGrid";
 import { CellDetail } from "./CellDetail";
@@ -98,7 +98,8 @@ export function DiffColumn(props: Props) {
       {movers.length > 0 && (
         <div className="metrics">
           {movers.map((m) => {
-            const ch = changeByRef.get(m.ref);
+            // m.ref may be quoted ('P&L'!G10); changeByRef is keyed unquoted.
+            const ch = changeByRef.get(canonRef(m.ref));
             const fmt = ch?.displayFormat;
             const up = (m.magnitude ?? 0) > 0;
             return (

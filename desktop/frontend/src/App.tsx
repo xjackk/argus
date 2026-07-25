@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { diffForCommit } from "./data/diffs";
 import { COMMIT_HISTORY } from "./data/history";
 import { qualify, canonRef } from "./data/refs";
+import { isAuthored } from "./data/classify";
 import type { DiffResult, CellChange, Cascade, Anomaly } from "./data/types";
 
 // The commit shown on open — the signed-off exit-multiple cascade (the demo
@@ -58,7 +59,7 @@ export default function App() {
   // Highlight the cascade blast-radius when an authored cell is selected.
   const rippled = useMemo(() => {
     const set = new Set<string>();
-    if (selectedCell && selectedCell.change.classification === "authored") {
+    if (selectedCell && isAuthored(selectedCell.change)) {
       const origin = qualify(selectedCell.sheet, selectedCell.change.coord);
       const c = cascadeByOrigin.get(origin);
       if (c) c.affected.forEach((r) => set.add(canonRef(r)));

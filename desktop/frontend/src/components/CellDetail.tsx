@@ -1,7 +1,7 @@
 import type { CellChange, Cascade } from "../data/types";
 import { formatDelta } from "../data/format";
 import { revisionsFor } from "../data/cellHistory";
-import { qualify } from "../data/refs";
+import { qualify, canonRef } from "../data/refs";
 import { isAuthored, classDot } from "../data/classify";
 import { ValueDelta } from "./ValueDelta";
 
@@ -9,19 +9,30 @@ interface Props {
   change: CellChange;
   sheet: string;
   cascadeByOrigin: Map<string, Cascade>;
+  changeByRef: Map<string, CellChange>;
   onClose: () => void;
 }
 
-// State 2 — "git log for a cell": formula, before/after, dependency chain,
-// revision timeline, and the classification-derived reassurance line.
-export function CellDetail({ change, sheet, cascadeByOrigin, onClose }: Props) {
+// State 2 — "git log for a cell": formula, before/after, dependency chain (with
+// the actual formula + value move at each step), revision timeline, and the
+// classification-derived reassurance line.
+export function CellDetail({
+  change,
+  sheet,
+  cascadeByOrigin,
+  changeByRef,
+  onClose,
+}: Props) {
   const qualified = qualify(sheet, change.coord);
   const authored = isAuthored(change);
   const origin = change.causedBy[0];
   const cascade = cascadeByOrigin.get(qualified);
   const revisions = revisionsFor(qualified); // oldest→newest
-  const precedents = change.dependsOn.filter((d) => d !== origin);
   const up = (change.magnitude ?? 0) > 0; // delta color follows direction
+
+  // The chain of cells from the authored origin down to this one. Each node is
+  // enriched with its formula + value move where the cell is part of the diff.
+  const chainRefs = origin ? [origin, qualified] : [];
 
   return (
     <div className="detail">
@@ -60,32 +71,45 @@ export function CellDetail({ change, sheet, cascadeByOrigin, onClose }: Props) {
           <span>{cascade.affectedCount} cells</span>
         </div>
       )}
-      {origin && (
-        <div className="dr">
-          <span className="k">Caused by</span>
-          <span className="tag-a">{origin}</span>
-        </div>
-      )}
 
-      {/* Dependency chain: origin → this cell, plus direct precedents. */}
+      {/* Dependency chain — origin → this cell, each node showing the actual
+          formula and value move so a reviewer sees HOW the number was reached. */}
       {origin && (
         <div className="chain">
-          <div className="h">Dependency chain</div>
-          <div className="chain-step">
-            <span className="tag-a">{origin}</span>
-          </div>
-          <div className="chain-step chain-arrow">↓</div>
-          {precedents.map((d) => (
-            <div key={d} className="chain-step">
-              <span className="tag-c">{d}</span>
-            </div>
-          ))}
-          {precedents.length > 0 && (
-            <div className="chain-step chain-arrow">↓</div>
-          )}
-          <div className="chain-step here">
-            {qualified} <span className="tag-m">← you are here</span>
-          </div>
+          <div className="h">How this value was reached</div>
+          {chainRefs.map((ref, i) => {
+            const node = ref === qualified ? change : changeByRef.get(canonRef(ref));
+            const isHere = ref === qualified;
+            return (
+              <div key={ref}>
+                {i > 0 && <div className="chain-arrow">↓</div>}
+                <div className={"chain-node" + (isHere ? " here" : "")}>
+                  <div className="cn-head">
+                    <span className="sha">{canonRef(ref)}</span>
+                    {node?.label && <span className="cn-label">{node.label}</span>}
+                    {node && (
+                      <span className={"cn-tag tag-" + classDot(node.classification)}>
+                        {node.classification}
+                      </span>
+                    )}
+                    {isHere && <span className="cn-here">← you are here</span>}
+                  </div>
+                  {node?.newFormula && (
+                    <div className="cn-formula">{node.newFormula}</div>
+                  )}
+                  {node && (
+                    <div className="cn-val">
+                      <ValueDelta
+                        old={node.oldValue}
+                        next={node.newValue}
+                        fmt={node.displayFormat}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

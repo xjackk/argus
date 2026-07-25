@@ -6,20 +6,14 @@ const WORKBOOKS = [
   "Atlas — Ops Model",
   "Meridian — Credit Model",
 ];
-const SCENARIOS = [
-  "deal-team/base",
-  "deal-team/upside",
-  "deal-team/downside",
-  "modeling/returns",
-];
 
-// GitHub-Desktop-style top bar: workbook (repo) ▾, scenario (branch) ▾, sync
-// status, and a primary action. Dropdowns and Commit/Sync are mocked (no
-// persistence) but fully interactive so the chrome feels real.
+// Top bar: a workbook picker, sync status, and Commit. Deliberately NOT a
+// git-branch bar — finance reviewers think in "which model" + "what changed
+// over time", so there's no branch/scenario concept. Dropdown and Commit/Sync
+// are mocked (no persistence) but fully interactive so the chrome feels real.
 export function TopBar() {
   const [workbook, setWorkbook] = useState(WORKBOOKS[0]);
-  const [scenario, setScenario] = useState(SCENARIOS[0]);
-  const [open, setOpen] = useState<null | "wb" | "sc">(null);
+  const [open, setOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncedLabel, setSyncedLabel] = useState("Synced 2m ago");
   const [showCommit, setShowCommit] = useState(false);
@@ -52,17 +46,14 @@ export function TopBar() {
   return (
     <div className="topbar">
       {/* Workbook picker */}
-      <div
-        className="tb picker wb"
-        onClick={() => setOpen(open === "wb" ? null : "wb")}
-      >
+      <div className="tb picker wb" onClick={() => setOpen((o) => !o)}>
         <i className="ico">▤</i>
         <div className="tb-mid">
           <div className="l">Current workbook</div>
           <div className="v">{workbook}</div>
         </div>
         <span className="caret">▾</span>
-        {open === "wb" && (
+        {open && (
           <div className="menu" onClick={(e) => e.stopPropagation()}>
             {WORKBOOKS.map((w) => (
               <div
@@ -70,7 +61,7 @@ export function TopBar() {
                 className={"menu-item" + (w === workbook ? " on" : "")}
                 onClick={() => {
                   setWorkbook(w);
-                  setOpen(null);
+                  setOpen(false);
                 }}
               >
                 {w}
@@ -80,42 +71,12 @@ export function TopBar() {
             <div
               className="menu-item add"
               onClick={() => {
-                setOpen(null);
+                setOpen(false);
                 setShowOnboarding(true);
               }}
             >
               ＋ Watch a new folder…
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Scenario picker */}
-      <div
-        className="tb picker sc"
-        onClick={() => setOpen(open === "sc" ? null : "sc")}
-      >
-        <i className="ico">⑂</i>
-        <div className="tb-mid">
-          <div className="l">Current scenario</div>
-          <div className="v">{scenario}</div>
-        </div>
-        <span className="caret">▾</span>
-        {open === "sc" && (
-          <div className="menu" onClick={(e) => e.stopPropagation()}>
-            <div className="menu-head">Switch fork</div>
-            {SCENARIOS.map((s) => (
-              <div
-                key={s}
-                className={"menu-item mono" + (s === scenario ? " on" : "")}
-                onClick={() => {
-                  setScenario(s);
-                  setOpen(null);
-                }}
-              >
-                ⑂ {s}
-              </div>
-            ))}
           </div>
         )}
       </div>
@@ -133,8 +94,8 @@ export function TopBar() {
         </button>
       </div>
 
-      {/* Backdrop closes any open dropdown */}
-      {open && <div className="menu-backdrop" onClick={() => setOpen(null)} />}
+      {/* Backdrop closes the open dropdown */}
+      {open && <div className="menu-backdrop" onClick={() => setOpen(false)} />}
 
       {/* Commit modal (mocked) */}
       {showCommit && (
@@ -142,7 +103,7 @@ export function TopBar() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-title">Commit a new version</div>
             <div className="modal-sub">
-              Snapshots the current workbook to {workbook} · {scenario}.
+              Snapshots the current state of {workbook}.
             </div>
             <textarea
               className="modal-input"

@@ -249,10 +249,32 @@ body {
   border-bottom: 1px solid var(--line);
   flex: none;
 }
+.chead-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .chead .ctitle {
   color: var(--tx);
   font-weight: 600;
   font-size: 13px;
+}
+.collapse-btn {
+  margin-left: auto;
+  flex: none;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--tx2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: var(--sans);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.collapse-btn:hover {
+  background: var(--bg3);
+  color: var(--tx);
 }
 .chead .cdesc {
   margin-top: 7px;
@@ -704,13 +726,16 @@ body {
 }
 
 /* Cell detail panel */
-.detail {
-  border-top: 1px solid var(--line);
-  padding: 11px 14px;
+/* Right-side inspector holding the clicked-cell detail (UI-SPEC State 2). */
+.inspector {
+  flex: 0 0 340px;
+  border-left: 1px solid var(--line);
   background: var(--bg2);
-  flex: none;
-  max-height: 38%;
+  min-height: 0;
   overflow-y: auto;
+}
+.detail {
+  padding: 13px 15px;
 }
 .detail .d-head {
   display: flex;
@@ -759,17 +784,53 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.chain-step {
-  font-family: var(--mono);
-  font-size: 11px;
-  line-height: 1.5;
-}
 .chain-arrow {
   color: var(--tx3);
-  padding-left: 4px;
+  padding: 2px 0 2px 10px;
+  font-size: 12px;
 }
-.chain .here {
+.chain-node {
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.chain-node.here {
+  border-color: var(--amber);
+}
+.cn-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.cn-label {
+  color: var(--tx);
+  font-size: 12px;
+}
+.cn-tag {
+  font-size: 10px;
+}
+.cn-here {
   color: var(--amber);
+  font-size: 10px;
+  margin-left: auto;
+}
+.cn-formula {
+  margin-top: 6px;
+  padding: 5px 8px;
+  background: var(--bg2);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--tx2);
+  overflow-x: auto;
+}
+.cn-val {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--tx);
+  font-variant-numeric: tabular-nums;
 }
 .reassure {
   margin-top: 10px;

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { DiffResult, CellChange, Cascade, Anomaly } from "../data/types";
 import type { CommitRow } from "../data/history";
 import { formatValue, formatDelta } from "../data/format";
@@ -48,9 +48,9 @@ export function DiffColumn(props: Props) {
     onHover,
   } = props;
 
+  const [summaryCollapsed, setSummaryCollapsed] = useState(false);
   const sheet = diff.sheets.find((s) => s.name === selectedSheet) ?? diff.sheets[0];
   const narrative = diff.summary.narrative;
-
   // Up to three headline metrics from the cascade top-movers (highest |Δ|).
   const movers = useMemo(
     () =>
@@ -61,6 +61,7 @@ export function DiffColumn(props: Props) {
     [diff]
   );
 
+  const hasSummary = !!narrative || movers.length > 0;
   const visibleCount = sheetCount(sheet.changes, mode);
   const anomaly = diff.anomalies[0];
 
@@ -68,7 +69,18 @@ export function DiffColumn(props: Props) {
     <div className="diffcol">
       {/* Commit header */}
       <div className="chead">
-        <div className="ctitle">{commit.message}</div>
+        <div className="chead-top">
+          <div className="ctitle">{commit.message}</div>
+          {hasSummary && (
+            <button
+              className="collapse-btn"
+              onClick={() => setSummaryCollapsed((v) => !v)}
+              title={summaryCollapsed ? "Show summary" : "Hide summary"}
+            >
+              {summaryCollapsed ? "▾ Summary" : "▴ Hide summary"}
+            </button>
+          )}
+        </div>
         {commit.description && <div className="cdesc">{commit.description}</div>}
         <div className="cauth">
           <div className="av" />
@@ -81,8 +93,8 @@ export function DiffColumn(props: Props) {
         </div>
       </div>
 
-      {/* Narrative banner — rendered only when present (may be null). */}
-      {narrative && (
+      {/* Narrative banner — rendered only when present and not collapsed. */}
+      {!summaryCollapsed && narrative && (
         <div className="narrative">
           <div className="n-text">{narrative}</div>
           <div className="n-sub">
@@ -95,7 +107,7 @@ export function DiffColumn(props: Props) {
       )}
 
       {/* Metric cards */}
-      {movers.length > 0 && (
+      {!summaryCollapsed && movers.length > 0 && (
         <div className="metrics">
           {movers.map((m) => {
             // m.ref may be quoted ('P&L'!G10); changeByRef is keyed unquoted.
@@ -162,7 +174,8 @@ export function DiffColumn(props: Props) {
                 <span>{n}</span>
               </div>
             ))}
-          {narrative && (
+          {/* When the top banner is collapsed, keep the summary reachable here. */}
+          {summaryCollapsed && narrative && (
             <div className="aibox">
               <div className="h">AI summary</div>
               <div className="t">{narrative}</div>
@@ -220,16 +233,20 @@ export function DiffColumn(props: Props) {
             onHover={onHover}
             onSelectCell={(c) => onSelectCell(c, sheet.name)}
           />
+        </div>
 
-          {selectedCell && (
+        {/* Right inspector — the clicked cell's detail (UI-SPEC State 2). */}
+        {selectedCell && (
+          <div className="inspector">
             <CellDetail
               change={selectedCell.change}
               sheet={selectedCell.sheet}
               cascadeByOrigin={cascadeByOrigin}
+              changeByRef={changeByRef}
               onClose={() => onSelectCell(selectedCell.change, selectedCell.sheet)}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

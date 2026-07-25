@@ -1,3 +1,15 @@
+> **Ported into the repo 2026-07-25.** Paths in the original text below refer to the old
+> `~/Downloads/argus-files/test-workbooks/` layout. In this repo:
+>
+> - The workbooks (`atlas_v1–v5`, `atlas_c01–c07`) are **here**, in `engine/testdata/`.
+> - The generators (`build_lbo.py`, `build_versions.py`, `build_chain.py`) are in `/scripts/`.
+> - `commit-history.json` lives at `desktop/frontend/src/data/commit-history.json`.
+> - `fixture-v1-to-v2.json` was **not** ported — the `fixture.json` it fed was deleted in `dd91ca9`.
+> - `scripts/gen-fixtures.sh` still reads workbooks from `~/Downloads/...` by default;
+>   override with `ARGUS_WORKBOOKS=engine/testdata`.
+
+---
+
 # Test workbooks — Project Atlas LBO model
 
 Four version-pairs derived from one base LBO model, each designed to exercise a **specific** diff/cascade behavior the engine must handle. Use them two ways:

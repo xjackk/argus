@@ -1,4 +1,4 @@
-import { memo, useRef, useMemo } from "react";
+import { memo, useRef, useMemo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CellChange, SheetDiff, Anomaly } from "../data/types";
 import { formatValue } from "../data/format";
@@ -68,6 +68,27 @@ export function VirtualGrid({
     estimateSize: () => ROW_H,
     overscan: 10,
   });
+
+  // Scroll the selected cell into view (row + column) when it changes — so
+  // clicking a change in the rail actually TAKES you to the cell, not just to
+  // the right sheet. No-op when the selected cell isn't on this sheet.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!selectedRef || !el) return;
+    const sel = sheet.changes.find(
+      (c) => qualify(sheet.name, c.coord) === selectedRef
+    );
+    if (!sel) return;
+    rowVirtualizer.scrollToIndex(sel.row - 1, { align: "center" });
+    const colX =
+      sel.col <= 1 ? ROWNUM_W : ROWNUM_W + LABEL_W + (sel.col - 2) * CELL_W;
+    el.scrollTo({
+      left: Math.max(0, colX - el.clientWidth / 2 + CELL_W / 2),
+      behavior: "smooth",
+    });
+    // rowVirtualizer identity changes each render; depend on the actual inputs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRef, sheet]);
 
   return (
     <div className="grid-scroll" ref={scrollRef}>

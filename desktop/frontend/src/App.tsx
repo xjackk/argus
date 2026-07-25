@@ -228,11 +228,19 @@ export default function App() {
   );
 
   function handleSelectCell(change: CellChange, sheet: string) {
-    setSelectedCell((prev) =>
-      prev && prev.sheet === sheet && prev.change.coord === change.coord
-        ? null
-        : { change, sheet }
-    );
+    const isSame =
+      selectedCell &&
+      selectedCell.sheet === sheet &&
+      selectedCell.change.coord === change.coord;
+    if (isSame) {
+      setSelectedCell(null); // clicking the open cell again closes it
+      return;
+    }
+    // Jump the center grid to the cell's sheet, so clicking a change in the rail
+    // (which may live on a different sheet than the one on screen) takes you
+    // there — the tab switches and the cell highlights, not just the inspector.
+    setSelectedSheet(sheet);
+    setSelectedCell({ change, sheet });
   }
 
   // Jump to a cell by its (possibly cross-sheet) ref — used to click through the

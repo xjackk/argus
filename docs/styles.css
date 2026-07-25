@@ -169,8 +169,11 @@ h1,h2,h3,h4,p{ margin:0; }
 }
 @media (max-width:1180px){ .rail{ display:none; } }
 
-/* ── placeholder frames ────────────────────────────────────── */
-/* Swap these out by replacing the .ph body with <img src="..."> or <video>. */
+/* ── product shots ─────────────────────────────────────────── */
+/* .shot = a framed capture with a faux window chrome bar on top.
+   .panel-shot = a bare framed capture, for crops that aren't whole windows.
+   The app is dark and the page is bone, so every shot carries its own
+   contrast — this is the only place color appears on the page. */
 .shot{ position:relative; border:1px solid var(--ink); background:var(--white); }
 .shot-bar{
   display:flex; align-items:center; gap:14px;
@@ -179,38 +182,31 @@ h1,h2,h3,h4,p{ margin:0; }
 .shot-dots{ display:flex; gap:6px; }
 .shot-dots i{ width:9px; height:9px; border:1px solid var(--rule-2); border-radius:50%; display:block; }
 .shot-title{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--muted); }
-.shot-tabs{ margin-left:auto; display:flex; gap:4px; }
-.shot-tabs b{
-  font-family:var(--mono); font-size:10px; font-weight:500; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--faint); padding:5px 11px; border:1px solid transparent;
-}
-.shot-tabs b.on{ color:var(--ink); border-color:var(--rule-2); background:var(--white); }
-@media (max-width:700px){ .shot-tabs{ display:none; } }
 
-.ph{
-  position:relative;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
-  padding:40px 20px; text-align:center;
-  background:
-    repeating-linear-gradient(-45deg, transparent 0 13px, var(--bone-2) 13px 14px),
-    var(--bone);
+/* width/height are on the tags, so these reserve space and never shift. */
+.shot img,
+.shot video{ display:block; width:100%; height:auto; background:#141518; }
+.demo-vid{ aspect-ratio:16/10; object-fit:cover; }
+
+.shot-cap{
+  margin-top:16px; max-width:64ch;
+  font-family:var(--mono); font-size:11.5px; line-height:1.75;
+  letter-spacing:.03em; color:var(--muted);
 }
-.ph-16x9{ aspect-ratio:16/9; }
-.ph-16x10{ aspect-ratio:16/10; }
-.ph-4x3{ aspect-ratio:4/3; }
-.ph-label{
-  font-family:var(--mono); font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase;
-  color:var(--ink); background:var(--bone); border:1px solid var(--ink); padding:9px 16px;
+.shot-cap em{ font-style:normal; color:var(--ink); }
+
+figure.shot{ margin:0; }
+.panel-shot{ position:relative; margin:0; border:1px solid var(--ink); background:#141518; }
+.panel-shot img{ display:block; width:100%; height:auto; }
+.panel-shot figcaption,
+.shot figcaption{
+  border-top:1px solid var(--rule); background:var(--bone-2); color:var(--muted);
+  font-family:var(--mono); font-size:11px; line-height:1.6; letter-spacing:.03em;
+  padding:12px 14px;
 }
-.ph-sub{ font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; color:var(--faint); max-width:44ch; line-height:1.7; }
-.ph-play{
-  width:62px; height:62px; border:1px solid var(--ink); border-radius:50%;
-  display:grid; place-items:center; background:var(--bone); margin-bottom:2px;
-}
-.ph-play::after{
-  content:""; width:0; height:0; margin-left:4px;
-  border-left:14px solid var(--ink); border-top:9px solid transparent; border-bottom:9px solid transparent;
-}
+/* The inspector crop is a tall, narrow panel — cap it so it doesn't tower
+   over the copy beside it, and centre it in its column. */
+#engine .panel-shot{ max-width:420px; margin-inline:auto; }
 
 /* ── generic section ───────────────────────────────────────── */
 .sec{ padding:clamp(72px,9vw,124px) 0; position:relative; }
@@ -251,50 +247,9 @@ h1,h2,h3,h4,p{ margin:0; }
   .step:last-child{ border-bottom:0; }
 }
 
-/* ── cell detail card (real, CSS-rendered — not a placeholder) ── */
+/* ── two-column copy + shot ────────────────────────────────── */
 .split{ display:grid; grid-template-columns:1fr 1fr; gap:clamp(32px,5vw,72px); align-items:center; }
 @media (max-width:900px){ .split{ grid-template-columns:1fr; } }
-
-.card{ border:1px solid var(--ink); background:var(--white); position:relative; }
-.card-h{
-  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
-  padding:16px 20px; border-bottom:1px solid var(--rule);
-}
-.card-h .ref{ font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.02em; }
-.card-h .lbl{ font-size:14px; color:var(--muted); }
-.card-h .tag{
-  margin-left:auto; font-family:var(--mono); font-size:9.5px; font-weight:600;
-  letter-spacing:.16em; text-transform:uppercase;
-  background:var(--ink); color:var(--bone); padding:5px 10px;
-}
-.card-h .tag-o{ background:transparent; color:var(--faint); border:1px solid var(--rule-2); }
-.card-b{ padding:24px 20px; }
-.delta{ display:flex; align-items:center; gap:16px; margin-bottom:8px; flex-wrap:wrap; }
-.delta .v{ font-family:var(--mono); font-size:clamp(24px,3vw,34px); font-weight:500; letter-spacing:-.03em; }
-.delta .v.old{ color:var(--faint); text-decoration:line-through; text-decoration-thickness:1px; }
-.delta .ar{ color:var(--faint); font-size:20px; }
-.formula{
-  font-family:var(--mono); font-size:12px; color:var(--muted);
-  background:var(--bone); border:1px solid var(--rule); padding:11px 13px; margin-top:18px;
-  overflow-x:auto; white-space:nowrap;
-}
-.formula .cmt{ color:var(--faint); }
-.card-f{ border-top:1px solid var(--rule); padding:14px 20px; display:flex; align-items:center; gap:10px; }
-.card-f .k{ font-family:var(--mono); font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); }
-.card-f .k-right{ margin-left:auto; color:var(--ink); }
-.cascade-list{ border-top:1px solid var(--rule); }
-.cascade-list div{
-  display:flex; align-items:center; gap:14px; padding:11px 20px;
-  border-bottom:1px solid var(--rule); font-family:var(--mono); font-size:12px;
-}
-.cascade-list div:last-child{ border-bottom:0; }
-.cascade-list .r{ width:92px; flex:none; color:var(--ink); font-weight:500; }
-.cascade-list .d{ margin-left:auto; color:var(--faint); }
-.cascade-list .bar{ height:3px; background:var(--ink); opacity:.16; flex:1; max-width:120px; }
-/* Bar length encodes each mover's magnitude — descending, mock data. */
-.cascade-list div:nth-child(2) .bar{ max-width:96px; }
-.cascade-list div:nth-child(3) .bar{ max-width:71px; }
-.cascade-list div:nth-child(4) .bar{ max-width:38px; }
 
 /* ── feature grid ──────────────────────────────────────────── */
 .grid6{ display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--ink); border-left:1px solid var(--rule); }

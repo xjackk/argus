@@ -79,19 +79,16 @@
 
 <!-- ── hero screenshot placeholder ────────────────────────── -->
 <section class="wrap sec-shot">
-  <!-- PLACEHOLDER → replace the .ph block with: <img src="screenshot-diff.png" alt="Argus diff view"> -->
   <div class="shot ticked rv">
     <span class="tick-tr"></span><span class="tick-bl"></span>
     <div class="shot-bar">
       <div class="shot-dots"><i></i><i></i><i></i></div>
-      <span class="shot-title">Argus — Q3_Model_v4.xlsx → Q3_Model_v5.xlsx</span>
-      <div class="shot-tabs"><b class="on">Diff</b><b>Cascade</b><b>Anomalies</b></div>
+      <span class="shot-title">Argus — Project Atlas, LBO model</span>
     </div>
-    <div class="ph ph-16x10">
-      <span class="ph-label">App screenshot</span>
-      <span class="ph-sub">Drop the main diff view here — 1600 × 1000 or larger.<br>Replace this block with an &lt;img&gt; tag.</span>
-    </div>
+    <img src="assets/argus-cascade.webp" width="2880" height="1800" decoding="async"
+         alt="The Argus desktop app. A version history rail on the left lists commits with authored and computed counts. The main pane shows a plain-English summary of a lowered exit multiple, headline metrics for Exit Equity, MOIC and IRR, and a spreadsheet grid where four recalculated cells are highlighted.">
   </div>
+  <p class="shot-cap rv">One authored edit on the Assumptions sheet. Four recalculated cells on Returns, each marked <em>computed</em> — nobody typed them.</p>
 </section>
 
 <!-- ── the stakes ─────────────────────────────────────────── -->
@@ -158,57 +155,60 @@
       <span class="eyebrow rv">/ Cell detail</span>
       <h2 class="display h-md mw-18c rv">Every number carries its <span class="serif-i">receipt.</span></h2>
       <p class="lede rv">Click any changed cell and Argus shows the old and new value in the workbook's own number format, the formula on both sides, what it depends on, and the authored edit upstream that caused it to move.</p>
-      <p class="lede rv">Nothing is inferred. Every relationship on screen came out of the formula graph.</p>
+      <p class="lede rv">Nothing is inferred. Every hop on that chain came out of the formula graph.</p>
     </div>
-    <div class="rv">
-      <div class="card ticked">
-        <span class="tick-tr"></span><span class="tick-bl"></span>
-        <div class="card-h">
-          <span class="ref">Assumptions!B12</span>
-          <span class="lbl">Discount rate</span>
-          <span class="tag">Authored</span>
-        </div>
-        <div class="card-b">
-          <div class="delta">
-            <span class="v old">27.5%</span>
-            <span class="ar">→</span>
-            <span class="v">24.5%</span>
-          </div>
-          <div class="formula">= 0.245        <span class="cmt">// constant, retyped by author</span></div>
-        </div>
-        <div class="card-f"><span class="k">Cascade</span><span class="k k-right">148 cells · 6 sheets</span></div>
-        <div class="cascade-list">
-          <div><span class="r">DCF!F31</span><span class="bar"></span><span class="d">+18.4%</span></div>
-          <div><span class="r">DCF!F44</span><span class="bar"></span><span class="d">+14.1%</span></div>
-          <div><span class="r">Summary!C7</span><span class="bar"></span><span class="d">+9.8%</span></div>
-          <div><span class="r">Summary!C9</span><span class="bar"></span><span class="d">+4.2%</span></div>
-        </div>
-      </div>
-    </div>
+    <figure class="panel-shot ticked rv">
+      <span class="tick-tr"></span><span class="tick-bl"></span>
+      <img src="assets/argus-inspector.webp" width="665" height="1100" loading="lazy" decoding="async"
+           alt="The cell inspector for Returns!B14, IRR. It shows the formula, the change from 28.3% to 25.4%, and a section titled 'how this value was reached' listing the chain: the authored edit at Assumptions!B5 going from 10.5x to 9.5x, then Exit EV, then Exit Equity, ending at IRR marked 'you are here'.">
+      <figcaption>IRR moved. Argus walks it back to the one cell a human typed.</figcaption>
+    </figure>
   </div>
 </section>
 
-<!-- ── demo placeholder ───────────────────────────────────── -->
+<!-- ── demo ───────────────────────────────────────────────── -->
 <section class="sec">
   <div class="wrap">
     <div class="sec-head sec-head-tight">
       <span class="eyebrow rv">/ Demo</span>
       <h2 class="display h-lg mw-17c rv">Watch it find the <span class="serif-i">one</span> cell.</h2>
     </div>
-    <!-- PLACEHOLDER → replace the .ph block with:
-         <video src="demo.mp4" poster="demo-poster.png" controls muted loop playsinline></video> -->
     <div class="shot ticked rv">
       <span class="tick-tr"></span><span class="tick-bl"></span>
       <div class="shot-bar">
         <div class="shot-dots"><i></i><i></i><i></i></div>
-        <span class="shot-title">screen-demo.mp4 — 00:00 / 00:42</span>
+        <span class="shot-title">Argus — walkthrough</span>
       </div>
-      <div class="ph ph-16x9">
-        <span class="ph-play"></span>
-        <span class="ph-label">Screen recording</span>
-        <span class="ph-sub">Drop a 16:9 capture here — MP4 or WebM.<br>Replace this block with a &lt;video&gt; tag.</span>
-      </div>
+      <!-- Muted + inline + loop, so it behaves like a GIF but at a fraction of
+           the weight. Controls stay on for anyone who wants to scrub or pause. -->
+      <video class="demo-vid" width="1000" height="625" poster="assets/argus-demo-poster.webp"
+             autoplay muted loop playsinline controls preload="none"
+             aria-label="Screen recording of Argus: selecting a version, toggling between authored-only and full cascade, and opening a cell to trace what caused it to change.">
+        <source src="assets/argus-demo.webm" type="video/webm">
+        <source src="assets/argus-demo.mp4" type="video/mp4">
+      </video>
     </div>
+  </div>
+</section>
+
+<!-- ── anomaly ────────────────────────────────────────────── -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head sec-head-tight">
+      <span class="eyebrow rv">/ Anomalies</span>
+      <h2 class="display h-lg mw-18c rv">The edit that quietly <span class="serif-i">breaks</span> the model.</h2>
+      <p class="lede rv">Someone pastes a number over a formula. The workbook still opens, the totals still foot, and the link to the rest of the model is gone. It is the most common way a model goes wrong and the hardest to catch by eye. Argus flags it by severity and names the formula that was overwritten.</p>
+    </div>
+    <figure class="shot ticked rv">
+      <span class="tick-tr"></span><span class="tick-bl"></span>
+      <div class="shot-bar">
+        <div class="shot-dots"><i></i><i></i><i></i></div>
+        <span class="shot-title">Argus — anomaly detected</span>
+      </div>
+      <img src="assets/argus-anomaly.webp" width="1440" height="900" loading="lazy" decoding="async"
+           alt="Argus showing a high-severity anomaly: a banner reads 'a formula was replaced with a typed number', explaining that Returns!B9 Exit EV had its formula =Assumptions!B5*B8 replaced with the hardcoded value 2100. The affected cell is highlighted green in the grid below.">
+      <figcaption>Returns!B9 — a live formula replaced with the typed number 2,100.</figcaption>
+    </figure>
   </div>
 </section>
 

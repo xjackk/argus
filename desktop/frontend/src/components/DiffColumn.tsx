@@ -65,7 +65,12 @@ export function DiffColumn(props: Props) {
     [diff]
   );
 
-  const hasSummary = !!narrative || movers.length > 0;
+  // Metric cards only make sense when the top movers have human labels (a
+  // model-like sheet with named outputs). For plain/unlabeled sheets we skip
+  // them and let the AI summary be the headline — keeps the app workbook-
+  // agnostic instead of implying every sheet has KPIs.
+  const showMetrics = movers.length > 0 && movers.every((m) => !!m.label);
+  const hasSummary = !!narrative || showMetrics;
   const visibleCount = sheetCount(sheet.changes, mode);
   const anomaly = diff.anomalies[0];
 
@@ -110,8 +115,8 @@ export function DiffColumn(props: Props) {
         </div>
       )}
 
-      {/* Metric cards */}
-      {!summaryCollapsed && movers.length > 0 && (
+      {/* Metric cards — only for labeled model-like sheets (see showMetrics). */}
+      {!summaryCollapsed && showMetrics && (
         <div className="metrics">
           {movers.map((m) => {
             // m.ref may be quoted ('P&L'!G10); changeByRef is keyed unquoted.

@@ -1,34 +1,269 @@
 # Argus
 
-Argus diffs two Excel workbooks and explains what actually changed — separating
-the handful of inputs a human typed from the hundreds of cells that moved as a
-consequence.
+Argus is a GitHub-Desktop-style diff tool for Excel workbooks. It opens two
+versions of a model and explains what *actually* changed — separating the
+handful of inputs a human typed from the hundreds of cells that moved as a
+consequence, and tracing every ripple back to the edit that caused it.
 
 The engine **never recomputes spreadsheet values.** It reads the cached values
 Excel already stored, diffs them positionally, builds a cross-sheet dependency
 graph from the formulas, classifies each change as `authored` or `computed`, and
 traces the cascade (blast radius) from each authored edit.
 
-## Layout
+- **Engine** — a deterministic Go diff engine (no AI, no I/O beyond reading files).
+- **Narrator** — an optional, strictly separate step that turns a diff into prose via a local `claude -p` call.
+- **Daemon** (`cmd/argusd`) — watches a folder and captures/diffs every `.xlsx` save into a store (the "Dropbox model").
+- **Client** — a Wails (Go + React/TypeScript) desktop app with a three-pane, GitHub-Desktop layout.
 
-| Path              | What it is                                                        |
-| ----------------- | ----------------------------------------------------------------- |
-| `engine/`         | The deterministic diff engine. No AI, no I/O beyond reading files. |
-| `engine/types.go` | The frozen engine ⇄ UI contract (`DiffResult`).                    |
-| `narrator/`       | Optional post-processing: turns a `DiffResult` into prose.         |
-| `cmd/argus-diff/` | CLI — diffs two workbooks, prints `DiffResult` JSON.               |
-| `desktop/`        | Wails desktop shell (Go + React/TypeScript frontend).              |
+---
 
-## Usage
+## Architecture
+
+Argus follows the **Dropbox model**: a single background **daemon** watches a
+folder and is the only thing that touches the raw files, while the **client** is
+a passive viewer that reads what the daemon captured. One watcher, one writer —
+no two processes fighting over the folder.
+
+```mermaid
+flowchart LR
+  subgraph work["Where people work"]
+    X["Excel / LibreOffice"]
+  end
+  F[("Watched folder<br/>the 'dropbox'")]
+  subgraph d["argusd — capture daemon (1 watcher, 1 writer)"]
+    W["fsnotify watch"] --> S["snapshot version"] --> DF["engine.Diff vs. previous"]
+  end
+  ST[("Store on disk<br/>history.json + diffs/*.json")]
+  subgraph c["Client — passive viewer"]
+    UI["Argus app (Wails + React)"]
+  end
+
+  X -->|Ctrl+S saves .xlsx| F
+  F -->|file event| W
+  DF -->|append commit<br/>author = who saved| ST
+  ST -->|reads / polls / SSE| UI
+```
+
+- **Single-user:** daemon + client run on the laptop, sharing a local store.
+- **Team / self-host:** the daemon runs on a company server, the store is
+  central, and clients connect over HTTP/SSE — same design, different location.
+- **Resilience:** close the client and the daemon keeps capturing; the store is
+  the durable source of truth.
+
+Inside a single diff, the deterministic engine does the hard part — the AI only
+narrates the result, never computes it:
+
+```mermaid
+flowchart TD
+  A["two .xlsx versions"] --> B["parse cached values + formulas"]
+  B --> C["positional cell diff"]
+  B --> D["cross-sheet dependency graph"]
+  C --> E["classify: authored vs computed"]
+  D --> E
+  E --> G["cascade BFS from each authored edit"]
+  G --> H["DiffResult JSON<br/>+ anomalies + top movers"]
+  H -. optional .-> N["narrator: claude -p → plain-English summary"]
+```
+
+---
+
+## What Argus does
+
+### Engine (`engine/`)
+
+- `Diff(a, b) → DiffResult` — one deterministic call, one JSON contract (`engine/types.go`).
+- Reads Excel's **cached values** — never recomputes, never does arithmetic.
+- **Positional diff** across every sheet, including row inserts/deletes.
+- Builds a **cross-sheet dependency graph** from the formulas.
+- **Authored-vs-computed classification** — tells the input you typed from the cell that recalculated because of it.
+- **Cascade / blast-radius** BFS — from each authored edit, the full set of downstream cells it moved, with top movers by magnitude.
+- **Anomaly detection** — flags formula-replaced-by-constant (hardcoded overrides) and large-magnitude jumps.
+- Works on **any** workbook — no reliance on label columns or a fixed layout. Proven by `TestUnlabeledWorkbook` (a sheet with no column-A labels and an arbitrary layout).
+- Renders values through Excel's **built-in and custom number formats**.
+
+### Client (`desktop/`)
+
+A three-pane, GitHub-Desktop-style layout:
+
+- **Commit History rail** (left) — click any commit and its diff loads. Includes a **per-cell revision timeline** ("git log for a single cell").
+- **Diff column** (center):
+  - **Cascade toggle** — flip between *authored-only* (just the inputs) and *show cascade* (inputs plus every computed ripple).
+  - **AI summary banner** — the narrator's grounded prose, collapsible.
+  - **Adaptive metric cards** — top movers by magnitude, shown only for labeled, model-like sheets (hidden on arbitrary workbooks so the app stays general).
+  - **Anomaly ⚠ badges** and per-cell `ƒ` formula markers.
+  - **Sheet / tab navigator** ("N changed sheets"), plus muted unchanged sheets for context.
+  - **Changes / History tabs**, a version filter, and hover cards.
+- **Cell inspector** (right) — select a cell to see the **full multi-hop dependency chain**. Each hop shows the formula and the value move, and is **clickable to jump to that cell** (switching sheets as needed).
+- **Top bar** — workbook dropdown, version filter, and a Commit-version modal.
+- **Onboarding** — a mocked watch-folder / SSO first-run flow.
+- **Themes** — four, persisted to `localStorage`: **Midnight** and **Tokyo Night** (dark), **GitHub Light** and **Solarized Light** (light).
+
+The client renders **real, bundled engine output** — the `c01→c07` commit chain
+in `desktop/frontend/src/data/history/` — so the whole UI runs in a plain browser
+with no backend. Regenerate it any time with `make fixtures`.
+
+### Narrator (`narrator/`)
+
+An optional AI summary produced by a local `claude -p` call. It is **grounded**:
+it narrates only the computed diff (with every number pre-rendered through its
+`displayFormat`), never judges whether a value is correct, and never does
+arithmetic. If narration fails, the narrative stays `null` and the UI tolerates
+it. Has its own tests (`narrator/narrator_test.go`).
+
+## Screenshots
+
+Screenshots live in [`screenshots/`](screenshots/) (generated by a separate
+process).
+
+---
+
+# Developer guide
+
+Everything you need to build, run, and iterate on Argus locally.
+
+## 1. Prerequisites
+
+| Tool          | Version   | Notes                                                         |
+| ------------- | --------- | ------------------------------------------------------------- |
+| Go            | 1.25+     | `go version`                                                  |
+| Node + npm    | 20+ / 10+ | For the React frontend                                        |
+| Wails CLI     | v2.11+    | `go install github.com/wailsapp/wails/v2/cmd/wails@latest`    |
+| Xcode CLT     | any       | `xcode-select --install` — clang, required by Wails on macOS  |
+| LibreOffice   | optional  | Only to **regenerate fixtures** (recalculates cached values)  |
+
+You do **not** need Excel or LibreOffice to build or run Argus — `excelize` reads
+`.xlsx` directly and the engine binary is pure Go (CGO-free). LibreOffice is only
+used to author/refresh test workbooks so their cached values are stored.
+
+**It's a Go workspace.** `go.work` binds **two modules**:
+
+- **`argus`** (root) — engine, CLI, and narrator. Lean deps (`excelize`, `efp`), so engine tests stay fast.
+- **`desktop`** — the Wails app, which pulls in the full Wails/webview graph.
+
+The workspace is what lets `desktop` import `argus/engine` without dragging the
+Wails dependency tree into the engine module.
+
+> ⚠️ **Do not move `engine/` or `narrator/` under `internal/`.** Because
+> `desktop` is a separate module, Go would then forbid it from importing them and
+> the Wails↔engine binding would break.
+
+## 2. Fastest loop — the browser
+
+The whole UI renders from bundled engine output and calls no Wails APIs, so it
+runs in a plain browser with instant hot-reload and full DevTools. **No engine,
+no second terminal.**
 
 ```sh
-go build ./...
-go test ./engine/...
-
-go run ./cmd/argus-diff old.xlsx new.xlsx           # DiffResult JSON, narrative=null
-go run ./cmd/argus-diff --prompt-only old.xlsx new.xlsx  # show the grounded prompt, no model call
-go run ./cmd/argus-diff --narrate old.xlsx new.xlsx      # fill narrative via `claude -p`
+cd desktop/frontend
+npm run dev          # → http://localhost:5173
 ```
+
+Edit anything under `desktop/frontend/src/` and it live-reloads. This is where
+~90% of UI work happens.
+
+## 3. The engine (CLI + tests)
+
+The engine is a one-shot CLI (and an in-process call inside Wails) — **not a
+server**.
+
+```sh
+# Diff two workbooks → DiffResult JSON on stdout (narrative = null, no model call)
+go run ./cmd/argus-diff \
+  engine/testdata/atlas_v1_base.xlsx \
+  engine/testdata/atlas_v2_exit_multiple.xlsx
+
+# Inspect the grounded narration prompt (no model call):
+go run ./cmd/argus-diff --prompt-only  a.xlsx b.xlsx
+
+# Fill summary.narrative via a live `claude -p` call (~3s, needs the claude CLI):
+go run ./cmd/argus-diff --narrate      a.xlsx b.xlsx
+# Optional: pick the model for --narrate
+go run ./cmd/argus-diff --narrate --model claude-sonnet-4-5  a.xlsx b.xlsx
+```
+
+Tests and build:
+
+```sh
+make test            # go test ./engine/... ./narrator/...
+make build           # go build ./...
+go vet ./...         # should be clean
+```
+
+Test fixtures live in `engine/testdata/` (the `atlas_c01–c07` commit chain, the
+`atlas_v*` variants, and `unlabeled_v*`). The canonical demo pair is
+`atlas_v1_base.xlsx → atlas_v2_exit_multiple.xlsx` (1 authored input, several
+computed ripples).
+
+**Regenerate the bundled UI diffs** after an engine change. `make fixtures` diffs
+each consecutive `atlas_c0N → atlas_c0(N+1)` pair and writes real engine output
+into `desktop/frontend/src/data/history/`; Vite HMR then picks it up. Single-input
+commits get a live `claude -p` narrative baked in.
+
+```sh
+make fixtures                                   # uses ~/Downloads/argus-files/test-workbooks
+ARGUS_WORKBOOKS=/path/to/workbooks make fixtures  # or point it elsewhere
+```
+
+## 4. The native app
+
+Verify the real WKWebView rendering and the live engine binding.
+
+```sh
+cd desktop
+wails dev            # hot-reloading native app (frontend deps auto-install first run)
+# or
+wails build          # packages build/bin/argus.app
+```
+
+The result is a **single self-contained binary** — pure Go, no runtime
+dependencies (no Electron, no Node at runtime). `desktop/app.go` binds
+`App.Diff(pathA, pathB) → DiffResult`; Wails auto-generates the JS/TS binding
+under `desktop/frontend/wailsjs/`. To go from bundled diffs to live engine
+output, `desktop/frontend/src/data/diffs.ts` resolves a commit to its file pair
+and calls `window.go.main.App.Diff(...)` — nothing else in the UI changes.
+
+**Rule of thumb:** live in the browser (step 2), run `make fixtures` after an
+engine change (step 3), and run `wails dev`/`wails build` to confirm it looks
+right in the actual app (step 4).
+
+## 5. Live capture — the daemon (`argusd`)
+
+The "Dropbox model": run the daemon in one terminal, the client in another, and
+every save to a watched folder becomes a tracked commit — live, no hardcoded
+data.
+
+```sh
+# Terminal 1 — the capture daemon (watches a folder, writes the store the client reads)
+go run ./cmd/argusd \
+  -folder ~/ArgusDropbox \
+  -author "M. Rivera"           # who saved it; defaults to your OS user
+# default -store is desktop/frontend/public/store, so the dev client serves it at /store
+
+# Terminal 2 — the client
+cd desktop/frontend && npm run dev
+```
+
+Then drop `.xlsx` files into `~/ArgusDropbox` (it's created for you), or **save
+over one** — the daemon snapshots it, diffs it against the previous version,
+flags anomalies, and appends a commit attributed to `-author`. The client polls
+the store and the new version appears live. Run the daemon as different
+`-author`s to show per-person attribution. (Real multi-user auth/SSO is the
+server-side piece — see Architecture.)
+
+## 6. Project layout
+
+| Path                          | What it is                                                              |
+| ----------------------------- | ---------------------------------------------------------------------- |
+| `engine/`                     | The deterministic diff engine. No AI, no I/O beyond reading files.     |
+| `engine/types.go`             | The frozen engine ⇄ UI contract (`DiffResult`).                        |
+| `engine/testdata/`            | Test workbooks — the `atlas_c*`/`atlas_v*` chain and `unlabeled_v*`.   |
+| `narrator/`                   | Optional post-processing: turns a `DiffResult` into grounded prose.    |
+| `cmd/argus-diff/`             | CLI — diffs two workbooks, prints `DiffResult` JSON.                   |
+| `cmd/argusd/`                 | The capture daemon — watches a folder, writes the store (Dropbox model).|
+| `desktop/`                    | Wails desktop shell — `app.go` (Go backend) + `frontend/` (React/TS).  |
+| `desktop/frontend/src/`       | The UI: `App.tsx`, `components/`, and `data/` (diffs, refs, formatting).|
+| `scripts/gen-fixtures.sh`     | Regenerates the bundled commit-chain diffs from the engine.            |
+| `Makefile`                    | `fixtures`, `test`, `build`.                                           |
 
 ## The AI boundary
 
@@ -38,147 +273,3 @@ it. The model only narrates facts already computed, with every number
 pre-rendered through its `displayFormat`; it never judges whether a value is
 correct, and it never does arithmetic. If narration fails, `narrative` stays
 `null` and the UI tolerates it.
-
-## Desktop app
-
-```sh
-cd desktop
-wails dev     # or: wails build
-```
-
----
-
-# Developer guide
-
-Everything you need to build, run, and iterate on Argus locally.
-
-## Prerequisites
-
-| Tool          | Version    | Notes                                                             |
-| ------------- | ---------- | ----------------------------------------------------------------- |
-| Go            | 1.25+      | `go version`                                                      |
-| Node + npm    | 20+ / 10+  | For the React frontend                                            |
-| Wails CLI     | v2.11+     | `go install github.com/wailsapp/wails/v2/cmd/wails@latest`        |
-| Xcode CLT     | any        | `xcode-select --install` — clang, required by Wails on macOS      |
-| LibreOffice   | optional   | Only to **regenerate test fixtures** (recalculates cached values) |
-
-You do **not** need Excel or LibreOffice to build or run Argus — `excelize` reads
-`.xlsx` directly, and the engine binary is pure Go (CGO-free). LibreOffice is
-only used to author/refresh test workbooks so their cached values are stored.
-
-## Repo structure — a Go workspace
-
-This repo is a **Go workspace** (`go.work`) with **two modules**:
-
-- **`argus`** (root) — the engine, CLI, and narrator. Lean dependency tree
-  (`excelize`, `efp`), so `go test ./engine/...` stays fast and clean.
-- **`desktop`** — the Wails app, which pulls in the full Wails/webview graph.
-
-The workspace is what lets `desktop` import `argus/engine` without polluting the
-engine module with Wails dependencies. `go.work` / `go.work.sum` are committed.
-
-> ⚠️ **Do not move `engine/` or `narrator/` under `internal/`.** Because
-> `desktop` is a separate module, Go would then forbid it from importing them and
-> the Wails↔engine binding would break.
-
-## Run the engine (CLI)
-
-```sh
-go build ./...                                   # build everything
-go test ./engine/...                             # acceptance + anomaly + multi-input tests
-go vet ./...                                     # should be clean
-
-# Diff two workbooks → DiffResult JSON on stdout
-go run ./cmd/argus-diff \
-  engine/testdata/atlas_v1_base.xlsx \
-  engine/testdata/atlas_v2_exit_multiple.xlsx
-
-# Inspect the grounded narration prompt (no model call):
-go run ./cmd/argus-diff --prompt-only  A.xlsx B.xlsx
-# Fill summary.narrative via a live `claude -p` call (~3s, needs network):
-go run ./cmd/argus-diff --narrate      A.xlsx B.xlsx
-```
-
-Test fixtures live in `engine/testdata/`; the full set (linear commit chain
-`c01–c07`, all `v*` variants, `commit-history.json`) is in
-`~/Downloads/argus-files/test-workbooks/`. The canonical demo pair is
-`atlas_v1_base.xlsx → atlas_v2_exit_multiple.xlsx` (1 authored input, 4 computed
-ripples).
-
-## Run the desktop app
-
-```sh
-cd desktop
-wails dev       # hot-reloading dev app (frontend deps auto-install on first run)
-# or
-wails build     # packages build/bin/argus.app
-```
-
-`wails dev` is the loop for UI work: edit anything under
-`desktop/frontend/src/` and it hot-reloads. If `wails dev` misbehaves, run
-`wails build` and open `build/bin/argus.app`.
-
-## The dev workflow — rapid iteration
-
-The engine is **not a server** — it's a one-shot CLI (or an in-process call
-inside Wails). So most UI work needs nothing but the browser. Three tiers:
-
-**Tier 1 — Pure UI, in the browser (90% of the work).**
-The whole current UI renders from bundled engine output (the `c01→c07` commit
-chain) and calls no Wails APIs, so it runs in a plain browser with instant
-hot-reload and full DevTools:
-
-```sh
-cd desktop/frontend
-npm run dev          # → http://localhost:5173
-```
-
-Edit anything under `desktop/frontend/src/` and it live-reloads. No engine, no
-second terminal.
-
-**Tier 2 — Regenerate the bundled diffs from the engine.**
-The commit-chain diffs the UI renders live in `desktop/frontend/src/data/history/`
-and are generated straight from `argus-diff` — never hand-edited. To refresh them
-after an engine change (a one-shot command, not a running process), then let Vite
-HMR pick them up:
-
-```sh
-make fixtures        # regenerates history/c0*.json for the whole chain
-```
-
-It diffs each consecutive `atlas_c0N → atlas_c0(N+1)` pair and bakes in a live
-`claude -p` narrative for the single-input commits. Point it at a different
-workbook set with `ARGUS_WORKBOOKS=/path make fixtures`.
-
-**Tier 3 — Full native app (periodic + before shipping).**
-Verify the real WKWebView rendering and the live engine binding:
-
-```sh
-cd desktop
-wails dev            # real webview + live App.Diff; or `wails build` to package
-```
-
-Rule of thumb: **live in Tier 1**, run **Tier 2** after an engine change, and
-run **Tier 3** to confirm it looks and behaves right in the actual app.
-
-## Engine ⇄ UI integration state
-
-Today the frontend renders **bundled engine output** — the `c01→c07` diffs in
-`desktop/frontend/src/data/history/`, mapped commit→diff by
-`desktop/frontend/src/data/diffs.ts`. This lets the UI be built and polished
-against real, stable data with no backend running.
-
-The Go backend already exposes the engine to the frontend:
-`desktop/app.go` binds `App.Diff(pathA, pathB) → DiffResult`, and Wails
-auto-generates the JS binding at `desktop/frontend/wailsjs/go/main/App.js`
-(with the matching TS types in `wailsjs/go/models.ts`). To switch from bundled
-diffs to live engine output, `diffs.ts` resolves a commit to its file pair and
-calls `window.go.main.App.Diff(...)` — nothing else in the UI changes.
-
-## Iterating on the UI
-
-The intended loop: run `wails dev`, edit `desktop/frontend/src/`, and compare the
-result against the target design. The three-pane layout, the authored↔cascade
-toggle, per-cell `ƒ`/⚠ markers, hover cards, and the cell-detail panel all live
-under `desktop/frontend/src/components/`; shared formatting/ref helpers are in
-`desktop/frontend/src/data/`.

@@ -10,3 +10,6 @@ node_modules
 
 # Wails desktop build output
 /desktop/desktop
+
+# daemon runtime store (written by argusd)
+desktop/frontend/public/store/

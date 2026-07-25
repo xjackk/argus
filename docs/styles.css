@@ -320,16 +320,8 @@ h1,h2,h3,h4,p{ margin:0; }
 .term-b{ padding:24px 20px; font-family:var(--mono); font-size:13px; line-height:1.85; }
 .term-b > *{ max-width:88ch; } /* keep mono line length readable on wide screens */
 .term-b .cmt{ color:rgba(241,240,232,.42); }
-.term-b .pr{ color:rgba(241,240,232,.42); }
 .term-b p{ margin-bottom:16px; color:rgba(241,240,232,.82); }
 .term-b p:last-child{ margin-bottom:0; }
-
-/* ── CLI ───────────────────────────────────────────────────── */
-.cli{ border:1px solid var(--ink); background:var(--ink); color:var(--bone); }
-.cli-b{ padding:22px 20px; font-family:var(--mono); font-size:13px; line-height:2; overflow-x:auto; }
-.cli-b .pr{ color:rgba(241,240,232,.4); user-select:none; }
-.cli-b .fl{ color:rgba(241,240,232,.6); }
-.cli-b .out{ color:rgba(241,240,232,.5); }
 
 /* ── footer ────────────────────────────────────────────────── */
 .foot{ border-top:1px solid var(--ink); padding:clamp(48px,6vw,76px) 0 34px; }
@@ -353,7 +345,6 @@ h1,h2,h3,h4,p{ margin:0; }
 /* ── section modifiers ─────────────────────────────────────── */
 .sec-shot{ padding-bottom:clamp(64px,8vw,110px); }   /* section holding a screenshot frame */
 .sec-head-tight{ margin-bottom:36px; }
-.split-top{ align-items:start; }                      /* .split, but columns top-aligned */
 
 /* Headline measure. The wrap point is tuned per headline, so these are
    deliberate one-offs rather than a general spacing scale. */
@@ -375,6 +366,13 @@ h1,h2,h3,h4,p{ margin:0; }
 .dark-head .eyebrow{ display:block; margin-bottom:20px; }
 
 /* ── closing CTA ───────────────────────────────────────────── */
+/* The manifesto and the closing CTA are both .dark and now sit next to each
+   other (the CLI section used to break them up). Trim the doubled padding at
+   the join and mark it with a hairline so they read as two panels of one dark
+   region rather than one slab with a hole in it. */
+.dark-join{ padding-bottom:clamp(56px,6vw,84px); }
+.dark + .dark{ padding-top:clamp(56px,6vw,84px); border-top:1px solid rgba(241,240,232,.16); }
+
 .cta-center{ text-align:center; }
 .cta-center .eyebrow{ display:block; margin-bottom:24px; }
 .cta-center h2{ max-width:16ch; margin:0 auto 34px; }

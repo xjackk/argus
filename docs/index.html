@@ -5,10 +5,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Argus — Every spreadsheet change, explained.</title>
-<meta name="description" content="Argus diffs two Excel workbooks and separates the handful of inputs a human typed from the hundreds of cells that moved as a consequence. Deterministic. Open source.">
+<meta name="description" content="Version history for the Excel model you are already working on. Argus captures every save, then separates the handful of inputs a human typed from the hundreds of cells that moved as a consequence. Deterministic. Open source.">
 
 <meta property="og:title" content="Argus — Every spreadsheet change, explained.">
-<meta property="og:description" content="Diff two Excel workbooks. See which cells a human typed, and exactly what those edits cascaded into.">
+<meta property="og:description" content="GitHub Desktop, for Excel models. Every save becomes a version — see which cells a human typed, and exactly what those edits cascaded into.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://xjackk.github.io/argus/">
 <!-- PLACEHOLDER: drop a 1200x630 og-image.png in docs/ and this starts working -->
@@ -26,18 +26,18 @@
 <!-- ── ticker ─────────────────────────────────────────────── -->
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track">
-    <span>Deterministic diff engine</span><i>◆</i>
+    <span>Version history for Excel</span><i>◆</i>
     <span>Never recomputes your numbers</span><i>◆</i>
     <span>Authored vs computed</span><i>◆</i>
     <span>Full cascade tracing</span><i>◆</i>
     <span>Open source</span><i>◆</i>
-    <span>Runs locally</span><i>◆</i>
-    <span>Deterministic diff engine</span><i>◆</i>
+    <span>Every save captured</span><i>◆</i>
+    <span>Version history for Excel</span><i>◆</i>
     <span>Never recomputes your numbers</span><i>◆</i>
     <span>Authored vs computed</span><i>◆</i>
     <span>Full cascade tracing</span><i>◆</i>
     <span>Open source</span><i>◆</i>
-    <span>Runs locally</span><i>◆</i>
+    <span>Every save captured</span><i>◆</i>
   </div>
 </div>
 
@@ -46,6 +46,7 @@
   <div class="wrap nav-in">
     <a class="brand" href="#top"><span class="brand-mark"><i></i></span>Argus</a>
     <div class="nav-links">
+      <a href="#history">Version history</a>
       <a href="#how">How it works</a>
       <a href="#engine">Engine</a>
       <a href="#ai">Determinism</a>
@@ -59,11 +60,11 @@
 
 <!-- ── hero ───────────────────────────────────────────────── -->
 <header class="hero" id="top">
-  <span class="rail">Argus · Excel diff engine · v0.1</span>
+  <span class="rail">Argus · Version history for Excel · v0.1</span>
   <div class="wrap hero-in">
     <span class="eyebrow rv">v0.1 · Open source · Runs entirely on your machine</span>
     <h1 class="display h-xl rv">Every spreadsheet change, <span class="serif-i">explained.</span></h1>
-    <p class="lede rv">Argus diffs two Excel workbooks and separates the handful of inputs a human actually typed from the hundreds of cells that moved as a consequence. No more scrolling four thousand highlighted rows looking for the one that mattered.</p>
+    <p class="lede rv">Argus watches the model you are already working on and turns every save into a version you can review — GitHub Desktop, for Excel. Open any two and it separates the handful of inputs someone actually typed from the hundreds of cells that moved as a consequence.</p>
     <div class="hero-cta rv">
       <a class="btn btn-solid" href="https://github.com/xjackk/argus/releases/download/v0.1.0/Argus-v0.1.0-macOS-universal.zip">Download for macOS <span class="arw">↘</span></a>
       <a class="btn" href="#how">See how it works</a>
@@ -97,7 +98,7 @@
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow rv">/ The problem</span>
-      <h2 class="display h-lg mw-20c rv">Two workbooks. Four thousand changed cells. <span class="serif-i">One</span> of them mattered.</h2>
+      <h2 class="display h-lg mw-20c rv">One save. Four thousand changed cells. <span class="serif-i">Three</span> of them were decisions.</h2>
       <p class="lede rv">Change a single discount rate and Excel quietly repaints half the model. Every existing diff tool shows you all of it, flat, with no way to tell a decision apart from its consequences.</p>
     </div>
     <div class="stakes rv">
@@ -117,8 +118,36 @@
   </div>
 </section>
 
+<!-- ── ambient capture / version history ──────────────────── -->
+<section class="sec" id="history">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">/ Version history</span>
+      <h2 class="display h-lg mw-17c rv">You keep working. Argus keeps the <span class="serif-i">history.</span></h2>
+      <p class="lede rv">There is nothing to import and nothing to remember. Point Argus at the folder your model already lives in — Dropbox, OneDrive, SharePoint, or just your desktop — and it captures each save on its own. No more <em>Model_v7_FINAL_v2.xlsx</em>.</p>
+    </div>
+    <div class="steps steps-3 rv">
+      <div class="step">
+        <span class="num">01 / WATCH</span>
+        <h3>Point it at a folder</h3>
+        <p>Argus doesn't sync anything or move your files. It watches a folder your existing tools already sync, and builds the version history on top.</p>
+      </div>
+      <div class="step">
+        <span class="num">02 / CAPTURE</span>
+        <h3>Every save becomes a version</h3>
+        <p>Save in Excel as you normally would. Argus snapshots the workbook, diffs it against the version before, and appends it to the timeline.</p>
+      </div>
+      <div class="step">
+        <span class="num">03 / REVIEW</span>
+        <h3>Scroll it like commits</h3>
+        <p>Each version carries who saved it, when, and how many cells were authored versus computed. Open any one to see exactly what changed and why.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── how it works ───────────────────────────────────────── -->
-<section class="sec" id="how">
+<section class="sec sec-alt" id="how">
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow rv">/ How it works</span>
@@ -150,7 +179,7 @@
 </section>
 
 <!-- ── cell detail (real CSS render) ──────────────────────── -->
-<section class="sec sec-alt" id="engine">
+<section class="sec" id="engine">
   <div class="wrap split">
     <div class="col-copy">
       <span class="eyebrow rv">/ Cell detail</span>
@@ -168,7 +197,7 @@
 </section>
 
 <!-- ── demo ───────────────────────────────────────────────── -->
-<section class="sec">
+<section class="sec sec-alt">
   <div class="wrap">
     <div class="sec-head sec-head-tight">
       <span class="eyebrow rv">/ Demo</span>
@@ -195,7 +224,7 @@
 </section>
 
 <!-- ── anomaly ────────────────────────────────────────────── -->
-<section class="sec sec-alt">
+<section class="sec">
   <div class="wrap">
     <div class="sec-head sec-head-tight">
       <span class="eyebrow rv">/ Anomalies</span>
@@ -298,10 +327,11 @@
     <div class="foot-top">
       <div class="foot-brand">
         <div class="display">Argus</div>
-        <p>A deterministic diff engine for Excel workbooks. Open source, MIT licensed, built for people who have to defend a number.</p>
+        <p>Version history for Excel models, with a deterministic diff engine underneath. Open source, MIT licensed, built for people who have to defend a number.</p>
       </div>
       <div class="foot-col">
         <h4>Product</h4>
+        <a href="#history">Version history</a>
         <a href="#how">How it works</a>
         <a href="#engine">Engine</a>
       </div>
